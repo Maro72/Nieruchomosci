@@ -13,12 +13,13 @@
 @inject AuthenticationStateProvider AuthStateProvider
 
 @* GŁÓWNY KONTENER - pozycjonowanie absolutne wymusza pełny ekran i ignoruje jakiekolwiek ukryte marginesy z layoutów *@
-<MudContainer MaxWidth="MaxWidth.False" 
-              Style="min-height: 100vh; width: 100vw; position: fixed; top: 0; left: 0; z-index: 9999; background-color: #f8fafc; display: flex; align-items: center; justify-content: center; padding: 1rem;">
+<MudContainer MaxWidth="MaxWidth.False"
+              Class="login-shell"
+              Style="min-height: 100vh; width: 100%; position: fixed; top: 0; left: 0; z-index: 9999; background-color: #f8fafc; display: flex; align-items: center; justify-content: center; padding: 1rem; overflow-y: auto;">
     
     @* WEWNĘTRZNY KONTENER - trzyma profesjonalną, sztywną szerokość dla formularza *@
-    <MudContainer MaxWidth="MaxWidth.ExtraSmall" Class="pa-0">
-        <MudPaper Class="pa-8 shadow-lg" Elevation="4" Style="border-radius: 16px; width: 100%; background: #ffffff;">
+    <MudContainer MaxWidth="MaxWidth.False" Class="login-form-container pa-0">
+        <MudPaper Class="login-card pa-8 shadow-lg" Elevation="4" Style="border-radius: 16px; width: 100%; background: #ffffff;">
             
             <div class="d-flex flex-column align-center justify-center mb-8">
                 <MudAvatar Color="Color.Primary" Variant="Variant.Filled" Style="width: 64px; height: 64px;" Class="mb-4 shadow-sm">
@@ -143,3 +144,20 @@
         NavigationManager.NavigateTo("about:blank");
     }
 }
+
+<style>
+    .login-form-container {
+        width: min(100%, 520px);
+    }
+
+    @@media (max-width: 576px) {
+        .login-shell {
+            align-items: flex-start !important;
+            padding: 12px !important;
+        }
+
+        .login-card {
+            padding: 24px !important;
+        }
+    }
+</style>

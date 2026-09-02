@@ -1,0 +1,2078 @@
+======================================================================
+                  PE£NY RAPORT ARCHITEKTURY APLIKACJI
+======================================================================
+Data wygenerowania: 06/13/2026 13:35:44
+Katalog g³ówny: C:\Users\redma\source\repos\Mieszkaniec
+----------------------------------------------------------------------
+Znaleziono 92 plików Ÿród³owych. Rozpoczynam g³êbok¹ analizê...
+
+======================================================================
+PLIK: \BenchmarkSuite1\ObiektServiceBenchmark.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Benchmarks
+Typ obiektu: class
+Nazwa
+
+
+
+
+
+
+: ObiektServiceBenchmark
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  - public MieszkaniecDbContext CreateDbContext()
+
+
+======================================================================
+PLIK: \BenchmarkSuite1\Program.cs
+======================================================================
+Przestrzeñ nazw: BenchmarkSuite1
+Typ obiektu: class
+Nazwa
+
+
+
+
+
+
+: Program
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  (Brak metod)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Layout\MainLayout.razor
+======================================================================
+Typ obiektu: Komponent Blazor (UI View)
+
+Wstrzykiwane serwisy (@inject):
+  - Serwis: NavigationManager -> Jako: Navigation
+  - Serwis: IDbConnectionService -> Jako: DbService
+
+U¿yte komponenty bibliotek UI:
+  - MudThemeProvider, MudDialogProvider, MudSnackbarProvider, MudPopoverProvider, FluentDialogProvider, FluentToastProvider, FluentTooltipProvider, FluentMessageBarProvider, MudLayout, MudAppBar, MudIconButton, MudText, MudIcon, MudSpacer, MudDrawer, MudMainContent, MudContainer, MudCard, MudButton, MudPaper
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Layout\NavMenu.razor
+======================================================================
+Typ obiektu: Komponent Blazor (UI View)
+
+U¿yte komponenty bibliotek UI:
+  - MudNavMenu, MudNavGroup, MudNavLink
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\BudynkFluent\FluBudynki.razor
+======================================================================
+Typ obiektu: Komponent Blazor (UI View)
+Dostêpny pod adresem URL: /flubudynki
+
+U¿yte komponenty bibliotek UI:
+  - FluentButton, FluentSearch, FluentDataGrid, FluentPaginator
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\BudynkFluent\FluBudynki.razor.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Components.Pages.Budynkifluent
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  - protected async Task OdswiezDane()
+  - protected void FiltrujListe()
+  - protected async Task OpenCreateDialog()
+  - protected async Task OpenEditDialog(Obiekt? obiekt)
+  - protected async Task RequestDelete(Obiekt? obiekt)
+  - protected void WybierzWiersz(Obiekt obiekt)
+  - protected async Task DrukujListe()
+  - protected async Task EksportujDoExcela()
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\BudynkFluent\FluBudynkiDialog.razor
+======================================================================
+Typ obiektu: Komponent Blazor (UI View)
+
+U¿yte komponenty bibliotek UI:
+  - FluentDialogBody, FluentIcon, FluentTextField, FluentNumberField, FluentTextArea, FluentDialogFooter, FluentButton
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\BudynkFluent\FluBudynkiDialog.razor.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Components.Pages.Budynkifluent
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  - public Obiekt Content
+  - public FluentDialog Dialog
+
+Definiowane metody:
+  (Brak metod)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\FAwarie\FAwarie.razor
+======================================================================
+Typ obiektu: Komponent Blazor (UI View)
+Dostêpny pod adresem URL: /fawarie
+
+U¿yte komponenty bibliotek UI:
+  - MudSelect, MudSelectItem, MudSwitch
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\FAwarie\FAwarie.razor.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Components.Pages.FAwarie
+Typ obiektu: enum
+Nazwa
+
+
+
+
+
+
+: TypAkcji
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  - protected async Task RefreshGridAsync()
+  - protected async Task RefreshGridAfterObiekt(int? id)
+  - protected async Task RefreshGridAfterRodzaj(int? id)
+  - protected async Task RefreshGridAfterStatus(string? status)
+  - protected async Task PrzelaczWidokArchiwum(bool stan)
+  - protected void WybierzWiersz(UsterkiBud model)
+  - protected void OpenCreateDialog()
+  - protected void OpenEditDialog(UsterkiBud? model)
+  - protected void RequestDelete(UsterkiBud? model)
+  - protected void ZazadajPotwierdzeniaZapisu()
+  - protected void ZazadajPotwierdzeniaUsuniecia(UsterkiBud model)
+  - protected async Task HandleConfirmationAnswer(bool czyZatwierdzono)
+  - protected void CloseDialog()
+  - protected async Task PodgladPlikuPdf(string nazwa)
+  - protected async Task PokazZalacznikiDialog(IEnumerable<Zalacznik> zalaczniki)
+  - protected string WyznaczKlasuStatusu(string status)
+  - protected string WyznaczKlasuPriorytetu(string? p)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\FAwarie\FAwarieDialog.razor
+======================================================================
+Typ obiektu: Komponent Blazor (UI View)
+
+U¿yte komponenty bibliotek UI:
+  - MudDialog, MudFileUpload
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\FAwarie\FAwarieDialog.razor.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Components.Pages.FAwarie
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  - public bool IsVisible
+  - public EventCallback<bool> IsVisibleChanged
+  - public UsterkiBud Model
+  - public List<Obiekt> ListaObiektow
+  - public List<RodzajUsterki> ListaRodzajow
+  - public List<PriorytetUsterki> ListaPriorytetow
+  - public EventCallback OnSave
+  - public EventCallback OnCancel
+
+Definiowane metody:
+  - protected async Task Save()
+  - protected async Task Cancel()
+  - protected async Task OnUploadFiles(IReadOnlyList<IBrowserFile> files)
+  - protected void UsunZalacznik(Zalacznik zalacznik)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\FBudynki\FBudynki.razor
+======================================================================
+Typ obiektu: Komponent Blazor (UI View)
+Dostêpny pod adresem URL: /fbudynki
+
+U¿yte komponenty bibliotek UI:
+  - MudSwitch
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\FBudynki\FBudynki.razor.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Components.Pages.Obiekty
+Typ obiektu: enum
+Nazwa
+
+
+
+
+
+
+: TypAkcji
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  - protected async Task OdswiezDane()
+  - protected void FiltrujListe()
+  - protected void OnSearchInput(string val)
+  - protected async Task PrzelaczWidokArchiwum(bool stan)
+  - protected async Task OpenCreateDialog()
+  - protected async Task OpenEditDialog(Obiekt? obiekt)
+  - protected void ZazadajPotwierdzeniaZapisu(Obiekt obiekt)
+  - protected void RequestDelete(Obiekt? obiekt)
+  - protected async Task HandleConfirmationAnswer(bool czyZatwierdzono)
+  - protected void WybierzWiersz(Obiekt obiekt)
+  - protected async Task DrukujListe()
+  - protected async Task EksportujDoExcela()
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\FBudynki\FBudynkiDialog.razor
+======================================================================
+Typ obiektu: Komponent Blazor (UI View)
+
+U¿yte komponenty bibliotek UI:
+  - MudDialog, MudSpacer
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\FHistoriaBud\FHistoriaBud.razor
+======================================================================
+Typ obiektu: Komponent Blazor (UI View)
+Dostêpny pod adresem URL: /historiausterek
+
+U¿yte komponenty bibliotek UI:
+  - MudText, MudGrid, MudItem, MudPaper, MudIcon, MudButton, MudSwitch, MudDataGrid, MudChip, MudDataGridPager
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\FHistoriaBud\FHistoriaBud.razor.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Components.Pages.Usterki
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  - protected void FiltrujBudynki()
+  - protected async Task LadujHistorieUsterek()
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\FPrzeglady\FPrzegladDialog.razor
+======================================================================
+Typ obiektu: Komponent Blazor (UI View)
+
+U¿yte komponenty bibliotek UI:
+  - MudDialog, MudButton
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\FPrzeglady\FPrzegladyList.razor
+======================================================================
+Typ obiektu: Komponent Blazor (UI View)
+Dostêpny pod adresem URL: /fprzeglady
+
+U¿yte komponenty bibliotek UI:
+  - MudSelect, MudSelectItem, MudSwitch
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\FPrzeglady\FPrzegladyList.razor.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Components.Pages.FPrzeglady
+Typ obiektu: enum
+Nazwa
+
+
+
+
+
+
+: TypAkcji
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  - protected async Task OdswiezDane()
+  - protected void PrzelaczWidokArchiwum(bool stan)
+  - protected void OnObiektFilterChanged(int? val)
+  - protected void OnDefinicjaFilterChanged(int? val)
+  - protected void OnStatusFilterChanged(string? val)
+  - protected void ApplyFilters()
+  - protected async Task OpenCreateDialog()
+  - protected async Task OpenEditDialog(Przeglad? model)
+  - protected async Task OpenRealizeDialog(Przeglad model)
+  - protected void ZazadajPotwierdzeniaZapisu(Przeglad model, bool trybRealizacji)
+  - protected void RequestDelete(Przeglad? model)
+  - protected async Task HandleConfirmationAnswer(bool czyZatwierdzono)
+  - protected void WybierzWiersz(Przeglad model)
+  - protected string WyznaczStatusTekst(Przeglad p)
+  - protected string WyznaczStatusKlasa(Przeglad p)
+  - protected string WyznaczDniTekst(Przeglad p)
+  - protected async Task EksportujDoExcela()
+  - protected async Task PodgladPlikuPdf(string nazwaPliku)
+  - protected async Task PokazZalacznikiDialog(IEnumerable<Zalacznik> zalaczniki)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\FRemontBud\FRemonBud.razor
+======================================================================
+Typ obiektu: Komponent Blazor (UI View)
+Dostêpny pod adresem URL: /fremonbud
+
+U¿yte komponenty bibliotek UI:
+  - MudSelect, MudSelectItem, MudToggleGroup, MudToggleItem, MudIcon, MudPaper, MudStack, MudText, MudButton, MudIconButton, MudDropContainer, MudChip, MudDropZone, MudDivider
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\FRemontBud\FRemonBud.razor.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Components.Pages.FRemonBud
+Typ obiektu: enum
+Nazwa
+
+
+
+
+
+
+: TypAkcji
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  - protected async Task RefreshGridAsync()
+  - protected async Task OnObiektFilterChanged(int? id)
+  - protected async Task OnRodzajFilterChanged(int? id)
+  - protected async Task OnStatusFilterChanged(string? status)
+  - protected void WybierzWiersz(PraceRemontowe model)
+  - protected void OpenCreateDialog()
+  - protected async Task OpenEditDialog(PraceRemontowe? model)
+  - protected void RequestDelete(PraceRemontowe? model)
+  - protected void ZazadajPotwierdzeniaZapisu()
+  - protected async Task HandleConfirmationAnswer(bool czyZatwierdzono)
+  - protected void CloseDialog()
+  - protected string WyznaczKlasuStatusu(string status)
+  - protected void OnWidokChanged(bool val)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\FRemontBud\FRemonBudDialog.razor
+======================================================================
+Typ obiektu: Komponent Blazor (UI View)
+
+U¿yte komponenty bibliotek UI:
+  - MudDialog, MudSpacer, MudTabs, MudTabPanel, MudButton
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\FRemontBud\FRemonBudDialog.razor.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Components.Pages.FRemonBud
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  - public bool IsVisible
+  - public EventCallback<bool> IsVisibleChanged
+  - public PraceRemontowe Model
+  - public List<Obiekt> ListaObiektow
+  - public List<RodzajUsterki> ListaRodzajow
+  - public List<PriorytetUsterki> ListaPriorytetow
+  - public List<string> OpcjeStatusow
+  - public EventCallback OnSave
+  - public EventCallback OnCancel
+
+Definiowane metody:
+  - public void PrzeliczKoszty()
+  - protected void DodajMaterial()
+  - protected void UsunMaterial(KosztorysMaterial mat)
+  - protected async Task ZapiszFormularz()
+  - protected async Task Anuluj()
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\FTerminy\FTerminDialog.razor
+======================================================================
+Typ obiektu: Komponent Blazor (UI View)
+
+U¿yte komponenty bibliotek UI:
+  - MudDialog, MudButton
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\FTerminy\FTerminyList.razor
+======================================================================
+Typ obiektu: Komponent Blazor (UI View)
+Dostêpny pod adresem URL: /fterminy/terminy
+
+U¿yte komponenty bibliotek UI:
+  (Brak komponentów M
+ud/Fluent lub czysty HTML)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\FTerminy\FTerminyList.razor.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Components.Pages.FTerminy
+Typ obiektu: enum
+Nazwa
+
+
+
+
+
+
+: TypAkcji
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  - protected async Task OdswiezDane()
+  - protected async Task OpenCreateDialog()
+  - protected async Task OpenEditDialog(TerminDefinicja? model)
+  - protected void ZazadajPotwierdzeniaZapisu(TerminDefinicja model)
+  - protected void RequestDelete(TerminDefinicja? model)
+  - protected async Task HandleConfirmationAnswer(bool czyZatwierdzono)
+  - protected void WybierzWiersz(TerminDefinicja model)
+  - protected async Task EksportujDoExcela()
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\Komunikaty\PotwierdzenieDialog.razor
+======================================================================
+Typ obiektu: Komponent Blazor (UI View)
+
+U¿yte komponenty bibliotek UI:
+  (Brak komponentów M
+ud/Fluent lub czysty HTML)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\Obiekty\ObiektDialog.razor
+======================================================================
+Typ obiektu: Komponent Blazor (UI View)
+
+U¿yte komponenty bibliotek UI:
+  (Brak komponentów M
+ud/Fluent lub czysty HTML)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\Obiekty\ObiektyList.razor
+======================================================================
+Typ obiektu: Komponent Blazor (UI View)
+Dostêpny pod adresem URL: /obiekty
+
+U¿yte komponenty bibliotek UI:
+  (Brak komponentów M
+ud/Fluent lub czysty HTML)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\Obiekty\ObiektyList.razor.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Components.Pages.Obiekty
+Typ obiektu: enum
+Nazwa
+
+
+
+
+
+
+: TypAkcji
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  - protected async Task OdswiezDane()
+  - protected void FiltrujListe()
+  - protected async Task PrzelaczWidokArchiwum(bool stan)
+  - protected void OpenCreateDialog()
+  - protected void OpenEditDialog(Obiekt? obiekt)
+  - protected void ZazadajPotwierdzeniaZapisu(Obiekt obiekt)
+  - protected async Task OnGridActionBegin(ActionEventArgs<Obiekt> args)
+  - protected async Task HandleConfirmationAnswer(bool czyZatwierdzono)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\Przeglady\Przeglad.razor
+======================================================================
+Typ obiektu: Komponent Blazor (UI View)
+Dostêpny pod adresem URL: /przeglady
+
+U¿yte komponenty bibliotek UI:
+  (Brak komponentów M
+ud/Fluent lub czysty HTML)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\Przeglady\Przeglad.razor.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Components.Pages.Przeglady
+Typ obiektu: enum
+Nazwa
+
+
+
+
+
+
+: TypAkcji
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  - public bool IsRealizeMode
+
+Definiowane metody:
+  - protected async Task OdswiezDane()
+  - protected void PrzelaczWidokArchiwum(bool stan)
+  - protected void ApplyFilters()
+  - protected void OpenCreateDialog()
+  - protected void OpenEditDialog(Mieszkaniec.Model.Entities.Przeglad? model)
+  - protected void OpenRealizeDialog(Mieszkaniec.Model.Entities.Przeglad model)
+  - protected void ZazadajPotwierdzeniaZapisu(Mieszkaniec.Model.Entities.Przeglad model)
+  - protected async Task OnGridActionBegin(ActionEventArgs<Mieszkaniec.Model.Entities.Przeglad> args)
+  - protected async Task HandleConfirmationAnswer(bool czyZatwierdzono)
+  - protected void CloseDialog()
+  - protected string WyznaczStatusTekst(Mieszkaniec.Model.Entities.Przeglad p)
+  - protected string WyznaczStatusKlasa(Mieszkaniec.Model.Entities.Przeglad p)
+  - protected string WyznaczDniTekst(Mieszkaniec.Model.Entities.Przeglad p)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\Przeglady\PrzegladDialog.razor
+======================================================================
+Typ obiektu: Komponent Blazor (UI View)
+
+U¿yte komponenty bibliotek UI:
+  (Brak komponentów M
+ud/Fluent lub czysty HTML)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\Remonty\Remonty.razor
+======================================================================
+Typ obiektu: Komponent Blazor (UI View)
+Dostêpny pod adresem URL: /remonty
+
+U¿yte komponenty bibliotek UI:
+  (Brak komponentów M
+ud/Fluent lub czysty HTML)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\Remonty\Remonty.razor.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Components.Pages.Remonty
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  - protected async Task RefreshGridAsync()
+  - protected async Task FiltrujPoKarcieKPI(string status)
+  - protected string WyznaczKlasuStatusu(string status)
+  - protected void OpenCreateDialog()
+  - protected async Task OpenEditDialog(PraceRemontowe model)
+  - protected void ZamknijOkno()
+  - protected async Task ZapiszRemontAsync(PraceRemontowe model)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\Remonty\RemontyDialog.razor
+======================================================================
+Typ obiektu: Komponent Blazor (UI View)
+
+U¿yte komponenty bibliotek UI:
+  (Brak komponentów M
+ud/Fluent lub czysty HTML)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\Slownik\TerminDefinicjaList.razor
+======================================================================
+Typ obiektu: Komponent Blazor (UI View)
+Dostêpny pod adresem URL: /slownik/terminy
+
+U¿yte komponenty bibliotek UI:
+  (Brak komponentów M
+ud/Fluent lub czysty HTML)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\Slownik\TerminDefinicjaList.razor.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Components.Pages.Slownik
+Typ obiektu: enum
+Nazwa
+
+
+
+
+
+
+: TypAkcji
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  - protected async Task OdswiezDane()
+  - protected void OpenCreateDialog()
+  - protected void OpenEditDialog(TerminDefinicja? model)
+  - protected void CloseDialog()
+  - protected void ZazadajPotwierdzeniaZapisu(TerminDefinicja model)
+  - protected async Task OnGridActionBegin(ActionEventArgs<TerminDefinicja> args)
+  - protected async Task HandleConfirmationAnswer(bool czyZatwierdzono)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\Slownik\TerminDialog.razor
+======================================================================
+Typ obiektu: Komponent Blazor (UI View)
+
+U¿yte komponenty bibliotek UI:
+  (Brak komponentów M
+ud/Fluent lub czysty HTML)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\Usterki\UsterkiHistoria.razor
+======================================================================
+Typ obiektu: Komponent Blazor (UI View)
+Dostêpny pod adresem URL: /usterki-historia
+
+U¿yte komponenty bibliotek UI:
+  (Brak komponentów M
+ud/Fluent lub czysty HTML)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\Usterki\UsterkiHistoria.razor.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Components.Pages.Usterki
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  - protected void FiltrujBudynki()
+  - protected async Task OnBudynekWybrany(ClickEventArgs<Obiekt> args)
+  - protected async Task LadujHistorieUsterek()
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\ConfirmDialog.razor
+======================================================================
+Typ obiektu: Komponent Blazor (UI View)
+
+U¿yte komponenty bibliotek UI:
+  - MudDialog, MudText, MudButton
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\ConnectionGuard.razor
+======================================================================
+Typ obiektu: Komponent Blazor (UI View)
+
+Wstrzykiwane serwisy (@inject):
+  - Serwis: IDbConnectionService -> Jako: DbService
+
+U¿yte komponenty bibliotek UI:
+  (Brak komponentów M
+ud/Fluent lub czysty HTML)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\Error.razor
+======================================================================
+Typ obiektu: Komponent Blazor (UI View)
+Dostêpny pod adresem URL: /Error
+
+U¿yte komponenty bibliotek UI:
+  (Brak komponentów M
+ud/Fluent lub czysty HTML)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\Home.razor
+======================================================================
+Typ obiektu: Komponent Blazor (UI View)
+Dostêpny pod adresem URL: /
+
+U¿yte komponenty bibliotek UI:
+  (Brak komponentów M
+ud/Fluent lub czysty HTML)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Pages\ZalacznikiDialog.razor
+======================================================================
+Typ obiektu: Komponent Blazor (UI View)
+
+U¿yte komponenty bibliotek UI:
+  - MudDialog, MudButton
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\UI\FGrid\FGrid.razor
+======================================================================
+Typ obiektu: Komponent Blazor (UI View)
+
+U¿yte komponenty bibliotek UI:
+  - MudDataGrid, MudSpacer, MudDataGridPager
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\UI\FGrid\FGrid.razor.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Components.UI
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  - public string Title
+  - public IEnumerable<TItem> Items
+  - public TItem? SelectedItem
+  - public EventCallback<TItem?> SelectedItemChanged
+  - public int GridKey
+  - public string SearchText
+  - public EventCallback<string> SearchTextChanged
+  - public RenderFragment? GridColumns
+  - public RenderFragment? ToolbarLeftContent
+  - public RenderFragment? ExtraActions
+  - public EventCallback OnExportToExcel
+  - public EventCallback OnAdd
+  - public EventCallback<TItem> OnEdit
+  - public EventCallback<TItem> OnDelete
+  - public bool ShowToolbar
+  - public bool ShowPrint
+  - public bool ShowSearch
+
+Definiowane metody:
+  - protected async Task HandleSearch(ChangeEventArgs e)
+  - protected string OnRowClassFunc(TItem item, int rowNumber)
+  - protected async Task WykonajEksportExcel()
+  - protected async Task DrukujWidok()
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\UI\Gid\MGrid.razor
+======================================================================
+Typ obiektu: Komponent Blazor (UI View)
+
+U¿yte komponenty bibliotek UI:
+  (Brak komponentów M
+ud/Fluent lub czysty HTML)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\UI\Gid\MGrid.razor.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Components.UI.Grid
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  - public IEnumerable<TValue> DataSource
+  - public RenderFragment ChildContent
+  - public EventCallback<ActionEventArgs<TValue>> OnActionBegin
+  - public EventCallback OnAddClick
+  - public EventCallback<TValue> OnEditClick
+  - public bool PokazujToolbar
+  - public SfGrid<TValue> Grid
+
+Definiowane metody:
+  - protected async Task ToolbarClickHandler(ClickEventArgs args)
+  - protected async Task OnActionBeginHandler(ActionEventArgs<TValue> args)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\App.razor
+======================================================================
+Typ obiektu: Komponent Blazor (UI View)
+
+U¿yte komponenty bibliotek UI:
+  (Brak komponentów M
+ud/Fluent lub czysty HTML)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\Routes.razor
+======================================================================
+Typ obiektu: Komponent Blazor (UI View)
+
+U¿yte komponenty bibliotek UI:
+  (Brak komponentów M
+ud/Fluent lub czysty HTML)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Components\_Imports.razor
+======================================================================
+Typ obiektu: Komponent Blazor (UI View)
+
+U¿yte komponenty bibliotek UI:
+  (Brak komponentów M
+ud/Fluent lub czysty HTML)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Migrations\20260606062107_InitOdNowa.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Migrations
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  (Brak metod)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Migrations\20260606062107_InitOdNowa.Designer.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Migrations
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  (Brak metod)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Migrations\MieszkaniecDbContextModelSnapshot.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Migrations
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  (Brak metod)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Model\Context\MieszkaniecDbContext.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Model.Context
+Typ obiektu: class
+Nazwa
+
+
+
+
+
+
+: MieszkaniecDbContext
+Dziedziczy po / Implementuje: DbContext
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  - public DbSet<Obiekt> Obiekty
+  - public DbSet<TerminDefinicja> TerminyDefinicje
+  - public DbSet<Przeglad> Przeglady
+  - public DbSet<Zalacznik> Zalaczniki
+  - public DbSet<PraceRemontowe> PraceRemontowe
+  - public DbSet<PriorytetUsterki> PriorytetyUsterek
+  - public DbSet<RodzajUsterki> RodzajeUsterek
+  - public DbSet<UsterkiBud> UsterkiBud
+
+Definiowane metody:
+  (Brak metod)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Model\Context\MieszkaniecDbContextFactory.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Model.Context
+Typ obiektu: class
+Nazwa
+
+
+
+
+
+
+: MieszkaniecDbContextFactory
+Dziedziczy po / Implementuje: IDesignTimeDbContextFactory<MieszkaniecDbContext>
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  - public MieszkaniecDbContext CreateDbContext(string[] args)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Model\Entities\KosztorysMaterial.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Model.Entities
+Typ obiektu: class
+Nazwa
+
+
+
+
+
+
+: KosztorysMaterial
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  - public int Id
+  - public int PraceRemontoweId
+  - public string NazwaMaterialu
+  - public string Jm
+  - public decimal Ilosc
+  - public decimal CenaJednostkowa
+  - public decimal WartoscCalkowita
+
+Definiowane metody:
+  (Brak metod)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Model\Entities\Obiekt.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Model.Entities
+Typ obiektu: class
+Nazwa
+
+
+
+
+
+
+: Obiekt
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  - public int Id
+  - public string Nazwa
+  - public string NumerEwidencyjny
+  - public string Adres
+  - public int? RokBudowy
+  - public int? LiczbaKondygnacji
+  - public decimal Wysokosc
+  - public decimal Kubatura
+  - public decimal PowUzytkowa
+  - public string? Opis
+  - public string? Wyposazenie
+  - public bool CzyArchiwum
+  - public DateTime DataUtworzenia
+
+Definiowane metody:
+  (Brak metod)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Model\Entities\PraceRemontowe.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Model.Entities
+Typ obiektu: class
+Nazwa
+
+
+
+
+
+
+: PraceRemontowe
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  - public int Id
+  - public int ObiektId
+  - public int? UsterkaId
+  - public DateTime? DataZgloszeniaUsterki
+  - public string? OsobaZglaszajaca
+  - public string Nazwa
+  - public string? Opis
+  - public int RodzajUsterkiId
+  - public int PriorytetUsterkiId
+  - public string Status
+  - public DateTime DataRozpoczeciaPlanowana
+  - public DateTime DataZakonczeniaPlanowana
+  - public DateTime? DataRozpoczeciaFaktyczna
+  - public DateTime? DataZakonczeniaFaktyczna
+  - public decimal KosztSzacowany
+  - public decimal KosztFaktyczny
+  - public string? WykonawcaNazwa
+  - public decimal RobociznaStawkaGodzinowa
+  - public int LiczbaPracownikow
+  - public int SzacowanaLiczbaDni
+  - public int GodzinyDziennie
+  - public decimal KosztCalkowityRobocizny
+
+Definiowane metody:
+  (Brak metod)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Model\Entities\PriorytetUsterki.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Model.Entities
+Typ obiektu: class
+Nazwa
+
+
+
+
+
+
+: PriorytetUsterki
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  - public int Id
+  - public string Nazwa
+  - public int Poziom
+  - public string KodKoloru
+  - public int? MaksCzasReakcjiGodziny
+
+Definiowane metody:
+  (Brak metod)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Model\Entities\Przeglad.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Model.Entities
+Typ obiektu: class
+Nazwa
+
+
+
+
+
+
+: Przeglad
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  - public int Id
+  - public int ObiektId
+  - public int TerminDefinicjaId
+  - public DateTime DataWykonania
+  - public DateTime DataNastepnego
+  - public string OsobaWykonujaca
+  - public string? WynikOcena
+  - public string Status
+
+Definiowane metody:
+  (Brak metod)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Model\Entities\RodzajUsterki.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Model.Entities
+Typ obiektu: class
+Nazwa
+
+
+
+
+
+
+: RodzajUsterki
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  - public int Id
+  - public string Nazwa
+  - public string KlasaIkony
+  - public bool CzyWymagaUprawnien
+
+Definiowane metody:
+  (Brak metod)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Model\Entities\TerminDefinicja.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Model.Entities
+Typ obiektu: class
+Nazwa
+
+
+
+
+
+
+: TerminDefinicja
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  - public int Id
+  - public string NazwaTypu
+  - public int? CzestoscMiesiace
+  - public int? DniPowiadomienia
+
+Definiowane metody:
+  (Brak metod)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Model\Entities\UsterkiBud.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Model.Entities
+Typ obiektu: class
+Nazwa
+
+
+
+
+
+
+: UsterkiBud
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  - public int Id
+  - public int ObiektId
+  - public string OsobaZglaszajaca
+  - public DateTime DataZgloszenia
+  - public string OpisZg³oszenia
+  - public int RodzajUsterkiId
+  - public int PriorytetUsterkiId
+  - public string Status
+  - public DateTime? DataZakonczeniaNaprawy
+  - public string? UwagiKonserwatora
+  - public bool CzyArchiwum
+  - public List<Zalacznik> Zalaczniki
+
+Definiowane metody:
+  (Brak metod)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Model\Entities\UsterkiSummary.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Model.Entities
+Typ obiektu: class
+Nazwa
+
+
+
+
+
+
+: UsterkiSummary
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  - public int Nowe
+  - public int WNaprawie
+  - public int Zakonczone
+
+Definiowane metody:
+  (Brak metod)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Model\Entities\WinFormsMenuItem.cs
+======================================================================
+Typ obiektu: class
+Nazwa
+
+
+
+
+
+
+: WinFormsMenuItem
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  - public string Text
+  - public string? IconCss
+  - public string? Url
+  - public List<WinFormsMenuItem>? SubItems
+
+Definiowane metody:
+  (Brak metod)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Model\Entities\Zalacznik.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Model.Entities
+Typ obiektu: class
+Nazwa
+
+
+
+
+
+
+: Zalacznik
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  - public int Id
+  - public int? PrzegladId
+  - public int? UsterkiBudId
+  - public string NazwaPliku
+  - public string SciezkaMagazyn
+  - public int RozmiarKB
+  - public DateTime DataDodania
+
+Definiowane metody:
+  (Brak metod)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Services\Implementations\DatabaseHealthService.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Services
+Typ obiektu: class
+Nazwa
+
+
+
+
+
+
+: DatabaseHealthService
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  - public async Task<bool> IsDatabaseOnline()
+
+
+======================================================================
+PLIK: \Mieszkaniec\Services\Implementations\DbConnectionService.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Services
+Typ obiektu: interface
+Nazwa
+
+
+
+
+
+
+: IDbConnectionService
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  - public async Task<bool> CanConnectAsync()
+
+
+======================================================================
+PLIK: \Mieszkaniec\Services\Implementations\ExcelExporter.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Services
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  (Brak metod)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Services\Implementations\ExportdoExcela.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Services
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  (Brak metod)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Services\Implementations\FileService.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Services.Implementations
+Typ obiektu: class
+Nazwa
+
+
+
+
+
+
+: FileService
+Dziedziczy po / Implementuje: IFileService
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  - public async Task<Zalacznik> UploadAsync(IBrowserFile file, int przegladId)
+  - public async Task<bool> DeleteAsync(int zalacznikId)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Services\Implementations\ObiektService.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Services.Implementations
+Typ obiektu: class
+Nazwa
+
+
+
+
+
+
+: ObiektService
+Dziedziczy po / Implementuje: IObiektService
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  - public async Task<bool> SaveAsync(Obiekt obiekt)
+  - public async Task<string> DeleteOrArchiveAsync(int id)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Services\Implementations\PraceRemontoweService.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Services
+Typ obiektu: class
+Nazwa
+
+
+
+
+
+
+: PraceRemontoweService
+Dziedziczy po / Implementuje: IPraceRemontoweService
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  - public async Task<bool> SaveAsync(PraceRemontowe model)
+  - public async Task<bool> DeleteAsync(int id)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Services\Implementations\PrzegladService.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Services
+Typ obiektu: class
+Nazwa
+
+
+
+
+
+
+: PrzegladService
+Dziedziczy po / Implementuje: IPrzegladService
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  - public async Task SaveAsync(Przeglad model)
+  - public async Task DeleteAsync(int id)
+  - public async Task ZrealizujIArchiwizujAsync(Przeglad zrealizowanyModel)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Services\Implementations\StorageService.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Services.Implementations
+Typ obiektu: class
+Nazwa
+
+
+
+
+
+
+: StorageService
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  (Brak metod)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Services\Implementations\SyncfusionLocalizer.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec
+Typ obiektu: class
+Nazwa
+
+
+
+
+
+
+: SyncfusionLocalizer
+Dziedziczy po / Implementuje: ISyncfusionStringLocalizer
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+
+
+======================================================================
+PLIK: \Mieszkaniec\Services\Implementations\TerminDefinicjaService.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Services
+Typ obiektu: class
+Nazwa
+
+
+
+
+
+
+: TerminDefinicjaService
+Dziedziczy po / Implementuje: ITerminDefinicjaService
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  - public async Task SaveAsync(TerminDefinicja model)
+  - public async Task DeleteOrArchiveAsync(int id)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Services\Implementations\UsterkiBudService.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Services.Implementations
+Typ obiektu: class
+Nazwa
+
+
+
+
+
+
+: UsterkiBudService
+Dziedziczy po / Implementuje: IUsterkiBudService
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  - public async Task<bool> SaveAsync(UsterkiBud model)
+  - public async Task<bool> DeleteAsync(int id)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Services\Interfaces\IFileService.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Services.Interfaces
+Typ obiektu: interface
+Nazwa
+
+
+
+
+
+
+: IFileService
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  (Brak metod)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Services\Interfaces\IObiektService.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Services.Interfaces
+Typ obiektu: interface
+Nazwa
+
+
+
+
+
+
+: IObiektService
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  (Brak metod)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Services\Interfaces\IPraceRemontoweService.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Services
+Typ obiektu: interface
+Nazwa
+
+
+
+
+
+
+: IPraceRemontoweService
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  (Brak metod)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Services\Interfaces\IPrzegladService.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Services.Interfaces
+Typ obiektu: interface
+Nazwa
+
+
+
+
+
+
+: IPrzegladService
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  (Brak metod)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Services\Interfaces\IStorageService.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Services.Interfaces
+Typ obiektu: interface
+Nazwa
+
+
+
+
+
+
+: IStorageService
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  (Brak metod)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Services\Interfaces\ITerminDefinicjaService.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Services.Interfaces
+Typ obiektu: interface
+Nazwa
+
+
+
+
+
+
+: ITerminDefinicjaService
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  (Brak metod)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Services\Interfaces\IUsterkiBudService.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Services
+Typ obiektu: interface
+Nazwa
+
+
+
+
+
+
+: IUsterkiBudService
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  (Brak metod)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Services\RemontySummary.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Model.Entities
+Typ obiektu: class
+Nazwa
+
+
+
+
+
+
+: RemontySummary
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  - public int WRealizacji
+  - public int Planowane
+  - public int SumaKosztowFaktycznych
+
+Definiowane metody:
+  (Brak metod)
+
+
+======================================================================
+PLIK: \Mieszkaniec\Program.cs
+======================================================================
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  (Brak metod)
+
+
+======================================================================
+PLIK: \Mieszkaniec.Tests\UnitTest1.cs
+======================================================================
+Przestrzeñ nazw: Mieszkaniec.Tests
+Typ obiektu: class
+Nazwa
+
+
+
+
+
+
+: PrzegladStatusTests
+
+W³aœciwo
+
+
+
+
+
+
+œci (Pola / Klasy POCO):
+  (Brak publicznych w³aœciwoœci lub to nie jest model danych)
+
+Definiowane metody:
+  - public void WyznaczStatusTekst_GdyDataNastepnegoPrzegladuMinela_PowinienZwrocicPrzeterminowany()
+  - public void WyznaczStatusDlaTestu_DlaRoznychDat_PowinienWyznaczycPoprawnyStatus(int rok, int miesiac, int dzien, string oczekiwanyStatus)
+
+

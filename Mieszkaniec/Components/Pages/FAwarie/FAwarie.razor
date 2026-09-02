@@ -1,0 +1,193 @@
+﻿@page "/fawarie"
+@attribute [Authorize(Policy = "OdczytBudynkow")]
+@rendermode InteractiveServer
+@namespace Mieszkaniec.Components.Pages.FAwarie
+@using Mieszkaniec.Model.Entities
+@using Mieszkaniec.Components.UI
+@using MudBlazor
+
+<FGrid TItem="UsterkiBud"
+       Title="Awarie i Usterki"
+       Items="@ListaUsterek"
+       GridKey="@gridKey"
+       @bind-SelectedItem="ObiektDoPrzetworzenia"
+       OnAdd="OpenCreateDialog"
+       OnEdit="OpenEditDialog"
+       OnDelete="RequestDelete"
+       >
+    
+
+    @* --- FILTRY INLINE --- *@
+    <ToolbarLeftContent>
+        <div class="d-flex align-items-center gap-2 flex-wrap ms-3">
+            <MudSelect T="int?" Label="Budynek: Wszystkie" Value="@FiltreObiektId" ValueChanged="RefreshGridAfterObiekt" Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined" Style="width: 180px; background-color: #f8f9fa;" Clearable="true">
+                <MudSelectItem T="int?" Value="null">Wszystkie budynki</MudSelectItem>
+                @foreach (var ob in ListaObiektow)
+                {
+                    <MudSelectItem T="int?" Value="@ob.Id">@ob.Nazwa</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudSelect T="int?" Label="Kategoria: Wszystkie" Value="@FiltreRodzajId" ValueChanged="RefreshGridAfterRodzaj" Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined" Style="width: 170px; background-color: #f8f9fa;" Clearable="true">
+                <MudSelectItem T="int?" Value="null">Wszystkie kategorie</MudSelectItem>
+                @foreach (var def in ListaRodzajow)
+                {
+                    <MudSelectItem T="int?" Value="@def.Id">@def.Nazwa</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudSelect T="string" Label="Status: Wszystkie" Value="@FiltreStatus" ValueChanged="RefreshGridAfterStatus" Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined" Style="width: 160px; background-color: #f8f9fa;" Clearable="true">
+                <MudSelectItem T="string" Value="null">Wszystkie statusy</MudSelectItem>
+                @foreach (var st in OpcjeStatusow)
+                {
+                    <MudSelectItem T="string" Value="@st">@st</MudSelectItem>
+                }
+            </MudSelect>
+
+            @if (FiltreObiektId.HasValue || FiltreRodzajId.HasValue || !string.IsNullOrEmpty(FiltreStatus) || PokazujArchiwum)
+            {
+                <button type="button" class="btn btn-sm text-secondary fw-medium border-0 bg-transparent d-flex align-items-center gap-1 px-2 py-1" @onclick="ResetujFiltry">
+                    <i class="bi bi-x-circle"></i> Wyczyść
+                </button>
+            }
+        </div>
+    </ToolbarLeftContent>
+
+    @* --- PRZEŁĄCZNIK WIDOKU + REFRESH --- *@
+    <ExtraActions>
+        <div class="d-flex align-items-center gap-3 me-2 ms-auto py-1" @onclick:stopPropagation="true">
+            <div class="d-flex align-items-center">
+                <span class="small fw-bold me-2 @(!PokazujArchiwum ? "text-danger" : "text-muted")"
+                      style="cursor:pointer; user-select:none; font-size: 0.85rem;"
+                      @onclick="() => PrzelaczWidokArchiwum(false)"
+                      @onclick:stopPropagation="true">
+                    Aktualne
+                </span>
+
+                <div @onclick:stopPropagation="true">
+                    <MudSwitch T="bool" Value="@PokazujArchiwum" ValueChanged="PrzelaczWidokArchiwum" Color="Color.Error" Dense="true" />
+                </div>
+
+                <span class="small fw-bold ms-1 @(PokazujArchiwum ? "text-danger" : "text-muted")"
+                      style="cursor:pointer; user-select:none; font-size: 0.85rem;"
+                      @onclick="() => PrzelaczWidokArchiwum(true)"
+                      @onclick:stopPropagation="true">
+                    Archiwalne
+                </span>
+            </div>
+
+            <div style="width: 1px; height: 18px; background-color: #dee2e6;"></div>
+
+            <button type="button" class="btn btn-sm btn-link text-secondary p-1 border-0 d-flex align-items-center justify-content-center rounded-circle"
+                    @onclick="RefreshGridAsync"
+                    @onclick:stopPropagation="true"
+                    title="Odśwież zgłoszenia">
+                <i class="bi bi-arrow-clockwise fs-5"></i>
+            </button>
+        </div>
+    </ExtraActions>
+
+    @* --- KOLUMNY GRIDA --- *@
+    <GridColumns>
+        <PropertyColumn T="UsterkiBud" TProperty="DateTime" Property="x => x.DataZgloszenia" Title="Data wpłynięcia" Width="130px" Format="yyyy-MM-dd" HeaderClass="justify-center" CellClass="justify-center text-center fw-medium">
+            <CellTemplate Context="wiersz">
+                <div class="w-100" @onclick="@(() => WybierzWiersz(wiersz.Item))" style="cursor:pointer;">
+                    @wiersz.Item.DataZgloszenia.ToString("yyyy-MM-dd")
+                </div>
+            </CellTemplate>
+        </PropertyColumn>
+
+        <PropertyColumn T="UsterkiBud" TProperty="string" Property="x => x.Status" Title="Status" Width="140px" HeaderClass="justify-center" CellClass="justify-center text-center">
+            <CellTemplate Context="wiersz">
+                <span class="custom-badge @WyznaczKlasuStatusu(wiersz.Item.Status)" @onclick="@(() => WybierzWiersz(wiersz.Item))" style="cursor:pointer;">
+                    <i class="bi bi-circle-fill me-1" style="font-size: 0.4rem;"></i>
+                    @wiersz.Item.Status
+                </span>
+            </CellTemplate>
+        </PropertyColumn>
+
+        <PropertyColumn T="UsterkiBud" TProperty="string" Property="x => x.PriorytetUsterki != null ? x.PriorytetUsterki.Nazwa : string.Empty" Title="Priorytet" Width="130px" HeaderClass="justify-center" CellClass="justify-center text-center">
+            <CellTemplate Context="wiersz">
+                <div class="w-100" @onclick="@(() => WybierzWiersz(wiersz.Item))" style="cursor:pointer;">
+                    @if (wiersz.Item.PriorytetUsterki != null)
+                    {
+                        <span class="custom-badge @WyznaczKlasuPriorytetu(wiersz.Item.PriorytetUsterki.Nazwa)">
+                            <i class="bi bi-exclamation-triangle-fill me-1" style="font-size: 0.75rem;"></i>
+                            @wiersz.Item.PriorytetUsterki.Nazwa
+                        </span>
+                    }
+                </div>
+            </CellTemplate>
+        </PropertyColumn>
+
+        <PropertyColumn T="UsterkiBud" TProperty="string" Property="x => x.Obiekt.Nazwa" Title="Nieruchomość" Width="180px">
+            <CellTemplate Context="wiersz">
+                <div class="w-100" @onclick="@(() => WybierzWiersz(wiersz.Item))" style="cursor:pointer;">
+                    @(wiersz.Item.Obiekt?.Nazwa ?? "-")
+                </div>
+            </CellTemplate>
+        </PropertyColumn>
+
+        <PropertyColumn T="UsterkiBud" TProperty="string" Property="x => x.OpisZgłoszenia" Title="Opis problemu i zgłoszenia" Width="280px">
+            <CellTemplate Context="wiersz">
+                <div class="d-flex align-items-start w-100" @onclick="@(() => WybierzWiersz(wiersz.Item))" style="cursor:pointer;">
+                    <i class="bi @(wiersz.Item.RodzajUsterki?.KlasaIkony ?? "bi-tools") text-danger me-2 mt-1" style="font-size: 1.1rem;"></i>
+                    <div>
+                        <span class="fw-semibold text-dark d-block text-wrap">@wiersz.Item.OpisZgłoszenia</span>
+                        <small class="text-muted d-block" style="font-size: 0.75rem;">
+                            Zgłosił(a): <strong class="text-secondary">@wiersz.Item.OsobaZglaszajaca</strong>
+                        </small>
+                    </div>
+                </div>
+            </CellTemplate>
+        </PropertyColumn>
+
+        <PropertyColumn T="UsterkiBud" TProperty="string" Property="x => x.UwagiKonserwatora" Title="Komentarz / Notatki naprawy" Width="220px">
+            <CellTemplate Context="wiersz">
+                <div class="w-100" @onclick="@(() => WybierzWiersz(wiersz.Item))" style="cursor:pointer;">
+                    @wiersz.Item.UwagiKonserwatora
+                </div>
+            </CellTemplate>
+        </PropertyColumn>
+
+        @* --- ZAAWANSOWANA KOLUMNA PDF MUDBLAZOR (Nowa, tak jak w Przeglądach) --- *@
+        <PropertyColumn T="UsterkiBud" TProperty="int" Property="x => x.Zalaczniki != null ? x.Zalaczniki.Count : 0" Title="Załączniki" Width="100px" HeaderClass="justify-center" CellClass="justify-center text-center">
+            <CellTemplate Context="wiersz">
+                <div class="w-100 d-flex justify-content-center" @onclick="@(() => WybierzWiersz(wiersz.Item))" style="cursor:pointer;">
+                    @if (wiersz.Item.Zalaczniki != null && wiersz.Item.Zalaczniki.Any())
+                    {
+                        <div @onclick:stopPropagation="true">
+                            <div class="badge bg-light text-danger border p-2 d-inline-flex align-items-center justify-content-center gap-1 shadow-sm hover-primary"
+                                 style="cursor: pointer; transition: 0.2s;"
+                                 title="Kliknij, aby zobaczyć załączniki"
+                                 @onclick="() => PokazZalacznikiDialog(wiersz.Item.Zalaczniki)">
+                                <i class="bi bi-file-earmark-pdf-fill fs-6"></i>
+                                <span class="fw-bold ms-1" style="font-size: 0.85rem;">@wiersz.Item.Zalaczniki.Count</span>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <span class="text-muted small">-</span>
+                    }
+                </div>
+            </CellTemplate>
+        </PropertyColumn>
+    </GridColumns>
+</FGrid>
+
+<FAwarieDialog @bind-IsVisible="IsDialogVisible"
+               Model="EdytowanyModel"
+               ListaObiektow="ListaObiektow"
+               ListaRodzajow="ListaRodzajow"
+               ListaPriorytetow="ListaPriorytetow"
+               OnSave="ZazadajPotwierdzeniaZapisu"
+               OnCancel="CloseDialog" />
+
+<PotwierdzenieDialog IsVisible="IsConfirmSaveVisible"
+                     Title="@ConfirmTitle"
+                     Message="@ConfirmMessage"
+                     ThemeClass="@ConfirmTheme"
+                     IconClass="@ConfirmIcon"
+                     OnAnswer="HandleConfirmationAnswer" />
+

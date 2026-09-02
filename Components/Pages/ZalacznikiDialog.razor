@@ -1,0 +1,74 @@
+@using Mieszkaniec.Model.Entities
+@using MudBlazor
+
+<MudDialog Class="modern-dialog">
+    <TitleContent>
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-folder2-open text-primary fs-4"></i>
+            <span class="fw-bold">Wybierz plik z listy</span>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <div class="d-flex flex-column gap-2 py-2" style="min-width: 320px;">
+            @if (Zalaczniki != null)
+            {
+                @foreach (var obj in Zalaczniki)
+                {
+                    string nazwaPliku = "";
+                    string sciezka = "";
+
+                    if (obj is Zalacznik z)
+                    {
+                        nazwaPliku = z.NazwaPliku;
+                        sciezka = z.SciezkaMagazyn;
+                    }
+                    else if (obj is ZalacznikUmowy zu)
+                    {
+                        nazwaPliku = zu.NazwaPliku;
+                        sciezka = zu.SciezkaPliku;
+                    }
+
+                    if (string.IsNullOrEmpty(nazwaPliku)) continue;
+
+                    var unikalnaNazwa = System.IO.Path.GetFileName(sciezka);
+                    // Ustalamy katalog zrzutu (opcjonalnie do dopracowania, w zależności czy upload czy upload_umowy)
+                    var linkPobierania = sciezka.Contains("upload_umowy") ? $"/Shared/upload_umowy/{unikalnaNazwa}" : $"/uploads/{unikalnaNazwa}";
+
+                    <div class="d-flex align-items-center justify-content-between p-2 rounded hover-bg-light border mb-2">
+                        <div class="d-flex align-items-center gap-2 overflow-hidden pe-2" title="@nazwaPliku">
+                            <i class="bi bi-file-earmark-pdf-fill text-danger fs-3"></i>
+                            <span class="text-dark fw-medium text-truncate">@nazwaPliku</span>
+                        </div>
+                        <div class="d-flex gap-2 ms-auto flex-shrink-0">
+                            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" Href="@linkPobierania" Target="_blank">
+                                <i class="bi bi-eye me-1"></i> Podgląd
+                            </MudButton>
+                            <MudButton Variant="Variant.Filled" Color="Color.Default" Size="Size.Small" Href="@linkPobierania" Target="_blank" Download="@nazwaPliku">
+                                <i class="bi bi-download"></i>
+                            </MudButton>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+
+    // ZMIANA 1: Zamiast sztywnego typu, przyjmujemy 'object' co wyleczy error w Umowach
+    [Parameter] public IEnumerable<object> Zalaczniki { get; set; }
+
+    // ZMIANA 2: Zastępujemy pułapkę 'Action' bezpiecznym EventCallbackiem
+    [Parameter] public EventCallback<string> OnPodglad { get; set; }
+
+    private async Task WybierzDoPodgladu(string nazwaDyskowa)
+    {
+        if (OnPodglad.HasDelegate)
+        {
+            await OnPodglad.InvokeAsync(nazwaDyskowa); // Poprawny await
+        }
+        MudDialog.Close();
+    }
+}

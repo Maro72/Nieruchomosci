@@ -1,0 +1,201 @@
+﻿/* === KONTENER GŁÓWNY === */
+.dashboard-container {
+    padding: 10px;
+    width: 100%;
+}
+
+/* === KARTY STATYSTYK === */
+.stat-card {
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border-left: 5px solid #6c757d;
+}
+
+.stat-card.total {
+    border-left-color: #2196f3;
+    background-color: #f0f7ff;
+}
+
+.stat-card.active {
+    border-left-color: #f44336;
+    background-color: #ffebee;
+}
+
+.stat-card.resolved {
+    border-left-color: #4caf50;
+    background-color: #e8f5e9;
+}
+
+.stat-card.archived {
+    border-left-color: #37474f;
+    background-color: #eceff1;
+}
+
+.stat-content {
+    display: flex;
+    flex-direction: column;
+}
+
+/* === SEKCJA FILTRÓW === */
+.filter-section {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.filter-flex-container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 15px;
+}
+
+.filter-field {
+    flex: 1;
+    min-width: 200px;
+}
+
+.filter-switch-container {
+    display: flex;
+    align-items: center;
+    padding-top: 12px;
+}
+
+/* === LISTA BUDYNKÓW === */
+.budynek-item {
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: #444;
+    transition: background-color 0.15s ease;
+    user-select: none;
+}
+
+.budynek-item:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.budynek-item--active {
+    background-color: rgba(103, 58, 183, 0.12);
+    color: #673ab7;
+    font-weight: 600;
+}
+
+.budynek-item--active:hover {
+    background-color: rgba(103, 58, 183, 0.18);
+}
+
+/* === MUD DATA GRID - ROZSĄDNE ROZMIARY TEKSTU === */
+
+
+/* Nagłówek tabeli */
+::deep .mud-table-head th.mud-table-cell {
+    padding-top: 4px !important;
+    padding-bottom: 4px !important;
+    font-size: 12px !important;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+/* Komórki tabeli */
+::deep .mud-table-body td.mud-table-cell {
+    padding-top: 4px !important;
+    padding-bottom: 4px !important;
+    font-size: 12px !important;
+    color: #334155;
+    word-break: break-word;
+    white-space: normal;
+}
+
+/* Paginacja */
+::deep .mud-table-pagination {
+    font-size: 0.8rem;
+    padding: 12px 16px;
+}
+
+/* Status chips */
+::deep .mud-chip {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+}
+
+/* === RESPONSIVE (MOBILE) === */
+@media (max-width: 960px) {
+    .filter-flex-container {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .filter-field {
+        width: 100%;
+    }
+
+    .filter-switch-container {
+        justify-content: flex-start;
+        padding-top: 0;
+    }
+
+    /* Zmniejszyć tekst na mobilnych */
+    ::deep .mud-table-head .mud-table-cell {
+        font-size: 0.75rem;
+        padding: 6px 8px;
+    }
+
+    ::deep .mud-table-body .mud-table-cell {
+        font-size: 0.7rem;
+        padding: 8px 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    /* Jeszcze mniejszy tekst na bardzo małych ekranach */
+    ::deep .mud-table-head .mud-table-cell {
+        font-size: 0.65rem;
+        padding: 4px 6px;
+    }
+
+    ::deep .mud-table-body .mud-table-cell {
+        font-size: 0.65rem;
+        padding: 6px 8px;
+    }
+
+    ::deep .mud-table-pagination {
+        font-size: 0.7rem;
+    }
+}
+
+/* === DRUKOWANIE === */
+@media print {
+    .stat-card,
+    .filter-section,
+    .mud-table-pagination {
+        display: none;
+    }
+
+    .dashboard-container {
+        padding: 0;
+        margin: 0;
+    }
+
+    ::deep .mud-table-body .mud-table-cell {
+        font-size: 0.85rem;
+        padding: 8px 10px;
+    }
+    ::deep td.mud-table-cell {
+        font-size: 11px !important;
+        padding: 4px 12px !important;
+    }
+
+    ::deep th.mud-table-cell {
+        font-size: 11px !important;
+        padding: 4px 12px !important;
+    }
+    custom-table-rows .mud-table-cell {
+        padding-top: 4px !important; /* Mniejszy margines od góry */
+        padding-bottom: 4px !important; /* Mniejszy margines od dołu */
+    }

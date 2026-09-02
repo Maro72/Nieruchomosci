@@ -1,0 +1,320 @@
+/* =========================================================
+   1. GLOBALNE USTAWIENIA
+   ========================================================= */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    min-height: 100vh;
+    overflow: hidden !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: clamp(12px, 1.5vw, 14px) !important;
+    background-color: #f1f5f9;
+}
+
+h1:focus {
+    outline: none;
+}
+
+/* =========================================================
+   2. WALIDACJA FORMULARZY
+   ========================================================= */
+.valid.modified:not([type=checkbox]) {
+    outline: 1px solid #26b050;
+}
+
+.invalid {
+    outline: 1px solid #e50000;
+}
+
+.validation-message {
+    color: #e50000;
+}
+
+/* =========================================================
+   3. SCROLLBAR
+   ========================================================= */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+
+/* =========================================================
+   4. GÓRNA BELKA (APPBAR)
+   ========================================================= */
+.mud-appbar {
+    min-height: 40px !important;
+    height: 40px !important;
+    background-color: #ffffff !important;
+    color: #333333 !important;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+    .mud-appbar .mud-icon-button {
+        padding: 4px !important;
+    }
+
+/* =========================================================
+   5. MENU BOCZNE – RESET
+   ========================================================= */
+.mud-navmenu {
+    padding-top: 0;
+}
+
+    .mud-navmenu a,
+    .mud-navmenu .mud-nav-link,
+    .mud-navmenu .mud-nav-link:hover,
+    .mud-navmenu .mud-nav-link:focus,
+    .mud-navmenu .mud-nav-link:active,
+    .mud-navmenu .mud-nav-link .mud-nav-link-text {
+        text-decoration: none !important;
+    }
+
+        /* =========================================================
+   5b. WY£¥CZENIE RIPPLE MudBlazor NA MENU BOCZNYM podœwietlenie bez focusa wy³aczone
+   ========================================================= */
+        .mud-navmenu .mud-nav-link::before,
+        .mud-navmenu .mud-nav-link::after {
+            display: none !important;
+            opacity: 0 !important;
+            content: none !important;
+        }
+
+/* =========================================================
+   6. MENU BOCZNE – DOMYŒLNY WYGL¥D LINKÓW
+   ========================================================= */
+.mud-nav-link {
+    color: #4a4a4a !important;
+    font-size: 0.85rem !important;
+    padding: 10px 16px;
+    padding-left: 8px !important;
+    border: none !important;
+    border-radius: 0 !important;
+    justify-content: flex-start !important;
+    transition: background-color 0.2s ease-in-out;
+    background-color: transparent !important;
+}
+
+    .mud-nav-link .mud-icon-root {
+        color: #6e6e6e;
+    }
+
+/* Wciêcie + linia drzewa dla elementów wewn¹trz grup */
+.mud-nav-group .mud-collapse .mud-nav-link {
+    padding-left: 32px !important;
+    border-left: 2px solid transparent;
+}
+
+/* =========================================================
+   7. MENU BOCZNE – HOVER (tylko prawdziwe linki)
+   ========================================================= */
+a.mud-nav-link[href]:not(.active):hover {
+    background-color: #f1f5f9 !important;
+}
+
+.mud-nav-group .mud-collapse .mud-nav-link:not(.active):hover {
+    border-left: 2px solid var(--mud-palette-primary);
+}
+
+/* =========================================================
+   8. MENU BOCZNE – STAN AKTYWNY (WYBRANA STRONA)
+   ========================================================= */
+a.mud-nav-link.active,
+a.mud-nav-link.active:focus,
+a.mud-nav-link.active:hover {
+    background-color: #e3f2fd !important;
+    color: #1976d2 !important;
+}
+
+    a.mud-nav-link.active .mud-icon-root {
+        color: #1976d2 !important;
+    }
+
+.mud-nav-group .mud-collapse .mud-nav-link.active {
+    border-left: 2px solid var(--mud-palette-primary);
+}
+
+/* =========================================================
+   9. MENU BOCZNE – NAG£ÓWKI GRUP
+   ========================================================= */
+.mud-nav-group > .mud-nav-link,
+.mud-nav-group > .mud-nav-link .mud-nav-link-text {
+    font-weight: 700 !important;
+    color: #292727 !important;
+}
+
+.mud-nav-group.mud-nav-group-expanded > .mud-nav-link .mud-icon-root,
+.mud-nav-group.mud-nav-group-expanded > .mud-nav-link .mud-nav-link-expand-icon {
+    color: #1976d2 !important;
+}
+
+/* =========================================================
+   10. MENU BOCZNE – NAG£ÓWKI GRUP BEZ T£A I HOVER
+   ========================================================= */
+.mud-navmenu .mud-nav-group > .mud-nav-link,
+.mud-navmenu .mud-nav-group > .mud-nav-link.active,
+.mud-navmenu .mud-nav-group.mud-nav-group-expanded > .mud-nav-link,
+.mud-navmenu .mud-nav-group > .mud-nav-link:focus,
+.mud-navmenu .mud-nav-group > .mud-nav-link:focus-visible,
+.mud-navmenu .mud-nav-group > .mud-nav-link:hover {
+    background-color: transparent !important;
+    cursor: default;
+}
+
+/* =========================================================
+   11. TABELA – NAG£ÓWEK
+   ========================================================= */
+.mud-table-head .mud-table-cell {
+    background-color: #E7EAEF !important;
+    color: #1e293b !important;
+    font-weight: 700 !important;
+    white-space: nowrap !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+}
+
+/* =========================================================
+   12. TABELA – PODŒWIETLENIE WYBRANEGO WIERSZA
+   ========================================================= */
+.mud-table-row.selected-row-highlight {
+    background-color: #BED1F1 !important;
+}
+
+/* =========================================================
+   13. TOOLBAR – PRZYCISKI AKCJI
+   ========================================================= */
+@media (hover: hover) {
+    .custom-toolbar-buttons button:hover:not(:disabled),
+    .custom-toolbar-buttons .btn:hover:not(:disabled),
+    .custom-toolbar-buttons .btn-link:hover:not(:disabled) {
+        background-color: #C2C3B3 !important;
+        color: #0f172a !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+        border-radius: 6px !important;
+        text-decoration: none !important;
+    }
+
+    .custom-toolbar-buttons .btn.text-danger:hover:not(:disabled) {
+        background-color: #fee2e2 !important;
+        color: #dc2626 !important;
+    }
+
+    .custom-toolbar-buttons .btn:disabled:hover {
+        background-color: transparent !important;
+        color: #94a3b8 !important;
+        transform: none !important;
+        box-shadow: none !important;
+        cursor: not-allowed !important;
+    }
+}
+
+/* =========================================================
+   14. RESPONSYWNOŒÆ
+   ========================================================= */
+@media (max-width: 1400px) {
+    .mud-main-content {
+        zoom: 0.9;
+    }
+}
+
+@media (max-width: 1200px) {
+    .mud-main-content {
+        zoom: 0.8;
+    }
+}
+
+@media (max-width: 1024px) {
+    .mud-main-content {
+        zoom: 0.7;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        font-size: 11px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        font-size: 10px !important;
+    }
+}
+
+/* =========================================================
+   15. DRUKOWANIE
+   ========================================================= */
+@media print {
+    .mud-appbar,
+    .mud-drawer {
+        display: none !important;
+    }
+
+    .mud-main-content {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+}
+
+
+/* =========================================================
+   17. POMOCNICZE KLASY
+   ========================================================= */
+.ls-1 {
+    letter-spacing: 1px;
+}
+
+.extra-small {
+    font-size: 0.7rem;
+    letter-spacing: 0.5px;
+}
+
+.mysql-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 50px;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    flex-shrink: 0;
+    white-space: nowrap;
+    height: 32px;
+}
+
+    .mysql-status-pill .status-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .mysql-status-pill .status-text {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #64748b;
+        line-height: 1;
+    }

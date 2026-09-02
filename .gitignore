@@ -1,0 +1,25 @@
+# .NET build output
+**/bin/
+**/obj/
+
+# Visual Studio and VS Code user files
+.vs/
+*.user
+*.suo
+
+# Local configuration and secrets
+**/appsettings*.json
+!**/appsettings.example.json
+
+# Local uploads and generated files
+**/Shared/uploads/
+**/Shared/upload_umowy/
+**/wwwroot/uploads/
+**/wwwroot/uploads1111/
+
+# Logs and local scratch files
+*.log
+scratch/
+
+# macOS
+.DS_Store

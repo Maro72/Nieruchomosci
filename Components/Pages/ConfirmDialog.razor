@@ -1,0 +1,26 @@
+﻿@using MudBlazor
+
+<MudDialog Class="rounded-lg" Style="min-width: 400px;">
+    <TitleContent>
+        <MudText Typo="Typo.h6" Class="fw-bold">@Title</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText>@ContentText</MudText>
+    </DialogContent>
+    <DialogActions>
+        @* Przenosimy klasę do DIVa wewnątrz, a nie do tagu DialogActions *@
+        <div class="pb-2 pr-2">
+            <MudButton OnClick="Cancel" Variant="Variant.Text" Color="Color.Default" Class="px-4 rounded-lg">Anuluj</MudButton>
+            <MudButton OnClick="Submit" Variant="Variant.Filled" Color="Color.Primary" Class="px-4 rounded-lg">Zapisz</MudButton>
+        </div>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public string Title { get; set; } = "Potwierdzenie";
+    [Parameter] public string ContentText { get; set; } = "Czy na pewno chcesz wykonać tę akcję?";
+
+    private void Submit() => MudDialog.Close(DialogResult.Ok(true));
+    private void Cancel() => MudDialog.Cancel();
+}

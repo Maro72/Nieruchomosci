@@ -1,0 +1,136 @@
+﻿@using Mieszkaniec.Model.Entities
+@using Microsoft.AspNetCore.Components.Forms
+@using MudBlazor
+
+<MudDialog DefaultFocus="DefaultFocus.FirstChild" Class="modern-dialog-window">
+    <TitleContent>
+        <div class="d-flex align-items-center px-2 pt-2 mb-2">
+            <div class="bg-light shadow-sm rounded p-2 me-3 border d-flex align-items-center justify-content-center">
+                <i class="bi bi-person-badge text-success fs-4"></i>
+            </div>
+            <div>
+                <h6 class="fw-bold mb-0 text-dark">
+                    @(TylkoPodglad ? "Podgląd Kartoteki Dzierżawcy" : (Model?.Id == 0 ? "Nowy Dzierżawca / Najemca" : "Edycja Kartoteki Dzierżawcy"))
+                </h6>
+                <small class="text-muted" style="font-size: 0.75rem;">Dane identyfikacyjne, rejestrowe oraz kontaktowe kontrahenta</small>
+            </div>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        @if (Model != null)
+        {
+            <EditForm Model="@Model" OnValidSubmit="Zapisz" id="najemcaForm">
+                <DataAnnotationsValidator />
+
+                <div class="row g-2 px-3 pb-2">
+
+                    @* --- ROW 1: Nazwa firmy / imię i nazwisko --- *@
+                    <div class="col-12">
+                        <label class="form-label small fw-bold text-secondary mb-1">Nazwa firmy / Pełna nazwa kontrahenta</label>
+                        <div class="input-group input-group-sm shadow-sm">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-building"></i></span>
+                            <input type="text" class="form-control" @bind="Model.NazwaFirmyOsoby" disabled="@TylkoPodglad" placeholder="np. Przedsiębiorstwo Handlowe Jan Kowalski" required />
+                        </div>
+                    </div>
+
+                    @* --- ROW 2: NIP i REGON --- *@
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-secondary mb-1">NIP</label>
+                        <div class="input-group input-group-sm shadow-sm">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-card-text"></i></span>
+                            <input type="text" class="form-control" @bind="Model.Nip" disabled="@TylkoPodglad" placeholder="np. 1234567890" />
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-secondary mb-1">REGON</label>
+                        <div class="input-group input-group-sm shadow-sm">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-card-list"></i></span>
+                            <input type="text" class="form-control" @bind="Model.REGON" disabled="@TylkoPodglad" placeholder="np. 987654321" />
+                        </div>
+                    </div>
+
+                    @* --- ROW 3: Pełny adres firmy --- *@
+                    <div class="col-12">
+                        <label class="form-label small fw-bold text-secondary mb-1">Adres rejestrowy / korespondencyjny</label>
+                        <div class="input-group input-group-sm shadow-sm">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-geo-alt"></i></span>
+                            <input type="text" class="form-control" @bind="Model.Adres" disabled="@TylkoPodglad" placeholder="ul. Przykładowa 12/34, 00-000 Miasto" />
+                        </div>
+                    </div>
+
+                    @* --- ROW 4: Osoba kontaktowa --- *@
+                    <div class="col-12">
+                        <label class="form-label small fw-bold text-secondary mb-1">Osoba dedykowana do kontaktu</label>
+                        <div class="input-group input-group-sm shadow-sm">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-person"></i></span>
+                            <input type="text" class="form-control" @bind="Model.OsobaKontaktowa" disabled="@TylkoPodglad" placeholder="Imię i nazwisko pracownika lub właściciela" />
+                        </div>
+                    </div>
+
+                    @* --- ROW 5: Telefon i Email --- *@
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-secondary mb-1">Telefon kontaktowy</label>
+                        <div class="input-group input-group-sm shadow-sm">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-telephone"></i></span>
+                            <input type="tel" class="form-control" @bind="Model.Telefon" disabled="@TylkoPodglad" placeholder="+48 000 000 000" />
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-secondary mb-1">Adres E-mail</label>
+                        <div class="input-group input-group-sm shadow-sm">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-envelope"></i></span>
+                            <input type="email" class="form-control" @bind="Model.Email" disabled="@TylkoPodglad" placeholder="np. biuro@firma.pl" />
+                        </div>
+                    </div>
+
+                    @* --- ROW 6: Uwagi wewnętrzne --- *@
+                    <div class="col-12">
+                        <label class="form-label small fw-bold text-secondary mb-1">Uwagi wewnętrzne / Notatki administracyjne</label>
+                        <textarea class="form-control form-control-sm shadow-sm" @bind="Model.Uwagi" disabled="@TylkoPodglad" rows="2" placeholder="Dodatkowe informacje o dzierżawcy..."></textarea>
+                    </div>
+
+                </div>
+            </EditForm>
+        }
+    </DialogContent>
+    <DialogActions>
+        <div class="w-100 px-3 pb-2 d-flex justify-content-end gap-2 mt-1">
+            @if (TylkoPodglad)
+            {
+                <button type="button" class="btn btn-sm btn-secondary fw-bold px-4 shadow-sm" @onclick="Cancel">
+                    Zamknij podgląd
+                </button>
+            }
+            else
+            {
+                <button type="button" class="btn btn-sm btn-light fw-bold px-3 shadow-sm border" @onclick="Cancel">
+                    <i class="bi bi-x me-1"></i> Anuluj
+                </button>
+                <button type="submit" form="najemcaForm" class="btn btn-sm fw-bold px-4 shadow-sm" style="background-color: #5a4bda; color: white;">
+                    <i class="bi bi-save me-1"></i> Zapisz
+                </button>
+            }
+        </div>
+    </DialogActions>
+</MudDialog>
+
+<style>
+    .modern-dialog-window .mud-dialog {
+        border-radius: 12px !important;
+    }
+
+    .form-select, .form-control {
+        border-color: #cbd5e1;
+        font-size: 0.9rem;
+    }
+
+    .input-group-text {
+        border-color: #cbd5e1;
+    }
+
+    textarea.form-control {
+        min-height: 50px;
+    }
+</style>

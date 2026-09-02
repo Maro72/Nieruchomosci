@@ -1,0 +1,155 @@
+﻿@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.JSInterop
+@using Mieszkaniec.Model.Entities
+@using Mieszkaniec.Services.Interfaces
+@using MudBlazor
+@using System
+@using System.Collections.Generic
+@using System.Globalization
+@using System.Linq
+@using System.Threading.Tasks
+
+<MudDialog DefaultFocus="DefaultFocus.FirstChild" Class="modern-dialog-window">
+    <TitleContent>
+        <div class="d-flex align-items-center px-2 pt-2 mb-2">
+            <div class="bg-light shadow-sm rounded p-2 me-3 border d-flex align-items-center justify-content-center">
+                <i class="bi bi-shop text-success fs-4"></i>
+            </div>
+            <div>
+                <h6 class="fw-bold mb-0 text-dark">@(Model?.Id == 0 ? "Dodawanie nowego lokalu" : "Edycja lokalu")</h6>
+                <small class="text-muted" style="font-size: 0.75rem;">Wprowadź lub zaktualizuj dane biura i magazynu</small>
+            </div>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        @if (Model != null)
+        {
+            <EditForm Model="@Model" OnValidSubmit="Zapisz" id="lokalForm">
+                <DataAnnotationsValidator />
+
+                <div class="row g-2 px-3 pb-2">
+
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-secondary mb-1">Nieruchomość / Budynek</label>
+                        <div class="input-group input-group-sm shadow-sm">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-building"></i></span>
+                            <select class="form-select" @bind="Model.ObiektId" required>
+                                <option value="0" disabled>Wybierz budynek...</option>
+                                @foreach (var ob in ListaBudynkow)
+                                {
+                                    <option value="@ob.Id">@ob.Nazwa</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-secondary mb-1">Typ Lokalu</label>
+                        <div class="input-group input-group-sm shadow-sm">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-box"></i></span>
+                            <select class="form-select" @bind="Model.TypLokalu" required>
+                                <option value="Magazyn/Hala">Magazyn/Hala</option>
+                                <option value="Biuro">Biuro</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold text-secondary mb-1">Numer lokalu / nazwa</label>
+                        <div class="input-group input-group-sm shadow-sm">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-hash"></i></span>
+                            <input type="text" class="form-control" @bind="Model.NumerLokalu" placeholder="np. Biuro 12" required />
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold text-secondary mb-1">Powierzchnia</label>
+                        <div class="input-group input-group-sm shadow-sm">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-rulers"></i></span>
+                            <input type="number" step="0.01" class="form-control" @bind="Model.PowierzchniaM2" required />
+                            <span class="input-group-text bg-light text-muted">m²</span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold text-secondary mb-1">Cena za m²</label>
+                        <div class="input-group input-group-sm shadow-sm">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-cash"></i></span>
+                            <input type="number" step="0.01" class="form-control" @bind="Model.CenaZaM2" required />
+                            <span class="input-group-text bg-light text-muted">PLN</span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-secondary mb-1">Status operacyjny</label>
+                        <div class="input-group input-group-sm shadow-sm">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-clipboard-check"></i></span>
+                            <select class="form-select" @onchange="OnStatusChanged" required>
+                                <option value="Wolny" selected="@(Model.Status == "Wolny")">Wolny</option>
+                                <option value="Wynajęty" selected="@(Model.Status == "Wynajęty")">Wynajęty</option>
+                                <option value="Zarezerwowany" selected="@(Model.Status == "Zarezerwowany")">Zarezerwowany</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-secondary mb-1">Przypisany Najemca</label>
+                        <div class="input-group input-group-sm shadow-sm">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-person-badge"></i></span>
+                            <select class="form-select" @bind="Model.NajemcaId" disabled="@(Model.Status == "Wolny")">
+                                <option value="">- Brak najemcy -</option>
+                                @foreach (var n in ListaNajemcow)
+                                {
+                                    <option value="@n.Id">@n.NazwaFirmyOsoby</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mt-3">
+                        <label class="form-label small fw-bold text-secondary mb-1">ID elementu na mapie SVG</label>
+                        <div class="input-group input-group-sm shadow-sm">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-map"></i></span>
+                            <input type="text" class="form-control" @bind="Model.SvgElementId" placeholder="np. hala_A1 (opcjonalnie)" />
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mt-3">
+                        <label class="form-label small fw-bold text-secondary mb-1">Wartość najmu</label>
+                        <div class="p-2 border rounded bg-light d-flex justify-content-between align-items-center shadow-sm" style="height: 31px;">
+                            <span class="text-muted small">Wyliczana wartość:</span>
+                            <span class="fw-bold text-success">@Model.CenaWynajmu.ToString("C2", _plCulture)</span>
+                        </div>
+                    </div>
+
+                </div>
+            </EditForm>
+        }
+    </DialogContent>
+    <DialogActions>
+        <div class="w-100 px-3 pb-2 d-flex justify-content-end gap-2 mt-1">
+            <button type="button" class="btn btn-sm btn-light fw-bold px-3 shadow-sm border" @onclick="Cancel">
+                <i class="bi bi-x me-1"></i> Anuluj
+            </button>
+            <button type="submit" form="lokalForm" class="btn btn-sm fw-bold px-4 shadow-sm" style="background-color: #5a4bda; color: white;">
+                <i class="bi bi-save me-1"></i> Zapisz
+            </button>
+        </div>
+    </DialogActions>
+</MudDialog>
+
+<style>
+    .modern-dialog-window .mud-dialog {
+        border-radius: 12px !important;
+    }
+
+    .form-select, .form-control {
+        border-color: #cbd5e1;
+        font-size: 0.9rem;
+    }
+
+    .input-group-text {
+        border-color: #cbd5e1;
+    }
+</style>

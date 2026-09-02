@@ -1,0 +1,80 @@
+@using MudBlazor
+@using Mieszkaniec.Model.Entities
+
+<MudDialog>
+    <DialogContent>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <MudTextField @bind-Value="Model.Login" Label="E-mail (Login)" Variant="Variant.Outlined" Required="true" />
+            </div>
+            <div class="col-md-6">
+                <MudTextField @bind-Value="NoweHaslo" Label="@(Model.Id == 0 ? "Hasło" : "Nowe hasło (puste = bez zmian)")" Variant="Variant.Outlined" InputType="InputType.Password" Required="@(Model.Id == 0)" />
+            </div>
+            <div class="col-md-6">
+                <MudTextField @bind-Value="Model.Imie" Label="Imię" Variant="Variant.Outlined" />
+            </div>
+            <div class="col-md-6">
+                <MudTextField @bind-Value="Model.Nazwisko" Label="Nazwisko" Variant="Variant.Outlined" />
+            </div>
+
+            <div class="col-12 mt-2">
+                <MudSwitch @bind-Value="Model.CzyAktywny" Color="Color.Success" Label="Konto aktywne i może logować się do systemu" />
+            </div>
+
+            <div class="col-12 mt-4 border-top pt-3">
+                <MudText Typo="Typo.subtitle2" Class="mb-2 fw-bold text-secondary">Konfiguracja Uprawnień</MudText>
+
+                @if (CzyJestAdminem())
+                {
+                    <MudAlert Severity="Severity.Info" Class="mb-3 py-1">
+                        Zaznaczenie roli "Administrator" daje automatyczny dostęp do wszystkich stron.
+                    </MudAlert>
+                }
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <MudPaper Outlined="true" Class="pa-3 border" Style="border-radius: 8px; border-color: #e2e8f0; background-color: #f8fafc;">
+                            <MudText Typo="Typo.subtitle2" Class="fw-bold mb-2 text-secondary">PRZYPISANE ROLE</MudText>
+                            <div class="d-flex flex-column gap-1">
+                                @foreach (var rola in WszystkieRole)
+                                {
+                                    var r = rola;
+                                    <MudCheckBox T="bool"
+                                                 Value="@(WybraneRole.Any(x => x.Id == r.Id))"
+                                                 ValueChanged="@(val => OnRoleCheckboxChanged(r, val))"
+                                                 Color="Color.Primary"
+                                                 Class="my-0">
+                                        @r.Nazwa
+                                    </MudCheckBox>
+                                }
+                            </div>
+                        </MudPaper>
+                    </div>
+                    <div class="col-md-6">
+                        <MudPaper Outlined="true" Class="pa-3 border" Style="border-radius: 8px; border-color: #e2e8f0; background-color: #f8fafc;">
+                            <MudText Typo="Typo.subtitle2" Class="fw-bold mb-2 text-secondary">DOSTĘP DO STRON</MudText>
+                            <div class="d-flex flex-column gap-1">
+                                @foreach (var upr in WszystkieUprawnienia)
+                                {
+                                    var u = upr;
+                                    <MudCheckBox T="bool"
+                                                 Value="@(WybraneUprawnienia.Any(x => x.Id == u.Id))"
+                                                 ValueChanged="@(val => OnUprawnienieCheckboxChanged(u, val))"
+                                                 Color="Color.Primary"
+                                                 Disabled="CzyJestAdminem()"
+                                                 Class="my-0">
+                                        @u.Opis
+                                    </MudCheckBox>
+                                }
+                            </div>
+                        </MudPaper>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Anuluj" Variant="Variant.Text">Anuluj</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Zapisz" Disabled="@(string.IsNullOrWhiteSpace(Model.Login))">Zapisz użytkownika</MudButton>
+    </DialogActions>
+</MudDialog>

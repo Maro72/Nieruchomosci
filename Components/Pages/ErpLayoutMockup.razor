@@ -1,0 +1,246 @@
+﻿@page "/nowy-layout"
+@using MudBlazor
+
+<MudLayout>
+    @* ========================================== *@
+    @* GÓRNY PASEK (APP BAR)                      *@
+    @* ========================================== *@
+    <MudAppBar Elevation="1" Color="Color.Surface" Fixed="true" Class="border-bottom border-light">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Default" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+
+        <div class="d-flex align-items-center ms-2">
+            <MudIcon Icon="@Icons.Material.Filled.Business" Color="Color.Primary" Size="Size.Large" Class="me-2" />
+            <MudText Typo="Typo.h6" Class="fw-bold" Style="color: #1e1e80; letter-spacing: -0.5px;">SYSTEM ERP</MudText>
+        </div>
+
+        <MudSpacer />
+
+        @* Przycisk AI na środku *@
+        <MudButton Variant="Variant.Filled"
+                   Class="rounded-pill px-4 text-white text-none"
+                   Style="background: linear-gradient(90deg, #4b3cca, #7b6cf0); box-shadow: 0 4px 12px rgba(75,60,202,0.3);">
+            <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Class="me-2" Size="Size.Small" />
+            AI Procesuje dane...
+        </MudButton>
+
+        <MudSpacer />
+
+        @* Ikony po prawej stronie *@
+        <MudIconButton Icon="@Icons.Material.Filled.InsertDriveFile" Color="Color.Default" Class="mx-1" />
+        <MudBadge Content="3" Color="Color.Error" Overlap="true" Class="mx-1">
+            <MudIconButton Icon="@Icons.Material.Filled.Notifications" Color="Color.Default" />
+        </MudBadge>
+
+        <div class="d-flex align-items-center ms-4 ps-3 border-start">
+            <div class="text-end me-2 d-none d-md-block">
+                <MudText Typo="Typo.body2" Class="fw-bold mb-0" Style="line-height: 1;">FIRMA_DEMO</MudText>
+                <MudText Typo="Typo.caption" Class="text-muted">Jan Kowalski</MudText>
+            </div>
+            <MudAvatar Color="Color.Primary" Size="Size.Medium" Style="background-color: #1e1e80;">JK</MudAvatar>
+        </div>
+    </MudAppBar>
+
+    @* ========================================== *@
+    @* LEWE MENU BOCZNE (DRAWER)                  *@
+    @* ========================================== *@
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="1" ClipMode="DrawerClipMode.Always" Variant="@DrawerVariant.Responsive" Color="Color.Surface">
+        <MudNavMenu Class="pt-4 custom-nav">
+            <MudNavLink Href="/nowy-layout" Icon="@Icons.Material.Outlined.Home" Match="NavLinkMatch.All">Start</MudNavLink>
+
+            <MudNavGroup Title="Handel" Icon="@Icons.Material.Outlined.ShoppingBasket" Expanded="true">
+                <MudNavLink Href="/nowy-layout" Class="active-nav-link">
+                    <span class="d-flex align-items-center">
+                        <span class="active-dot me-2"></span> Faktury sprzedaży
+                    </span>
+                </MudNavLink>
+                <MudNavLink Href="#">Faktury proforma</MudNavLink>
+                <MudNavLink Href="#">Paragony</MudNavLink>
+                <MudNavLink Href="#">Rezerwacje odbiorcy</MudNavLink>
+                <MudNavLink Href="#">Produkty</MudNavLink>
+            </MudNavGroup>
+
+            <MudNavLink Href="#" Icon="@Icons.Material.Outlined.AccountBalanceWallet">Kasa/Bank</MudNavLink>
+            <MudNavLink Href="#" Icon="@Icons.Material.Outlined.Receipt">Rejestr VAT/Ewidencja</MudNavLink>
+            <MudNavLink Href="#" Icon="@Icons.Material.Outlined.Assignment">Deklaracje/JPK</MudNavLink>
+            <MudNavLink Href="#" Icon="@Icons.Material.Outlined.Book">Słowniki</MudNavLink>
+
+            <div class="mt-auto pt-4 pb-2">
+                <MudNavLink Href="#" Icon="@Icons.Material.Outlined.Diamond" IconColor="Color.Warning">Rozszerz możliwości</MudNavLink>
+            </div>
+        </MudNavMenu>
+    </MudDrawer>
+
+    @* ========================================== *@
+    @* GŁÓWNA ZAWARTOŚĆ (WORKSPACE)               *@
+    @* ========================================== *@
+    <MudMainContent Style="background-color: #f4f5f8; min-height: 100vh;">
+        <div class="pa-6">
+
+            @* Nagłówek strony *@
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex align-items-baseline gap-3">
+                    <MudText Typo="Typo.h5" Class="fw-bold" Style="color: #2c3e50;">Faktury sprzedaży</MudText>
+                    <MudText Typo="Typo.body2" Class="text-primary" Style="cursor: pointer;">Widok domyślny *</MudText>
+                </div>
+
+                <div class="d-flex gap-2 align-items-center">
+                    <MudIconButton Icon="@Icons.Material.Outlined.Print" Color="Color.Default" Size="Size.Small" />
+                    <MudIconButton Icon="@Icons.Material.Outlined.Share" Color="Color.Default" Size="Size.Small" />
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Class="rounded-pill px-4 ms-2 text-none"
+                               Style="background-color: #4b3cca;">
+                        Dodaj
+                    </MudButton>
+                </div>
+            </div>
+
+            @* Pasek filtrów *@
+            <MudPaper Elevation="0" Class="pa-3 mb-4 rounded-lg d-flex align-items-center gap-3 border border-light">
+                <MudTextField T="string" Placeholder="Szukaj po: numer dokumentu, NIP, nabywca"
+                              Variant="Variant.Outlined" Margin="Margin.Dense"
+                              Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+                              Style="background-color: white; min-width: 300px;" />
+
+                <MudSelect T="string" Value="@("Nabywca")" Variant="Variant.Outlined" Margin="Margin.Dense" Style="background-color: white; width: 150px;">
+                    <MudSelectItem Value="@("Nabywca")">Nabywca</MudSelectItem>
+                    <MudSelectItem Value="@("Sprzedawca")">Sprzedawca</MudSelectItem>
+                </MudSelect>
+
+                <MudTextField T="string" Placeholder="Wartość netto od:" Variant="Variant.Outlined" Margin="Margin.Dense" Style="background-color: white; width: 150px;" />
+
+                <MudSpacer />
+
+                <MudLink Href="#" Underline="Underline.None" Color="Color.Primary" Class="text-decoration-none fw-bold small">Więcej filtrów</MudLink>
+            </MudPaper>
+
+            @* Główna Tabela Danych *@
+            <MudTable Items="@MockData" Elevation="0" Class="rounded-lg border border-light" Hover="true" Breakpoint="Breakpoint.Sm" Striped="false">
+                <HeaderContent>
+                    <MudTh><MudCheckBox T="bool" Color="Color.Primary" Size="Size.Small"></MudCheckBox></MudTh>
+                    <MudTh Class="fw-bold text-muted small">Numer dokumentu</MudTh>
+                    <MudTh Class="fw-bold text-muted small">Stan dokumentu</MudTh>
+                    <MudTh Class="fw-bold text-muted small">Nabywca</MudTh>
+                    <MudTh Class="fw-bold text-muted small">NIP</MudTh>
+                    <MudTh Class="fw-bold text-muted small text-end">Wartość netto</MudTh>
+                    <MudTh Class="fw-bold text-muted small text-end">Wartość brutto</MudTh>
+                    <MudTh Class="fw-bold text-muted small">Status KSeF</MudTh>
+                    <MudTh></MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd><MudCheckBox T="bool" Color="Color.Primary" Size="Size.Small"></MudCheckBox></MudTd>
+                    <MudTd DataLabel="Numer"><span class="text-primary fw-bold" style="cursor: pointer;">@context.Numer</span></MudTd>
+                    <MudTd DataLabel="Stan">@context.Stan</MudTd>
+                    <MudTd DataLabel="Nabywca" Class="fw-bold">@context.Nabywca</MudTd>
+                    <MudTd DataLabel="NIP">@context.NIP</MudTd>
+                    <MudTd DataLabel="Netto" Class="text-end">@context.Netto</MudTd>
+                    <MudTd DataLabel="Brutto" Class="text-end fw-bold">@context.Brutto</MudTd>
+                    <MudTd DataLabel="Status">
+                        <div class="d-flex align-items-center gap-1">
+                            <MudIcon Icon="@Icons.Material.Filled.Check" Color="Color.Success" Size="Size.Small" />
+                            <span class="small">Wysłano/odebrano UPO</span>
+                        </div>
+                    </MudTd>
+                    <MudTd>
+                        <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Size="Size.Small" />
+                    </MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager RowsPerPageString="Elementów na stronie:" />
+                </PagerContent>
+            </MudTable>
+
+        </div>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private bool _drawerOpen = true;
+
+    private void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    // Proste dane do zaprezentowania layoutu
+    private List<FakturaMock> MockData = new List<FakturaMock>
+    {
+        new FakturaMock { Numer = "FS/23/2026", Stan = "Zatwierdzony", Nabywca = "POWSZECHNY ZAM", NIP = "5816793467", Netto = "143,01", Brutto = "175,90" },
+        new FakturaMock { Numer = "FS/22/2026", Stan = "Zatwierdzony", Nabywca = "AL-KOMP sp.z o.o.", NIP = "5226375131", Netto = "170,56", Brutto = "209,79" },
+        new FakturaMock { Numer = "FS/21/2026", Stan = "Zatwierdzony", Nabywca = "Twój Ogród s.c.", NIP = "9876543210", Netto = "148,66", Brutto = "182,85" },
+        new FakturaMock { Numer = "FS/20/2026", Stan = "Zatwierdzony", Nabywca = "MediaPro Group", NIP = "5816793467", Netto = "197,65", Brutto = "243,11" },
+        new FakturaMock { Numer = "FS/19/2026", Stan = "Zatwierdzony", Nabywca = "AL-KOMP sp.z o.o.", NIP = "2819498945", Netto = "118,95", Brutto = "146,31" }
+    };
+
+    public class FakturaMock
+    {
+        public string Numer { get; set; }
+        public string Stan { get; set; }
+        public string Nabywca { get; set; }
+        public string NIP { get; set; }
+        public string Netto { get; set; }
+        public string Brutto { get; set; }
+    }
+}
+
+<style>
+    /* Nadpisanie domyślnych styli MudBlazor, aby dopasować je do Comarch Optima */
+
+    .mud-appbar {
+        border-bottom: 1px solid #e0e6ed !important;
+    }
+
+    .mud-drawer {
+        border-right: 1px solid #e0e6ed !important;
+    }
+
+    /* Style nawigacji */
+    .custom-nav .mud-nav-link {
+        color: #4a5568 !important;
+        font-size: 0.875rem !important;
+        font-weight: 500 !important;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
+        .custom-nav .mud-nav-link:hover {
+            background-color: #f4f5f8 !important;
+            color: #1e1e80 !important;
+        }
+
+    /* Aktywny link w menu z niebieską kropką */
+    .active-nav-link {
+        color: #1e1e80 !important;
+        font-weight: 700 !important;
+        background-color: #f0f4ff !important;
+        border-radius: 0 20px 20px 0;
+        margin-right: 16px;
+    }
+
+    .active-dot {
+        height: 6px;
+        width: 6px;
+        background-color: #4b3cca;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    /* Dopieszczenie wyglądu inputów w filtrach */
+    .mud-input-control > .mud-input-control-input-container > .mud-input-outlined {
+        background-color: white !important;
+        border-radius: 8px !important;
+    }
+
+    /* Tabela */
+    .mud-table-root .mud-table-head .mud-table-cell {
+        background-color: white;
+        border-bottom: 2px solid #f0f2f5;
+        text-transform: none;
+    }
+
+    .mud-table-root .mud-table-body .mud-table-cell {
+        border-bottom: 1px solid #f0f2f5;
+        padding-top: 12px;
+        padding-bottom: 12px;
+    }
+</style>

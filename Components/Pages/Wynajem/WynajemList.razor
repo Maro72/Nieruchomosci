@@ -1,0 +1,165 @@
+﻿@page "/wynajem"
+@using MudBlazor
+@using Mieszkaniec.Model.Entities
+@using Mieszkaniec.Services.Interfaces
+@using Mieszkaniec.Components.UI
+@inject ILokalWynajemService LokalService
+@inject IObiektService ObiektService
+@inject IDialogService DialogService
+@inject INajemcaService NajemcaService
+
+<div class="modern-grid-scroll">
+    <FGrid TItem="LokalWynajem"
+           Items="@Lokale"
+           Title="Zarządzanie wynajmem lokali"
+           ShowToolbar="true"
+           ShowSearch="true"
+           OnAdd="OpenDodajDialog"
+           OnEdit="OpenEdytujDialog">
+
+        @* --- KAFELKI I FILTRY ZINTEGROWANE W JEDNYM PASKU --- *@
+        <ToolbarLeftContent>
+            <div class="d-flex align-items-center gap-2 flex-wrap ms-3 py-1">
+
+                @if (Statystyki != null)
+                {
+                    @* Mini Kafelek: Wszystkie *@
+                    <div class="d-flex align-items-center px-2 shadow-sm mud-theme-primary" style="height: 32px; border-radius: 6px; font-size: 0.85rem;">
+                        <span class="fw-bold me-1">@Statystyki.WszystkieLokale</span>
+                        <span style="opacity: 0.85; font-size: 0.75rem;">Wszystkie</span>
+                    </div>
+
+                    @* Mini Kafelek: Wolne *@
+                    <div class="d-flex align-items-center px-2 shadow-sm text-white" style="height: 32px; border-radius: 6px; background-color: #4caf50; font-size: 0.85rem;">
+                        <span class="fw-bold me-1">@Statystyki.Wolne</span>
+                        <span style="opacity: 0.85; font-size: 0.75rem;">Wolne</span>
+                    </div>
+
+                    @* Mini Kafelek: Wynajęte *@
+                    <div class="d-flex align-items-center px-2 shadow-sm text-white" style="height: 32px; border-radius: 6px; background-color: #f44336; font-size: 0.85rem;">
+                        <span class="fw-bold me-1">@Statystyki.Wynajete</span>
+                        <span style="opacity: 0.85; font-size: 0.75rem;">Wynajęte</span>
+                    </div>
+
+                    @* Mini Kafelek: Zarezerwowane *@
+                    <div class="d-flex align-items-center px-2 shadow-sm text-white" style="height: 32px; border-radius: 6px; background-color: #ff9800; font-size: 0.85rem;">
+                        <span class="fw-bold me-1">@Statystyki.Zarezerwowane</span>
+                        <span style="opacity: 0.85; font-size: 0.75rem;">Zarezerwowane</span>
+                    </div>
+
+                    @* Pionowy separator wizualny między statystykami a filtrami *@
+                    <div class="border-end mx-2" style="height: 24px; border-color: #cbd5e1 !important;"></div>
+                }
+
+                @* --- FILTRY --- *@
+                <MudSelect T="int" Label="Budynek" Value="@WybranyBudynekId" ValueChanged="OnBudynekChanged" Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined" Style="width: 180px; background-color: #f8f9fa;">
+                    <MudSelectItem Value="0">Wszystkie budynki</MudSelectItem>
+                    @foreach (var budynek in ListaBudynkow)
+                    {
+                        <MudSelectItem Value="@budynek.Id">@budynek.Nazwa</MudSelectItem>
+                    }
+                </MudSelect>
+
+                <MudSelect T="string" Label="Status" Value="@WybranyStatus" ValueChanged="OnStatusChanged" Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined" Style="width: 160px; background-color: #f8f9fa;">
+                    <MudSelectItem Value="@("Wszystkie")">Wszystkie statusy</MudSelectItem>
+                    <MudSelectItem Value="@("Wolny")">Wolny</MudSelectItem>
+                    <MudSelectItem Value="@("Wynajęty")">Wynajęty</MudSelectItem>
+                    <MudSelectItem Value="@("Zarezerwowany")">Zarezerwowany</MudSelectItem>
+                </MudSelect>
+
+                @if (WybranyBudynekId != 0 || WybranyStatus != "Wszystkie")
+                {
+                    <button type="button" class="btn btn-sm text-danger fw-semibold d-flex align-items-center gap-1 border ms-1 px-2" @onclick="WyczyscFiltry" style="height: 32px; border-radius: 4px;">
+                        <i class="bi bi-x-circle"></i> Wyczyść
+                    </button>
+                }
+            </div>
+        </ToolbarLeftContent>
+
+        @* --- PRZYCISK ODŚWIEŻANIA --- *@
+        <ExtraActions>
+            <div class="d-flex align-items-center gap-3 me-2 ms-auto py-1">
+                <button type="button" class="btn btn-sm btn-link text-secondary p-1 border-0 d-flex align-items-center justify-content-center rounded-circle" @onclick="ZaktualizujWidok" title="Odśwież listę bazy" style="width:32px; height:32px;">
+                    <i class="bi bi-arrow-clockwise fs-5"></i>
+                </button>
+            </div>
+        </ExtraActions>
+
+        <GridColumns>
+            <MudBlazor.TemplateColumn T="LokalWynajem" Title="Budynek">
+                <CellTemplate Context="ctx">
+                    @(ListaBudynkow.FirstOrDefault(b => b.Id == ctx.Item.ObiektId)?.Nazwa ?? "-")
+                </CellTemplate>
+            </MudBlazor.TemplateColumn>
+
+            <MudBlazor.PropertyColumn T="LokalWynajem" TProperty="string" Property="x => x.TypLokalu" Title="Typ" />
+            <MudBlazor.PropertyColumn T="LokalWynajem" TProperty="string" Property="x => x.NumerLokalu" Title="Numer" />
+            <MudBlazor.PropertyColumn T="LokalWynajem" TProperty="decimal" Property="x => x.PowierzchniaM2" Title="Pow. (m²)" Format="N2" />
+            <MudBlazor.PropertyColumn T="LokalWynajem" TProperty="decimal" Property="x => x.CenaZaM2" Title="Cena / m²" Format="C2" />
+            <MudBlazor.PropertyColumn T="LokalWynajem" TProperty="decimal" Property="x => x.CenaWynajmu" Title="Wartość najmu" Format="C2" />
+
+            <MudBlazor.TemplateColumn T="LokalWynajem" Title="Status">
+                <CellTemplate Context="ctx">
+                    <MudChip T="string" Color="@WyznaczKolorStatusu(ctx.Item.Status)" Size="Size.Small">
+                        @ctx.Item.Status
+                    </MudChip>
+                </CellTemplate>
+            </MudBlazor.TemplateColumn>
+
+            <MudBlazor.TemplateColumn T="LokalWynajem" Title="Najemca">
+                <CellTemplate Context="ctx">
+                    @if (ctx.Item.Status == "Wolny" || ctx.Item.Najemca == null)
+                    {
+                        <span class="text-muted">- brak -</span>
+                    }
+                    else
+                    {
+                        @ctx.Item.Najemca.NazwaFirmyOsoby
+                    }
+                </CellTemplate>
+            </MudBlazor.TemplateColumn>
+        </GridColumns>
+    </FGrid>
+</div>
+
+@* --- DOLNY PANEL PODSUMOWANIA FINANSOWEGO --- *@
+<MudPaper Class="pa-4 mt-4 mb-4" Elevation="2" Outlined="true" Style="border-radius: 8px;">
+    <MudGrid Justify="Justify.SpaceAround" AlignItems="Center">
+        <MudItem Class="d-flex flex-column align-center">
+            <MudText Typo="Typo.body2" Class="text-secondary">Powierzchnia wynajęta</MudText>
+            <MudText Typo="Typo.h6" Color="Color.Error" Style="font-weight: 700;">@SumaPowierzchniWynajetej.ToString("N2") m²</MudText>
+        </MudItem>
+
+        <MudItem Class="d-flex flex-column align-center">
+            <MudText Typo="Typo.body2" Class="text-secondary">Powierzchnia wolna</MudText>
+            <MudText Typo="Typo.h6" Color="Color.Surface" Style="font-weight: 700;">@SumaPowierzchniWolnej.ToString("N2") m²</MudText>
+        </MudItem>
+
+        <MudItem Class="d-flex flex-column align-center">
+            <MudText Typo="Typo.body2" Class="text-secondary">Przewidywany czynsz z najmu</MudText>
+            <MudText Typo="Typo.h6" Color="Color.Success" Style="font-weight: 700;">@SumaCzynszu.ToString("C2")</MudText>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+<style>
+    /* Ponieważ uwalniamy górną przestrzeń, możemy powiększyć wysokość samej tabeli */
+    .modern-grid-scroll .mud-table-container {
+        max-height: calc(100vh - 300px) !important;
+        min-height: 250px !important;
+        overflow-y: auto !important;
+    }
+
+    .modern-grid-scroll .mud-table-head {
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 2 !important;
+        background-color: #ffffff !important;
+    }
+
+    @@media (max-height: 768px) {
+        .modern-grid-scroll .mud-table-container {
+            max-height: calc(100vh - 270px) !important;
+        }
+    }
+</style>

@@ -1,0 +1,96 @@
+@typeparam TItem
+@namespace Mieszkaniec.Components.UI
+@using MudBlazor
+
+<div class="page-container">
+
+    @* --- UNIWERSALNY PASEK NARZĘDZIOWY --- *@
+    @if (ShowToolbar)
+    {
+        <div class="custom-grid-toolbar d-flex align-items-center justify-content-between py-2 px-3 bg-white border rounded shadow-sm mb-3">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="fs-5 fw-bold text-dark me-3">@Title</span>
+            </div>
+            <div class="d-flex align-items-center gap-1">
+                @ToolbarLeftContent
+            </div>
+        </div>
+    }
+
+    @* --- GŁÓWNY MUD DATA GRID --- *@
+    <MudDataGrid T="TItem"
+                 Items="@Items"
+                 @key="@GridKey"
+                 Hover="true"
+                 Striped="true"
+                 Bordered="true"
+                 Dense="true"
+                 Breakpoint="Breakpoint.None"
+                 RowsPerPage="10"
+                 RowClick="@HandleRowClick"
+                 RowClassFunc="@OnRowClassFunc"
+                 Class="mud-elevation-1 rounded-lg bg-white overflow-hidden"
+                 HeaderClass="bg-light text-dark">
+
+        <ToolBarContent>
+            @if (ShowToolbar)
+            {
+                <div class="custom-toolbar-buttons d-flex align-items-center gap-1 py-1" style="z-index: 10;">
+                    @if (OnAdd.HasDelegate)
+                    {
+                        <button type="button" class="btn btn-sm btn-link text-secondary fw-medium px-2 py-1.5 d-flex align-items-center gap-1 text-decoration-none small-font" @onclick="OnAdd">
+                            <i class="bi bi-plus-lg"></i> Dodaj
+                        </button>
+                    }
+                    @if (OnEdit.HasDelegate)
+                    {
+                        <button type="button" class="btn btn-sm btn-link text-secondary fw-medium px-2 py-1.5 d-flex align-items-center gap-1 text-decoration-none small-font" disabled="@(SelectedItem == null)" @onclick="() => OnEdit.InvokeAsync(SelectedItem)">
+                            <i class="bi bi-pencil-square"></i> Edytuj
+                        </button>
+                    }
+                    @if (OnDelete.HasDelegate)
+                    {
+                        <button type="button" class="btn btn-sm btn-link text-danger fw-medium px-2 py-1.5 d-flex align-items-center gap-1 text-decoration-none small-font" disabled="@(SelectedItem == null)" @onclick="() => OnDelete.InvokeAsync(SelectedItem)">
+                            <i class="bi bi-trash"></i> Usuń
+                        </button>
+                    }
+                    @if (ShowPrint)
+                    {
+                        <button type="button"
+                                class="btn btn-sm btn-link text-secondary fw-medium px-2 py-1.5 d-flex align-items-center gap-1 text-decoration-none small-font d-print-none"
+                                @onclick="DrukujWidok">
+                            <i class="bi bi-printer"></i> Drukuj
+                        </button>
+                    }
+                    @if (OnExportToExcel.HasDelegate)
+                    {
+                        <button type="button"
+                                class="btn btn-sm btn-link text-secondary fw-medium px-2 py-1.5 d-flex align-items-center gap-1 text-decoration-none small-font d-print-none"
+                                @onclick="WykonajEksportExcel"
+                                style="cursor: pointer !important;">
+                            <i class="bi bi-file-earmark-spreadsheet"></i> Excel
+                        </button>
+                    }
+                    @ExtraActions
+                </div>
+
+                <MudSpacer />
+
+                <div style="width: 240px; z-index: 10;" class="py-1">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control form-control-sm border-start-0 bg-light-inline" placeholder="Szukaj..." value="@SearchText" @oninput="HandleSearch" />
+                    </div>
+                </div>
+            }
+        </ToolBarContent>
+
+        <Columns>
+            @GridColumns
+        </Columns>
+
+        <PagerContent>
+            <MudDataGridPager T="TItem" RowsPerPageString="Rekordów na stronę:" InfoFormat="{first_item}-{last_item} z {all_items}" />
+        </PagerContent>
+    </MudDataGrid>
+</div>

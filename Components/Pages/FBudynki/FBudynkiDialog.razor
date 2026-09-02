@@ -1,0 +1,150 @@
+﻿@using Mieszkaniec.Model.Entities
+@using MudBlazor
+
+<MudDialog Options="_dialogOptions" Class="rounded-xl" DisableSidePadding="true">
+    <TitleContent>
+        @* NAGŁÓWEK FORMULARZA *@
+        <div class="px-6 py-4 d-flex align-center" style="background-color: #fff; border-bottom: 1px solid #f1f5f9;">
+            <div class="d-flex align-center">
+                <div class="bg-light shadow-sm rounded p-2 mr-3 border d-flex align-center justify-center" style="width: 42px; height: 42px;">
+                    <i class="bi bi-building text-primary fs-4"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold mb-0 text-dark" style="font-size: 1.1rem; line-height: 1.2;">
+                        @(Model.Id == 0 ? "Nowa Nieruchomość" : "Edycja Nieruchomości")
+                    </h6>
+                    <small class="text-muted" style="font-size: 0.75rem;">Metryka techniczna i dane ewidencyjne budynku</small>
+                </div>
+            </div>
+            <MudSpacer />
+        </div>
+    </TitleContent>
+
+    <DialogContent>
+        <div class="px-6 py-2">
+            <EditForm Model="@Model" OnValidSubmit="@HandleValidSubmit">
+                <DataAnnotationsValidator />
+
+                <div class="row g-3">
+
+                    @* --- SEKCJA 1: DANE PODSTAWOWE --- *@
+                    <div class="col-md-8">
+                        <label class="form-label small fw-bold text-secondary mb-1">NAZWA OBIEKTU</label>
+                        <div class="input-group input-group-sm shadow-sm">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-type"></i></span>
+                            <input type="text" class="form-control" @bind="Model.Nazwa" placeholder="np. Budynek A" required />
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold text-secondary mb-1">NR EWIDENCYJNY</label>
+                        <div class="input-group input-group-sm shadow-sm">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-fingerprint"></i></span>
+                            <input type="text" class="form-control" @bind="Model.NumerEwidencyjny" placeholder="np. 123/45" />
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label small fw-bold text-secondary mb-1">ADRES</label>
+                        <div class="input-group input-group-sm shadow-sm">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-geo-alt"></i></span>
+                            <input type="text" class="form-control" @bind="Model.Adres" placeholder="Pełny adres lokalizacji..." required />
+                        </div>
+                    </div>
+
+                    @* --- SEKCJA 2: METRYKA TECHNICZNA --- *@
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold text-secondary mb-1">ROK BUDOWY</label>
+                        <div class="input-group input-group-sm shadow-sm">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-calendar-event"></i></span>
+                            <input type="number" class="form-control" @bind="Model.RokBudowy" placeholder="Rok" min="1700" max="2100" />
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold text-secondary mb-1">KONDYGNACJE</label>
+                        <div class="input-group input-group-sm shadow-sm">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-layers"></i></span>
+                            <input type="number" class="form-control" @bind="Model.LiczbaKondygnacji" placeholder="Liczba" min="0" max="100" />
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold text-secondary mb-1">WYSOKOŚĆ (M)</label>
+                        <div class="input-group input-group-sm shadow-sm">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-ruler"></i></span>
+                            <input type="number" step="0.01" class="form-control" @bind="Model.Wysokosc" placeholder="0.00" min="0" />
+                        </div>
+                    </div>
+
+                    @* --- SEKCJA METRYKI: PARAMETRY --- *@
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-secondary mb-1">KUBATURA (M³)</label>
+                        <div class="input-group input-group-sm shadow-sm">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-box"></i></span>
+                            <input type="number" step="0.01" class="form-control" @bind="Model.Kubatura" placeholder="0.00" min="0" />
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-secondary mb-1">POW. UŻYTKOWA (M²)</label>
+                        <div class="input-group input-group-sm shadow-sm">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-textarea-resize"></i></span>
+                            <input type="number" step="0.01" class="form-control" @bind="Model.PowUzytkowa" placeholder="0.00" min="0" />
+                        </div>
+                    </div>
+
+                    @* --- SEKCJA 3: OPISY I DODATKI --- *@
+                    <div class="col-12">
+                        <label class="form-label small fw-bold text-secondary mb-1">WYPOSAŻENIE / INSTALACJE</label>
+                        <div class="input-group input-group-sm shadow-sm">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-tools"></i></span>
+                            <textarea class="form-control" @bind="Model.Wyposazenie" rows="2" placeholder="Opis instalacji i wyposażenia obiektu..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label small fw-bold text-secondary mb-1">DODATKOWY OPIS</label>
+                        <div class="input-group input-group-sm shadow-sm">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-chat-left-text"></i></span>
+                            <textarea class="form-control" @bind="Model.Opis" rows="2" placeholder="Dodatkowe uwagi i informacje uzupełniające..."></textarea>
+                        </div>
+                    </div>
+
+                </div>
+
+                @* STOPKA FORMULARZA (Ujednolicona z Przeglądami, wielkie litery i zaokrąglenia rounded-lg) *@
+                <div class="d-flex justify-content-end gap-2 mt-5 pt-3" style="border-top: 1px solid #f1f5f9;">
+                    <button type="button" class="btn btn-sm fw-bold px-4 py-2 d-flex align-items-center gap-1 border shadow-none"
+                            style="background-color: #f1f5f9; color: #334155; border-radius: 8px; font-size: 0.825rem;"
+                            @onclick="@Cancel">
+                        <i class="bi bi-x fs-6"></i> ANULUJ
+                    </button>
+
+                    <button type="submit" class="btn btn-sm fw-bold px-4 py-2 d-flex align-items-center gap-1 text-white shadow-none"
+                            style="background-color: #5a4bda; border-radius: 8px; font-size: 0.825rem;">
+                        <i class="bi bi-check-lg fs-6"></i> ZAPISZ
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public Obiekt Model { get; set; } = new();
+
+    private readonly DialogOptions _dialogOptions = new() { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true, BackdropClick = false };
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private void HandleValidSubmit()
+    {
+        MudDialog.Close(DialogResult.Ok(Model));
+    }
+}

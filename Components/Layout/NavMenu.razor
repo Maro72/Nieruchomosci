@@ -1,0 +1,41 @@
+﻿@using MudBlazor
+<MudNavMenu Class="pt-4">
+   @*  <MudNavGroup Title="System" Expanded="true" Icon="@Icons.Material.Filled.Computer"> *@
+        
+        <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard" Ripple="false">
+            Strona Główna
+        </MudNavLink>
+
+        <MudNavGroup Title="Nieruchomości" Expanded="false" Icon="@Icons.Material.Filled.Domain">
+         @*    <MudNavLink Href="obiekty" Icon="@Icons.Material.Filled.Apartment" Ripple="false">Budynki</MudNavLink>
+            <MudNavLink Href="przeglady" Icon="@Icons.Material.Filled.EventAvailable" Ripple="false">Przeglądy</MudNavLink> *@
+            <MudNavLink Href="fprzeglady" Icon="@Icons.Material.Filled.EventNote" Ripple="false">Przeglądy</MudNavLink>
+            <MudNavLink Href="fawarie" Icon="@Icons.Material.Filled.WarningAmber" Ripple="false">Zgłoszenia usterek</MudNavLink>
+            <MudNavLink Href="historiausterek" Icon="@Icons.Material.Filled.ManageHistory" Ripple="false">Historia usterek</MudNavLink>
+            <MudNavLink Href="fremonbud" Icon="@Icons.Material.Filled.Handyman" Ripple="false">Prace remontowe</MudNavLink>
+           @*  <MudNavLink Href="fbudynki" Icon="@Icons.Material.Filled.DomainAdd">FBudynki</MudNavLink> *@
+        </MudNavGroup>
+
+        <MudNavGroup Title="Słowniki" Expanded="false" Icon="@Icons.Material.Filled.MenuBook">
+            @* <MudNavLink Href="slownik/terminy" Icon="@Icons.Material.Filled.HistoryToggleOff" Ripple="false">
+                Definicje terminów
+            </MudNavLink> *@
+            <MudNavLink Href="fterminy/terminy" Icon="@Icons.Material.Filled.MoreTime" Ripple="false">
+                Definicje Terminów
+            </MudNavLink>
+            <MudNavLink Href="fbudynki" Icon="@Icons.Material.Filled.DomainAdd">Budynki</MudNavLink>
+        </MudNavGroup>
+        <MudNavGroup Title="Wynajmy" Expanded="false" Icon="@Icons.Material.Filled.CorporateFare">
+            @* <MudNavLink Href="slownik/terminy" Icon="@Icons.Material.Filled.HistoryToggleOff" Ripple="false">
+                Definicje terminów
+            </MudNavLink> *@
+           <MudNavLink Href="wynajem" Icon="@Icons.Material.Filled.Apartment" Ripple="false">Pomieszczenia</MudNavLink>
+            <MudNavLink Href="najemcy" Icon="@Icons.Material.Filled.People" Ripple="false">Najemcy</MudNavLink>
+            <MudNavLink Href="umowy" Icon="@Icons.Material.Filled.Description" Ripple="false">Umowy</MudNavLink>
+
+        </MudNavGroup>
+
+
+
+  @*   </MudNavGroup> *@
+</MudNavMenu>

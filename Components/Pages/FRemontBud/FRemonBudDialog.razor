@@ -1,0 +1,294 @@
+﻿@namespace Mieszkaniec.Components.Pages.FRemonBud
+@using Mieszkaniec.Model.Entities
+@using Microsoft.AspNetCore.Components.Forms
+@using MudBlazor
+
+<MudDialog @bind-Visible="IsVisible" Options="DialogOptions" Class="rounded-xl" DisableSidePadding="true">
+    <TitleContent>
+        <div class="px-6 py-4 d-flex align-center" style="background-color: #fff; border-bottom: 1px solid #f1f5f9;">
+            <div class="d-flex align-center">
+                <div class="bg-light shadow-sm rounded p-2 mr-3 border d-flex align-center justify-center" style="width: 42px; height: 42px;">
+                    <i class="bi bi-calculator text-primary fs-4"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold mb-0 text-dark" style="font-size: 1.1rem; line-height: 1.2;">
+                        @(Model?.Id == 0 ? "Nowe Zlecenie z Kosztorysem" : "Edycja Zlecenia i Kosztorysu")
+                    </h6>
+                    <small class="text-muted" style="font-size: 0.75rem;">Podstawowe dane remontu oraz kalkulacja kosztów (robocizna + materiały)</small>
+                </div>
+            </div>
+            <MudSpacer />
+        </div>
+    </TitleContent>
+
+    <DialogContent>
+        <div class="px-6 py-2 pb-2">
+            @if (Model != null)
+            {
+                <EditForm Model="@Model">
+                    @* --- ZAKŁADKI MUDBLAZOR --- *@
+                    <MudTabs Elevation="0"
+                             Rounded="false"
+                             ApplyEffectsToContainer="true"
+                             PanelClass="pt-4"
+                             Color="Color.Transparent"
+                             SliderColor="Color.Primary"
+                             TabHeaderClass="border-bottom border-light">
+
+                        @* ========================================= *@
+                        @* ZAKŁADKA 1: DANE PODSTAWOWE               *@
+                        @* ========================================= *@
+                        <MudTabPanel Text="Dane Podstawowe" Icon="@Icons.Material.Filled.Info">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label small fw-bold text-secondary mb-1">NAZWA / OPIS ZADANIA</label>
+                                    <div class="input-group input-group-sm shadow-sm">
+                                        <span class="input-group-text bg-light text-muted"><i class="bi bi-type"></i></span>
+                                        <input type="text" class="form-control" @bind="Model.Nazwa" placeholder="Krótki opis zadania remontowego..." />
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-secondary mb-1">NIERUCHOMOŚĆ / BUDYNEK</label>
+                                    <div class="input-group input-group-sm shadow-sm">
+                                        <span class="input-group-text bg-light text-muted"><i class="bi bi-building"></i></span>
+                                        <select class="form-select" @bind="Model.ObiektId">
+                                            <option value="0" disabled hidden>Wybierz budynek...</option>
+                                            @foreach (var ob in ListaObiektow)
+                                            {
+                                                <option value="@ob.Id">@ob.Nazwa</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-secondary mb-1">BRANŻA / RODZAJ PRAC</label>
+                                    <div class="input-group input-group-sm shadow-sm">
+                                        <span class="input-group-text bg-light text-muted"><i class="bi bi-wrench"></i></span>
+                                        <select class="form-select" @bind="Model.RodzajUsterkiId">
+                                            <option value="0" disabled hidden>Wybierz branżę...</option>
+                                            @foreach (var r in ListaRodzajow)
+                                            {
+                                                <option value="@r.Id">@r.Nazwa</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold text-secondary mb-1">STATUS PRAC</label>
+                                    <div class="input-group input-group-sm shadow-sm">
+                                        <span class="input-group-text bg-light text-muted"><i class="bi bi-flag"></i></span>
+                                        <select class="form-select" @bind="Model.Status">
+                                            <option value="@((string)null)">Wybierz status...</option>
+                                            @foreach (var st in OpcjeStatusow)
+                                            {
+                                                <option value="@st">@st</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold text-secondary mb-1">PLANOWANY START</label>
+                                    <div class="input-group input-group-sm shadow-sm">
+                                        <span class="input-group-text bg-light text-muted"><i class="bi bi-calendar-event"></i></span>
+                                        <input type="date" class="form-control" @bind="Model.DataRozpoczeciaPlanowana" @bind:format="yyyy-MM-dd" />
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold text-secondary mb-1">PLANOWANY KONIEC</label>
+                                    <div class="input-group input-group-sm shadow-sm">
+                                        <span class="input-group-text bg-light text-muted"><i class="bi bi-calendar-check"></i></span>
+                                        <input type="date" class="form-control" @bind="Model.DataZakonczeniaPlanowana" @bind:format="yyyy-MM-dd" />
+                                    </div>
+                                </div>
+
+                                <div class="col-12 mt-3 border-top pt-3">
+                                    <div class="row g-3">
+                                        <div class="col-12">
+                                            <label class="form-label small fw-bold text-secondary mb-1">WYKONAWCA PRAC</label>
+                                            <div class="input-group input-group-sm">
+                                                <span class="input-group-text bg-white text-muted"><i class="bi bi-person-workspace"></i></span>
+                                                <input type="text" class="form-control bg-white" @bind="Model.WykonawcaNazwa" placeholder="Wpisz nazwę firmy realizującej zlecenie..." />
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-bold text-secondary mb-1">KOSZT FAKTYCZNY (Po zakończeniu)</label>
+                                            <div class="input-group input-group-sm">
+                                                <span class="input-group-text bg-white text-success"><i class="bi bi-cash-stack"></i></span>
+                                                <input type="number" step="0.01" class="form-control bg-white border-success" @bind="Model.KosztFaktyczny" placeholder="0.00" min="0" />
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-bold text-primary mb-1">KOSZT SZACOWANY (Z Kosztorysu)</label>
+                                            <div class="form-control form-control-sm bg-light text-center fw-bold" style="font-size: 1rem; color: #1e40af;">
+                                                @Model.KosztSzacowany.ToString("N2") zł
+                                            </div>
+                                            <small class="text-muted" style="font-size: 0.7rem;">(Wyliczane automatycznie w zakładce Kosztorys)</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </MudTabPanel>
+
+                        @* ========================================= *@
+                        @* ZAKŁADKA 2: KOSZTORYS (ZAKBLOKOWANY ROZMIAR)*@
+                        @* ========================================= *@
+                        <MudTabPanel Text="Kosztorys (Kalkulator)" Icon="@Icons.Material.Filled.Calculate">
+                            @* NOWY KONTENER: Ogranicza wysokość całego panelu i wymusza scroll *@
+                            <div style="max-height: 440px; overflow-y: auto; overflow-x: hidden;" class="pe-2">
+
+                                @* --- SEKCJA ROBOCIZNY --- *@
+                                <div class="p-3 mb-4 rounded border bg-light shadow-sm">
+                                    <h6 class="fw-bold text-dark mb-3"><i class="bi bi-people-fill text-primary me-2"></i> 1. Kalkulacja Robocizny</h6>
+                                    <div class="row g-2 align-items-end">
+                                        <div class="col-md-2">
+                                            <label class="small text-muted fw-bold">Ilość osób</label>
+                                            <input type="number" class="form-control form-control-sm border-0 shadow-sm" @bind="Model.LiczbaPracownikow" @bind:after="PrzeliczKoszty" min="0" />
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="small text-muted fw-bold">Dni robocze</label>
+                                            <input type="number" class="form-control form-control-sm border-0 shadow-sm" @bind="Model.SzacowanaLiczbaDni" @bind:after="PrzeliczKoszty" min="0" />
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="small text-muted fw-bold">Godzin/dzień</label>
+                                            <input type="number" class="form-control form-control-sm border-0 shadow-sm" @bind="Model.GodzinyDziennie" @bind:after="PrzeliczKoszty" min="0" />
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="small text-muted fw-bold">Stawka/godz. (zł)</label>
+                                            <input type="number" step="0.01" class="form-control form-control-sm border-0 shadow-sm" @bind="Model.RobociznaStawkaGodzinowa" @bind:after="PrzeliczKoszty" min="0" />
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="bg-white p-2 rounded shadow-sm text-center border-start border-4 border-primary">
+                                                <small class="text-muted d-block" style="font-size: 0.7rem;">Razem Robocizna:</small>
+                                                <strong class="text-dark">@Model.KosztCalkowityRobocizny.ToString("N2") zł</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                @* --- SEKCJA MATERIAŁÓW --- *@
+                                <div class="p-3 rounded border shadow-sm mb-2">
+                                    <h6 class="fw-bold text-dark mb-3"><i class="bi bi-bricks text-warning me-2"></i> 2. Zestawienie Materiałów</h6>
+
+                                    @* Formularz dodawania materiału *@
+                                    <div class="row g-2 align-items-end mb-3 p-2 bg-light rounded border-dashed">
+                                        <div class="col-md-4">
+                                            <label class="small text-muted">Nazwa materiału</label>
+                                            <input type="text" class="form-control form-control-sm" @bind="NowyMaterial.NazwaMaterialu" placeholder="np. Farba, Płyta G-K, Kabel..." />
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="small text-muted">J.m.</label>
+                                            <input type="text" class="form-control form-control-sm" @bind="NowyMaterial.Jm" placeholder="szt., kg, m2" />
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="small text-muted">Ilość</label>
+                                            <input type="number" step="0.01" class="form-control form-control-sm" @bind="NowyMaterial.Ilosc" />
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="small text-muted">Cena jedn. (zł)</label>
+                                            <input type="number" step="0.01" class="form-control form-control-sm" @bind="NowyMaterial.CenaJednostkowa" />
+                                        </div>
+                                        <div class="col-md-2">
+                                            <button type="button" class="btn btn-sm btn-success w-100 fw-bold shadow-sm" @onclick="DodajMaterial">
+                                                <i class="bi bi-plus-lg"></i> Dodaj
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    @* Tabela z dodanymi materiałami *@
+                                    @if (Model.Materialy != null && Model.Materialy.Any())
+                                    {
+                                        <div class="table-responsive" style="border: 1px solid #e9ecef; border-radius: 4px;">
+                                            <table class="table table-sm table-hover align-middle text-center mb-0" style="font-size: 0.85rem;">
+                                                <thead class="table-light sticky-top">
+                                                    <tr>
+                                                        <th class="text-start">Nazwa materiału</th>
+                                                        <th>J.m.</th>
+                                                        <th>Ilość</th>
+                                                        <th>Cena jedn.</th>
+                                                        <th>Wartość</th>
+                                                        <th></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (var mat in Model.Materialy)
+                                                    {
+                                                        <tr>
+                                                            <td class="text-start">@mat.NazwaMaterialu</td>
+                                                            <td>@mat.Jm</td>
+                                                            <td>@mat.Ilosc</td>
+                                                            <td>@mat.CenaJednostkowa.ToString("N2")</td>
+                                                            <td class="fw-bold text-dark">@mat.WartoscCalkowita.ToString("N2") zł</td>
+                                                            <td>
+                                                                <button type="button" class="btn btn-sm btn-outline-danger border-0" @onclick="() => UsunMaterial(mat)" title="Usuń pozycję">
+                                                                    <i class="bi bi-trash"></i>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="text-center text-muted p-4 border rounded bg-light" style="border-style: dashed !important;">
+                                            <i class="bi bi-box-seam fs-3 d-block mb-2 text-black-50"></i>
+                                            Brak dodanych materiałów.<br />
+                                            <small>Wypełnij formularz wyżej, aby dodać pozycje do kosztorysu.</small>
+                                        </div>
+                                    }
+                                </div>
+                            </div> @* KONIEC KONTENERA SCROLLA *@
+                        </MudTabPanel>
+                    </MudTabs>
+
+                    @* KOMUNIKAT BŁĘDU *@
+                    @if (!string.IsNullOrEmpty(KomunikatBledu))
+                    {
+                        <div class="alert alert-danger px-3 py-2 mb-0 mt-3 d-flex align-items-center rounded-lg shadow-sm" role="alert" style="font-size: 0.85rem;">
+                            <i class="bi bi-exclamation-triangle-fill me-2 fs-6"></i> @KomunikatBledu
+                        </div>
+                    }
+                </EditForm>
+            }
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <div class="d-flex justify-content-end gap-2 pe-4 pb-3 w-100 mt-1 border-top pt-3 bg-white flex-wrap">
+            @if (Model != null)
+            {
+                @* --- ROZBUDOWANE PODSUMOWANIE KOSZTÓW NA KOŃCU FORMULARZA --- *@
+                <div class="me-auto d-flex align-items-center gap-2 flex-wrap">
+                    @* Składnik 1: Robocizna *@
+                    <div class="bg-light px-2 py-1 rounded border d-flex align-items-center" style="font-size: 0.8rem;">
+                        <span class="text-muted me-1">Robocizna:</span>
+                        <span class="fw-bold text-secondary">@Model.KosztCalkowityRobocizny.ToString("N2") zł</span>
+                    </div>
+
+                    @* Składnik 2: Materiały *@
+                    <div class="bg-light px-2 py-1 rounded border d-flex align-items-center" style="font-size: 0.8rem;">
+                        <span class="text-muted me-1">Materiały:</span>
+                        <span class="fw-bold text-muted">@((Model.Materialy?.Sum(m => m.WartoscCalkowita) ?? 0).ToString("N2")) zł</span>
+                    </div>
+
+                    @* Finał: Suma całości (wielki niebieski badge) *@
+                    <div class="bg-light px-3 py-1 rounded border border-primary-subtle d-flex align-items-center ms-1">
+                        <span class="small text-muted me-2 font-weight-bold">Suma Kosztorysu:</span>
+                        <strong class="text-primary fs-6">@Model.KosztSzacowany.ToString("N2") zł</strong>
+                    </div>
+                </div>
+            }
+
+            @* --- PRZYCISKI AKCJI --- *@
+            <MudButton Variant="Variant.Filled" Color="Color.Default" StartIcon="@Icons.Material.Filled.Close" Size="Size.Small" Class="border text-dark px-4 py-2" OnClick="Anuluj">Anuluj</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Save" Size="Size.Small" Class="px-5 py-2 shadow-sm" Style="background-color: #5a4bda;" OnClick="ZapiszFormularz">Zapisz Zmiany</MudButton>
+        </div>
+    </DialogActions>
+</MudDialog>

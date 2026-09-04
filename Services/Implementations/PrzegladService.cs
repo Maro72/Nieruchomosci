@@ -33,6 +33,11 @@ namespace Mieszkaniec.Services
 
             if (model.Id == 0)
             {
+                foreach (var zalacznik in model.Zalaczniki)
+                {
+                    zalacznik.Przeglad = model;
+                }
+
                 db.Przeglady.Add(model);
             }
             else
@@ -52,6 +57,8 @@ namespace Mieszkaniec.Services
                     {
                         if (z.Id == 0)
                         {
+                            z.PrzegladId = existing.Id;
+                            z.Przeglad = existing;
                             existing.Zalaczniki.Add(z);
                         }
                     }

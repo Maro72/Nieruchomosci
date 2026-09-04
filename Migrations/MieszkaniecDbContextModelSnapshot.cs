@@ -436,6 +436,24 @@ namespace Mieszkaniec.Migrations
                     b.ToTable("RodzajeUsterek");
                 });
 
+            modelBuilder.Entity("Mieszkaniec.Model.Entities.Rola", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Nazwa")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Role");
+                });
+
             modelBuilder.Entity("Mieszkaniec.Model.Entities.TerminDefinicja", b =>
                 {
                     b.Property<int>("Id")
@@ -479,6 +497,29 @@ namespace Mieszkaniec.Migrations
                     b.HasIndex("LokalWynajemId");
 
                     b.ToTable("UmowaLokal");
+                });
+
+            modelBuilder.Entity("Mieszkaniec.Model.Entities.Uprawnienie", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("NazwaSystemowa")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("Opis")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Uprawnienia");
                 });
 
             modelBuilder.Entity("Mieszkaniec.Model.Entities.UsterkiBud", b =>
@@ -536,6 +577,41 @@ namespace Mieszkaniec.Migrations
                     b.ToTable("UsterkiBud");
                 });
 
+            modelBuilder.Entity("Mieszkaniec.Model.Entities.Uzytkownik", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("CzyAktywny")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("HasloHash")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Imie")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("Login")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("Nazwisko")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Uzytkownicy");
+                });
+
             modelBuilder.Entity("Mieszkaniec.Model.Entities.Zalacznik", b =>
                 {
                     b.Property<int>("Id")
@@ -575,6 +651,21 @@ namespace Mieszkaniec.Migrations
                     b.ToTable("zalaczniki");
                 });
 
+            modelBuilder.Entity("RolaUzytkownik", b =>
+                {
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UzytkownicyId")
+                        .HasColumnType("int");
+
+                    b.HasKey("RoleId", "UzytkownicyId");
+
+                    b.HasIndex("UzytkownicyId");
+
+                    b.ToTable("UzytkownikRola", (string)null);
+                });
+
             modelBuilder.Entity("UmowaNajmu", b =>
                 {
                     b.Property<int>("Id")
@@ -604,6 +695,21 @@ namespace Mieszkaniec.Migrations
                     b.HasIndex("NajemcaId");
 
                     b.ToTable("UmowyNajmu");
+                });
+
+            modelBuilder.Entity("UprawnienieUzytkownik", b =>
+                {
+                    b.Property<int>("UprawnieniaId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UzytkownicyId")
+                        .HasColumnType("int");
+
+                    b.HasKey("UprawnieniaId", "UzytkownicyId");
+
+                    b.HasIndex("UzytkownicyId");
+
+                    b.ToTable("UzytkownikUprawnienie", (string)null);
                 });
 
             modelBuilder.Entity("ZalacznikUmowy", b =>
@@ -782,6 +888,21 @@ namespace Mieszkaniec.Migrations
                     b.Navigation("UsterkiBud");
                 });
 
+            modelBuilder.Entity("RolaUzytkownik", b =>
+                {
+                    b.HasOne("Mieszkaniec.Model.Entities.Rola", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Mieszkaniec.Model.Entities.Uzytkownik", null)
+                        .WithMany()
+                        .HasForeignKey("UzytkownicyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("UmowaNajmu", b =>
                 {
                     b.HasOne("Mieszkaniec.Model.Entities.Najemca", "Najemca")
@@ -791,6 +912,21 @@ namespace Mieszkaniec.Migrations
                         .IsRequired();
 
                     b.Navigation("Najemca");
+                });
+
+            modelBuilder.Entity("UprawnienieUzytkownik", b =>
+                {
+                    b.HasOne("Mieszkaniec.Model.Entities.Uprawnienie", null)
+                        .WithMany()
+                        .HasForeignKey("UprawnieniaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Mieszkaniec.Model.Entities.Uzytkownik", null)
+                        .WithMany()
+                        .HasForeignKey("UzytkownicyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ZalacznikUmowy", b =>

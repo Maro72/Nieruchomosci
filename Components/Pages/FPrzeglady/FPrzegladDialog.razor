@@ -167,7 +167,7 @@
         {
             try
             {
-                // Budujemy ścieżkę wskazującą bezpośrednio na katalog Root/Shared/uploads
+                // Pliki przeglądów są serwowane z katalogu Shared/uploads pod adresem /uploads.
                 var katalogSharedUploads = Path.Combine(Directory.GetCurrentDirectory(), "Shared", "uploads");
 
                 if (!Directory.Exists(katalogSharedUploads))
@@ -182,8 +182,9 @@
 
                 var nowyZalacznik = new Zalacznik
                 {
+                    Przeglad = Model,
                     NazwaPliku = _wybranyPlik.Name,
-                    SciezkaMagazyn = pelnaSciezka, // Ścieżka na dysku zaktualizuje się automatycznie
+                    SciezkaMagazyn = Path.Combine("uploads", unikalnaNazwa),
                     RozmiarKB = (int)WybranyPlikRozmiarKB,
                     DataDodania = DateTime.Now
                 };

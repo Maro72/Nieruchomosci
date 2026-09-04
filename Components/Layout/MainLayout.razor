@@ -12,14 +12,12 @@
 
 <MudThemeProvider Theme="_theme" />
 <MudDialogProvider />
-<MudSnackbarProvider PositionClass="Defaults.Classes.Position.TopCenter"/>
+<MudSnackbarProvider PositionClass="Defaults.Classes.Position.TopCenter" />
 <MudPopoverProvider />
-
-
 
 <MudLayout>
     @* ── GÓRNA BELKA ── *@
-    <MudAppBar Elevation="1" Fixed="true" Dense="true">
+    <MudAppBar Elevation="1" Fixed="true" Dense="true" Style="background-color: #ffffff; color: #1e293b; border-bottom: 1px solid #e2e8f0;">
         <MudIconButton Icon="@Icons.Material.Filled.Menu"
                        Color="Color.Inherit" Edge="Edge.Start"
                        OnClick="@DrawerToggle" />
@@ -40,13 +38,42 @@
 
         <MudSpacer />
 
-        <div class="d-flex align-items-center gap-2 me-3 px-3 py-1 rounded"
-             style="background-color: @(isOnline ? "rgba(34, 197, 94, 0.1)" : "rgba(239, 68, 68, 0.1)"); border: 1px solid @(isOnline ? "#22c55e" : "#ef4444");">
-            <div style="width: 10px; height: 10px; border-radius: 50%; background-color: @(isOnline ? "#22c55e" : "#ef4444");"></div>
-            <MudText Typo="Typo.body2"
-                     Style="@($"color: {(isOnline ? "#16a34a" : "#dc2626")}; font-weight: 600;")">
-                MySql: @(isOnline ? "Połączono" : "Rozłączono")
-            </MudText>
+        <div class="d-flex align-items-center gap-4">
+
+            @* --- BLOK ZALOGOWANEGO UŻYTKOWNIKA --- *@
+            <AuthorizeView>
+                <Authorized>
+                    <div class="d-flex align-items-center pe-3 me-2" style="border-right: 1px solid #e2e8f0;">
+                        <MudAvatar Color="Color.Primary" Size="Size.Small" Class="me-2 fw-bold text-white">
+                            @(context.User.Identity?.Name?.FirstOrDefault().ToString().ToUpper() ?? "U")
+                        </MudAvatar>
+                        <div class="d-flex flex-column justify-content-center">
+                            <MudText Typo="Typo.body2" Class="fw-bold mb-0" Style="line-height: 1.1; color: #1e293b;">
+                                @context.User.Identity?.Name
+                            </MudText>
+                            <MudLink Href="/wyloguj" Typo="Typo.caption" Color="Color.Error" Underline="Underline.Hover">
+                                Wyloguj się
+                            </MudLink>
+                        </div>
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    <MudButton Href="/login" Variant="Variant.Text" Color="Color.Primary" Class="me-3 fw-bold">
+                        Zaloguj się
+                    </MudButton>
+                </NotAuthorized>
+            </AuthorizeView>
+
+            @* --- WSKAŹNIK STANU BAZY DANYCH --- *@
+            <div class="d-flex align-items-center gap-2 me-3 px-3 py-1 rounded"
+                 style="background-color: @(isOnline ? "rgba(34, 197, 94, 0.1)" : "rgba(239, 68, 68, 0.1)"); border: 1px solid @(isOnline ? "#22c55e" : "#ef4444");">
+                <div style="width: 10px; height: 10px; border-radius: 50%; background-color: @(isOnline ? "#22c55e" : "#ef4444");"></div>
+                <MudText Typo="Typo.body2"
+                         Style="@($"color: {(isOnline ? "#16a34a" : "#dc2626")}; font-weight: 600;")">
+                    MySql: @(isOnline ? "Połączono" : "Rozłączono")
+                </MudText>
+            </div>
+
         </div>
     </MudAppBar>
 
@@ -149,11 +176,9 @@
         isOnline = await DbService.CanConnectAsync();
     }
 
-    // ZMIANA: Metoda jest teraz synchroniczna (void zamiast async void)
-    // Dzięki temu nie blokuje i nie przerywa renderowania nowo otwieranych stron
     private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
     {
-       WyznaczNazweStrony();
+        WyznaczNazweStrony();
         InvokeAsync(StateHasChanged);
     }
 
@@ -185,5 +210,4 @@
     {
         Navigation.LocationChanged -= OnLocationChanged;
     }
-}
 }

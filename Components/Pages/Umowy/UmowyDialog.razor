@@ -1,4 +1,5 @@
 ﻿@page "/umowy-dialog"
+@attribute [Authorize(Policy = "ZarzadzanieUmowami")]
 @inherits UmowyDialogBase
 @using MudBlazor
 @using Mieszkaniec.Model.Entities

@@ -1,4 +1,5 @@
 ﻿@page "/fbudynki"
+@attribute [Authorize(Policy = "ZarzadzanieBudynkami")]
 @namespace Mieszkaniec.Components.Pages.Obiekty
 @using Mieszkaniec.Model.Entities
 @using Mieszkaniec.Components.UI
@@ -29,7 +30,7 @@
                        Value="@PokazujArchiwum"
                        ValueChanged="PrzelaczWidokArchiwum"
                        Color="Color.Error"
-                       UnCheckedColor="Color.Primary" />
+                       UncheckedColor="Color.Primary" />
 
             <span class="ms-2 small fw-bold @(PokazujArchiwum ? "text-danger" : "text-muted")"
                   style="transition: color 0.15s; cursor: pointer; user-select: none; font-size: 0.85rem;"

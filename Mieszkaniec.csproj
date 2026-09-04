@@ -4,7 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <DefaultItemExcludes>$(DefaultItemExcludes);Mieszkaniec/**;BenchmarkSuite1/**</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);BenchmarkSuite1/**</DefaultItemExcludes>
     <UseAppHost>false</UseAppHost>
   </PropertyGroup>
 
@@ -44,15 +44,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Migrations\" />
-    <Folder Include="Model\DTOs\" />
-    <Folder Include="Model\Migracja\" />
     <Folder Include="Data\" />
     <Folder Include="Shared\upload_umowy\" />
     <Folder Include="wwwroot\uploads1111\" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" Version="4.2.0" />
     <PackageReference Include="BootstrapBlazor" Version="10.6.0" />
     <PackageReference Include="EPPlus" Version="8.6.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.16">

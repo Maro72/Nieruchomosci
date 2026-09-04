@@ -1,4 +1,5 @@
 ﻿@page "/fprzeglady"
+@attribute [Authorize(Policy = "OdczytBudynkow")]
 @rendermode InteractiveServer
 @namespace Mieszkaniec.Components.Pages.FPrzeglady
 @using Mieszkaniec.Model.Entities
@@ -80,6 +81,33 @@
         </div>
     </MudPaper>
 
+    <div class="px-4 pt-1">
+        <div class="status-summary" aria-label="Podsumowanie statusów przeglądów">
+            <span class="status-summary-label">Szybki filtr:</span>
+            <button type="button" class="status-chip status-chip-danger" @onclick="PokazPrzeterminowane">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <strong>@LiczbaPrzeterminowanych</strong>
+                <span>przeterminowanych</span>
+            </button>
+            <button type="button" class="status-chip status-chip-warning" @onclick="PokazZblizajaceSie">
+                <i class="bi bi-clock-fill"></i>
+                <strong>@LiczbaZblizajacychSie</strong>
+                <span>zbliżających się</span>
+            </button>
+            <button type="button" class="status-chip status-chip-success" @onclick="PokazAktualne">
+                <i class="bi bi-check-circle-fill"></i>
+                <strong>@LiczbaAktualnych</strong>
+                <span>aktualnych</span>
+            </button>
+            @if (!string.IsNullOrEmpty(FiltreStatus))
+            {
+                <button type="button" class="status-summary-clear" @onclick="ResetujFiltry">
+                    <i class="bi bi-x-circle"></i> pokaż wszystkie
+                </button>
+            }
+        </div>
+    </div>
+
     @* ── WIDOK WŁAŚCIWY: GRUPOWANIE AKORDEONOWE PO BUDYNKACH ── *@
     <div class="px-4 pb-4 pt-2">
         @if (ListaPrzegladow == null || !ListaPrzegladow.Any())
@@ -91,7 +119,7 @@
         }
         else
         {
-            <MudExpansionPanels MultiExpansion="true" Elevation="1" Rounded="true" Class="gap-2 d-flex flex-column">
+            <MudExpansionPanels @ref="PaneleBudynkow" MultiExpansion="true" Elevation="1" Rounded="true" Class="gap-2 d-flex flex-column">
                 @* Wykorzystujemy potężne grupowanie LINQ bezpośrednio w pętli widoku *@
                 @foreach (var grupaBudynku in ListaPrzegladow.GroupBy(p => p.ObiektId).OrderBy(g => g.First().Obiekt?.Nazwa))
                 {
@@ -269,5 +297,52 @@
 
     .shadow-inner {
         box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+    }
+
+    .status-summary {
+        min-height: 36px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        color: #64748b;
+        font-size: 0.78rem;
+    }
+
+    .status-summary-label {
+        font-weight: 600;
+        margin-right: 2px;
+    }
+
+    .status-chip,
+    .status-summary-clear {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        min-height: 28px;
+        padding: 3px 9px;
+        border: 1px solid;
+        border-radius: 5px;
+        background: #fff;
+        font-size: 0.76rem;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+    .status-chip:hover,
+    .status-summary-clear:hover {
+        filter: brightness(0.97);
+        box-shadow: 0 1px 4px rgba(15, 23, 42, 0.1);
+    }
+
+    .status-chip-danger { color: #b02a37; border-color: #f5c2c7; background: #fff8f8; }
+    .status-chip-warning { color: #997404; border-color: #ffe69c; background: #fffdf4; }
+    .status-chip-success { color: #157347; border-color: #a3cfbb; background: #f7fcf9; }
+    .status-summary-clear { color: #64748b; border-color: #cbd5e1; }
+
+    @@media (max-width: 576px) {
+        .status-summary-label {
+            width: 100%;
+        }
     }
 </style>

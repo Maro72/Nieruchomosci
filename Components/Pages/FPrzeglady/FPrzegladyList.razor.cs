@@ -26,6 +26,10 @@ namespace Mieszkaniec.Components.Pages.FPrzeglady
         protected List<TerminDefinicja> ListaDefinicji { get; set; } = new();
         protected List<string> OpcjeStatusow { get; set; } = new() { "Aktualny", "Zbliża się", "Przeterminowany" };
 
+        protected int LiczbaPrzeterminowanych => _pelnaListaPrzegladow.Count(p => CzyAktywny(p) && WyznaczStatusTekst(p) == "Przeterminowany");
+        protected int LiczbaZblizajacychSie => _pelnaListaPrzegladow.Count(p => CzyAktywny(p) && WyznaczStatusTekst(p) == "Zbliża się");
+        protected int LiczbaAktualnych => _pelnaListaPrzegladow.Count(p => CzyAktywny(p) && WyznaczStatusTekst(p) == "Aktualny");
+
         protected int? FiltreObiektId { get; set; }
         protected int? FiltreDefinicjaId { get; set; }
         protected string? FiltreStatus { get; set; }
@@ -41,6 +45,7 @@ namespace Mieszkaniec.Components.Pages.FPrzeglady
         protected TypAkcji OczekujacaAkcja { get; set; } = TypAkcji.Brak;
         protected Przeglad? ObiektDoPrzetworzenia { get; set; }
         protected Przeglad? WybranyPrzeglad { get; set; }
+        private MudExpansionPanels? PaneleBudynkow { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
@@ -74,6 +79,31 @@ namespace Mieszkaniec.Components.Pages.FPrzeglady
         protected void OnDefinicjaFilterChanged(int? val) { FiltreDefinicjaId = val; ApplyFilters(); }
         protected void OnStatusFilterChanged(string? val) { FiltreStatus = val; ApplyFilters(); }
 
+        protected void PokazPrzeterminowane()
+        {
+            UstawFiltrStatusu("Przeterminowany");
+        }
+
+        protected void PokazZblizajaceSie()
+        {
+            UstawFiltrStatusu("Zbliża się");
+        }
+
+        protected void PokazAktualne()
+        {
+            UstawFiltrStatusu("Aktualny");
+        }
+
+        private void UstawFiltrStatusu(string status)
+        {
+            PokazArchiwum = false;
+            FiltreObiektId = null;
+            FiltreDefinicjaId = null;
+            FiltreStatus = status;
+            WybranyPrzeglad = null;
+            ApplyFilters();
+        }
+
         protected void ApplyFilters()
         {
             var query = _pelnaListaPrzegladow.AsQueryable();
@@ -94,12 +124,17 @@ namespace Mieszkaniec.Components.Pages.FPrzeglady
             StateHasChanged();
         }
 
-        protected void ResetujFiltry()
+        protected async Task ResetujFiltry()
         {
             FiltreObiektId = null;
             FiltreDefinicjaId = null;
             FiltreStatus = null;
             ApplyFilters();
+
+            if (PaneleBudynkow != null)
+            {
+                await PaneleBudynkow.CollapseAllAsync();
+            }
         }
 
         protected async Task OpenCreateDialog()
@@ -210,6 +245,8 @@ namespace Mieszkaniec.Components.Pages.FPrzeglady
             if (p.DataNastepnego <= DateTime.Today.AddDays(dniWyprzedzenia)) return "Zbliża się";
             return "Aktualny";
         }
+
+        private static bool CzyAktywny(Przeglad p) => p.Status != "Wykonany";
 
         protected string WyznaczStatusKlasa(Przeglad p)
         {

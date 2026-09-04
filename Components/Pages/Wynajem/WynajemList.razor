@@ -1,4 +1,5 @@
 ﻿@page "/wynajem"
+@attribute [Authorize(Policy = "ZarzadzanieUmowami")]
 @using MudBlazor
 @using Mieszkaniec.Model.Entities
 @using Mieszkaniec.Services.Interfaces

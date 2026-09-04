@@ -13,11 +13,11 @@ html {
 body {
     margin: 0;
     padding: 0;
-    width: 100vw;
+    width: 100%;
     min-height: 100vh;
-    overflow: hidden !important;
+    overflow-x: hidden;
     font-family: 'Inter', sans-serif !important;
-    font-size: clamp(12px, 1.5vw, 14px) !important;
+    font-size: 14px !important;
     background-color: #f1f5f9;
 }
 
@@ -62,7 +62,7 @@ h1:focus {
     }
 
 /* =========================================================
-   4. GÓRNA BELKA (APPBAR)
+   4. Gï¿½RNA BELKA (APPBAR)
    ========================================================= */
 .mud-appbar {
     min-height: 40px !important;
@@ -77,7 +77,7 @@ h1:focus {
     }
 
 /* =========================================================
-   5. MENU BOCZNE – RESET
+   5. MENU BOCZNE ï¿½ RESET
    ========================================================= */
 .mud-navmenu {
     padding-top: 0;
@@ -93,7 +93,7 @@ h1:focus {
     }
 
         /* =========================================================
-   5b. WY£¥CZENIE RIPPLE MudBlazor NA MENU BOCZNYM podœwietlenie bez focusa wy³aczone
+   5b. WYï¿½ï¿½CZENIE RIPPLE MudBlazor NA MENU BOCZNYM podï¿½wietlenie bez focusa wyï¿½aczone
    ========================================================= */
         .mud-navmenu .mud-nav-link::before,
         .mud-navmenu .mud-nav-link::after {
@@ -103,7 +103,7 @@ h1:focus {
         }
 
 /* =========================================================
-   6. MENU BOCZNE – DOMYŒLNY WYGL¥D LINKÓW
+   6. MENU BOCZNE ï¿½ DOMYï¿½LNY WYGLï¿½D LINKï¿½W
    ========================================================= */
 .mud-nav-link {
     color: #4a4a4a !important;
@@ -121,14 +121,14 @@ h1:focus {
         color: #6e6e6e;
     }
 
-/* Wciêcie + linia drzewa dla elementów wewn¹trz grup */
+/* Wciï¿½cie + linia drzewa dla elementï¿½w wewnï¿½trz grup */
 .mud-nav-group .mud-collapse .mud-nav-link {
     padding-left: 32px !important;
     border-left: 2px solid transparent;
 }
 
 /* =========================================================
-   7. MENU BOCZNE – HOVER (tylko prawdziwe linki)
+   7. MENU BOCZNE ï¿½ HOVER (tylko prawdziwe linki)
    ========================================================= */
 a.mud-nav-link[href]:not(.active):hover {
     background-color: #f1f5f9 !important;
@@ -139,7 +139,7 @@ a.mud-nav-link[href]:not(.active):hover {
 }
 
 /* =========================================================
-   8. MENU BOCZNE – STAN AKTYWNY (WYBRANA STRONA)
+   8. MENU BOCZNE ï¿½ STAN AKTYWNY (WYBRANA STRONA)
    ========================================================= */
 a.mud-nav-link.active,
 a.mud-nav-link.active:focus,
@@ -157,7 +157,7 @@ a.mud-nav-link.active:hover {
 }
 
 /* =========================================================
-   9. MENU BOCZNE – NAG£ÓWKI GRUP
+   9. MENU BOCZNE ï¿½ NAGï¿½ï¿½WKI GRUP
    ========================================================= */
 .mud-nav-group > .mud-nav-link,
 .mud-nav-group > .mud-nav-link .mud-nav-link-text {
@@ -171,7 +171,7 @@ a.mud-nav-link.active:hover {
 }
 
 /* =========================================================
-   10. MENU BOCZNE – NAG£ÓWKI GRUP BEZ T£A I HOVER
+   10. MENU BOCZNE ï¿½ NAGï¿½ï¿½WKI GRUP BEZ Tï¿½A I HOVER
    ========================================================= */
 .mud-navmenu .mud-nav-group > .mud-nav-link,
 .mud-navmenu .mud-nav-group > .mud-nav-link.active,
@@ -184,7 +184,7 @@ a.mud-nav-link.active:hover {
 }
 
 /* =========================================================
-   11. TABELA – NAG£ÓWEK
+   11. TABELA ï¿½ NAGï¿½ï¿½WEK
    ========================================================= */
 .mud-table-head .mud-table-cell {
     background-color: #E7EAEF !important;
@@ -196,14 +196,14 @@ a.mud-nav-link.active:hover {
 }
 
 /* =========================================================
-   12. TABELA – PODŒWIETLENIE WYBRANEGO WIERSZA
+   12. TABELA ï¿½ PODï¿½WIETLENIE WYBRANEGO WIERSZA
    ========================================================= */
 .mud-table-row.selected-row-highlight {
     background-color: #BED1F1 !important;
 }
 
 /* =========================================================
-   13. TOOLBAR – PRZYCISKI AKCJI
+   13. TOOLBAR ï¿½ PRZYCISKI AKCJI
    ========================================================= */
 @media (hover: hover) {
     .custom-toolbar-buttons button:hover:not(:disabled),
@@ -232,35 +232,20 @@ a.mud-nav-link.active:hover {
 }
 
 /* =========================================================
-   14. RESPONSYWNOŒÆ
+   14. RESPONSYWNOï¿½ï¿½
    ========================================================= */
-@media (max-width: 1400px) {
-    .mud-main-content {
-        zoom: 0.9;
-    }
-}
-
-@media (max-width: 1200px) {
-    .mud-main-content {
-        zoom: 0.8;
-    }
-}
-
-@media (max-width: 1024px) {
-    .mud-main-content {
-        zoom: 0.7;
-    }
-}
-
 @media (max-width: 768px) {
-    body {
-        font-size: 11px !important;
+    .mud-main-content {
+        padding: 12px 8px !important;
     }
 }
 
 @media (max-width: 480px) {
-    body {
-        font-size: 10px !important;
+    .mud-appbar .mud-typography {
+        max-width: 45vw;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 }
 

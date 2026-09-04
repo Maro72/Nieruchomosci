@@ -1,4 +1,5 @@
 ﻿@page "/fterminy/terminy"
+@attribute [Authorize(Policy = "ZarzadzanieBudynkami")]
 @rendermode InteractiveServer
 @namespace Mieszkaniec.Components.Pages.FTerminy
 @using Mieszkaniec.Model.Entities

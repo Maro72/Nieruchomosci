@@ -24,6 +24,11 @@ namespace Mieszkaniec.Model.Context
         public DbSet<AneksUmowy> AneksyUmow { get; set; }
         public DbSet<ZalacznikUmowy> ZalacznikiUmow { get; set; }
 
+        // --- NOWE TABELE DO ZARZĄDZANIA UŻYTKOWNIKAMI ---
+        public DbSet<Uzytkownik> Uzytkownicy { get; set; }
+        public DbSet<Rola> Role { get; set; }
+        public DbSet<Uprawnienie> Uprawnienia { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -83,6 +88,22 @@ namespace Mieszkaniec.Model.Context
                 .HasOne(ul => ul.LokalWynajem)
                 .WithMany(l => l.HistoriaUmow)
                 .HasForeignKey(ul => ul.LokalWynajemId);
+
+
+            // --- KONFIGURACJA RELACJI WIELE-DO-WIELU ---
+            // Wymuszamy ładne nazwy dla ukrytych tabel łączących w bazie danych, 
+            // żeby nie powstały dziwne nazwy generowane automatycznie przez system.
+
+            modelBuilder.Entity<Uzytkownik>()
+                .HasMany(u => u.Role)
+                .WithMany(r => r.Uzytkownicy)
+                .UsingEntity(j => j.ToTable("UzytkownikRola")); // Tabela łącząca Użytkownika z Rolą
+
+            modelBuilder.Entity<Uzytkownik>()
+                .HasMany(u => u.Uprawnienia)
+                .WithMany(upr => upr.Uzytkownicy)
+                .UsingEntity(j => j.ToTable("UzytkownikUprawnienie")); // Tabela łącząca Użytkownika ze Stronami
         }
+
     }
 }

@@ -1,5 +1,6 @@
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
-
 using Mieszkaniec;
 using Mieszkaniec.Components; // Wymagane dla MapRazorComponents<App>()
 using Mieszkaniec.Model.Context;
@@ -8,7 +9,6 @@ using Mieszkaniec.Services.Implementations;
 using Mieszkaniec.Services.Interfaces;
 using MudBlazor.Services;
 using System.IO;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // --- 1. Podstawowe us�ugi Blazor ---
@@ -25,7 +25,31 @@ builder.Services.AddScoped<IObiektService, ObiektService>();
 builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddScoped<ITerminDefinicjaService, TerminDefinicjaService>();
 builder.Services.AddScoped<IPrzegladService, PrzegladService>();
+// Wymagane do globalnego dostarczania stanu autoryzacji (usuwa Tw�j b��d)
+builder.Services.AddCascadingAuthenticationState();
 
+// Polityki autoryzacji - NazwaSystemowa z tabeli Uprawnienia
+// Rola Administrator automatycznie omija wszystkie polityki
+builder.Services.AddAuthorizationCore(options =>
+{
+    options.AddPolicy("ZarzadzanieUzytkownikami", policy =>
+        policy.RequireAssertion(ctx =>
+            ctx.User.IsInRole("Administrator") ||
+            ctx.User.HasClaim("Permission", "ZarzadzanieUzytkownikami")));
+    options.AddPolicy("ZarzadzanieBudynkami", policy =>
+        policy.RequireAssertion(ctx =>
+            ctx.User.IsInRole("Administrator") ||
+            ctx.User.HasClaim("Permission", "ZarzadzanieBudynkami")));
+    options.AddPolicy("ZarzadzanieUmowami", policy =>
+        policy.RequireAssertion(ctx =>
+            ctx.User.IsInRole("Administrator") ||
+            ctx.User.HasClaim("Permission", "ZarzadzanieUmowami")));
+    options.AddPolicy("OdczytBudynkow", policy =>
+        policy.RequireAssertion(ctx =>
+            ctx.User.IsInRole("Administrator") ||
+            ctx.User.HasClaim("Permission", "OdczytBudynkow") ||
+            ctx.User.HasClaim("Permission", "ZarzadzanieBudynkami")));
+});
 
 // Rejestracja z podzia�em na interfejs oraz serwis implementuj�cy
 builder.Services.AddScoped<IPraceRemontoweService, PraceRemontoweService>();
@@ -35,6 +59,21 @@ builder.Services.AddScoped<IDbConnectionService, DbConnectionService>(); // Reje
 builder.Services.AddScoped<ILokalWynajemService, LokalWynajemService>();
 builder.Services.AddScoped<IUmowaService, UmowaService>();
 builder.Services.AddScoped<INajemcaService, NajemcaService>();
+builder.Services.AddScoped<IUzytkownikService, UzytkownikService>();
+
+
+
+// Dodajemy mechanizm logowania oparty na ciasteczkach
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/login";
+    });
+
+// 2. Nasz w�a�ciwy, natywny mechanizm sesji dla Blazora
+builder.Services.AddScoped<AuthenticationStateProvider, Mieszkaniec.Services.MieszkaniecAuthStateProvider>();
+
+
 
 builder.Services.AddMudServices();
 
@@ -51,6 +90,8 @@ if (!app.Environment.IsDevelopment())
     // Domy�lna warto�� HSTS to 30 dni. 
     app.UseHsts();
 }
+app.UseAuthentication(); // 1. Najpierw sprawdzamy KIM jest u�ytkownik
+app.UseAuthorization();  // 2. Potem sprawdzamy CO mu wolno zrobi�
 
 app.UseHttpsRedirection();
 

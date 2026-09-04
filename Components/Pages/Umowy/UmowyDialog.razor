@@ -68,6 +68,32 @@
                                 </div>
                             </div>
 
+                            <div class="col-12 mt-3 pt-3 border-top">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <i class="bi bi-calendar-event text-warning"></i>
+                                    <span class="small fw-bold text-secondary">Wypowiedzenie umowy</span>
+                                </div>
+                                <div class="row g-2">
+                                    <div class="col-md-4">
+                                        <label class="form-label small text-secondary mb-1">Data wypowiedzenia</label>
+                                        <input type="date" class="form-control form-control-sm" @bind="Model.DataWypowiedzenia" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small text-secondary mb-1">Okres wypowiedzenia (dni)</label>
+                                        <input type="number" min="0" class="form-control form-control-sm" @bind="Model.OkresWypowiedzeniaDni" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small text-secondary mb-1">Planowane zakończenie</label>
+                                        <input type="text" class="form-control form-control-sm bg-light" readonly value="@(Model.WyliczonaDataZakonczeniaWypowiedzenia?.ToString("yyyy-MM-dd") ?? "zostanie wyliczone przy zapisie")" />
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label small text-secondary mb-1">Powód wypowiedzenia (opcjonalnie)</label>
+                                        <input type="text" class="form-control form-control-sm" @bind="Model.PowodWypowiedzenia" />
+                                    </div>
+                                </div>
+                                <small class="text-muted d-block mt-2">Po zapisaniu umowa otrzyma status „Wypowiedziana”. Wyczyszczenie daty anuluje wypowiedzenie.</small>
+                            </div>
+
                             <div class="col-12 mt-3">
                                 <MudCheckBox @bind-Value="Model.CzyAktywna" Color="Color.Success" Dense="true">
                                     <b>Umowa oznaczona jako aktywna</b>

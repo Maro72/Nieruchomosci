@@ -11,6 +11,12 @@ public class UmowaNajmu
     public DateTime DataOd { get; set; }
     public DateTime? DataDo { get; set; }
     public bool CzyAktywna { get; set; } = true;
+    public string Status { get; set; } = "Aktywna";
+    public DateTime? DataWypowiedzenia { get; set; }
+    public int? OkresWypowiedzeniaDni { get; set; }
+    public DateTime? DataPlanowanegoZakonczenia { get; set; }
+    public DateTime? DataFaktycznegoZakonczenia { get; set; }
+    public string? PowodWypowiedzenia { get; set; }
 
     // Relacje
     public List<AneksUmowy> Aneksy { get; set; } = new();
@@ -22,7 +28,18 @@ public class UmowaNajmu
     // =========================================================================
 
     [NotMapped]
-    public int DniDoKonca => DataDo.HasValue ? (DataDo.Value.Date - DateTime.Today).Days : int.MaxValue;
+    public int DniDoKonca => DataZakonczeniaDoOdliczania.HasValue
+        ? (DataZakonczeniaDoOdliczania.Value.Date - DateTime.Today).Days
+        : int.MaxValue;
+
+    [NotMapped]
+    public DateTime? DataZakonczeniaDoOdliczania => DataPlanowanegoZakonczenia ?? DataDo;
+
+    [NotMapped]
+    public DateTime? WyliczonaDataZakonczeniaWypowiedzenia =>
+        DataWypowiedzenia.HasValue && OkresWypowiedzeniaDni.HasValue
+            ? DataWypowiedzenia.Value.Date.AddDays(OkresWypowiedzeniaDni.Value)
+            : DataPlanowanegoZakonczenia;
 
     [NotMapped]
     public bool CzyWygasaWkrotce => CzyAktywna && DniDoKonca >= 0 && DniDoKonca <= 30;

@@ -91,10 +91,10 @@
 
                     <MudBlazor.PropertyColumn T="UmowaNajmu" TProperty="DateTime?" Property="x => x.DataDo"  Title="Do">
                         <CellTemplate Context="ctx">
-                            @if (ctx.Item.DataDo.HasValue)
+                            @if (ctx.Item.DataZakonczeniaDoOdliczania.HasValue)
                             {
                                 <div class="d-flex align-items-center justify-content-between w-100">
-                                    <span>@ctx.Item.DataDo.Value.ToString("yyyy-MM-dd")</span>
+                                    <span>@ctx.Item.DataZakonczeniaDoOdliczania.Value.ToString("yyyy-MM-dd")</span>
 
                                     @if (ctx.Item.CzyPrzeterminowana)
                                     {
@@ -156,9 +156,13 @@
 
                     <MudBlazor.TemplateColumn T="UmowaNajmu" Title="Status">
                         <CellTemplate Context="ctx">
-                            <MudChip T="string" Color="@((ctx.Item?.CzyAktywna ?? false) ? Color.Success : Color.Error)" Size="Size.Small">
-                                @((ctx.Item?.CzyAktywna ?? false) ? "Aktywna" : "Nieaktywna")
+                            <MudChip T="string" Color="@(ctx.Item?.Status == "Wypowiedziana" ? Color.Warning : ((ctx.Item?.CzyAktywna ?? false) ? Color.Success : Color.Error))" Size="Size.Small">
+                                @(ctx.Item?.Status ?? ((ctx.Item?.CzyAktywna ?? false) ? "Aktywna" : "Archiwalna"))
                             </MudChip>
+                            @if (ctx.Item?.Status == "Wypowiedziana")
+                            {
+                                <small class="text-muted d-block">@((ctx.Item.DniDoKonca >= 0) ? $"pozostało {ctx.Item.DniDoKonca} dni" : $"po terminie {Math.Abs(ctx.Item.DniDoKonca)} dni")</small>
+                            }
                         </CellTemplate>
                     </MudBlazor.TemplateColumn>
 

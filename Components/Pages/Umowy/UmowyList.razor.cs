@@ -140,6 +140,12 @@ namespace Mieszkaniec.Components.Pages.Umowy
                 DataOd = umowa.DataOd,
                 DataDo = umowa.DataDo,
                 CzyAktywna = umowa.CzyAktywna,
+                Status = umowa.Status,
+                DataWypowiedzenia = umowa.DataWypowiedzenia,
+                OkresWypowiedzeniaDni = umowa.OkresWypowiedzeniaDni,
+                DataPlanowanegoZakonczenia = umowa.DataPlanowanegoZakonczenia,
+                DataFaktycznegoZakonczenia = umowa.DataFaktycznegoZakonczenia,
+                PowodWypowiedzenia = umowa.PowodWypowiedzenia,
                 Zalaczniki = umowa.Zalaczniki ?? new(),
                 Aneksy = umowa.Aneksy ?? new()
             };

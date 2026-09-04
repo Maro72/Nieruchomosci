@@ -72,6 +72,25 @@ namespace Mieszkaniec.Services
         {
             try
             {
+                if (umowa.DataWypowiedzenia.HasValue)
+                {
+                    if (!umowa.OkresWypowiedzeniaDni.HasValue || umowa.OkresWypowiedzeniaDni.Value < 0)
+                    {
+                        return false;
+                    }
+
+                    umowa.Status = "Wypowiedziana";
+                    umowa.DataPlanowanegoZakonczenia = umowa.DataWypowiedzenia.Value.Date
+                        .AddDays(umowa.OkresWypowiedzeniaDni.Value);
+                    umowa.CzyAktywna = true;
+                }
+                else if (umowa.Status == "Wypowiedziana")
+                {
+                    umowa.Status = "Aktywna";
+                    umowa.DataPlanowanegoZakonczenia = null;
+                    umowa.OkresWypowiedzeniaDni = null;
+                }
+
                 _context.ChangeTracker.Clear();
 
                 if (umowa.Id == 0)

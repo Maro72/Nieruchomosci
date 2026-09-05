@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Mieszkaniec.Model.Entities;
 
 namespace Mieszkaniec.Model.Context
@@ -103,7 +103,51 @@ namespace Mieszkaniec.Model.Context
                 .HasMany(u => u.Uprawnienia)
                 .WithMany(upr => upr.Uzytkownicy)
                 .UsingEntity(j => j.ToTable("UzytkownikUprawnienie")); // Tabela łącząca Użytkownika ze Stronami
-        }
 
+            // --- ZIARNO DANYCH (SEED DATA) DLA KATEGORII USTEREK ---
+            modelBuilder.Entity<RodzajUsterki>().HasData(
+                new RodzajUsterki { Id = 1, Nazwa = "Instalacje Elektryczne", KlasaIkony = "bi-lightning-charge", CzyWymagaUprawnien = true },
+                new RodzajUsterki { Id = 2, Nazwa = "Instalacje Wodno-Kanalizacyjne", KlasaIkony = "bi-droplet-fill", CzyWymagaUprawnien = true },
+                new RodzajUsterki { Id = 3, Nazwa = "Instalacje Gazowe i C.O.", KlasaIkony = "bi-fire", CzyWymagaUprawnien = true },
+                new RodzajUsterki { Id = 4, Nazwa = "Wentylacja i Klimatyzacja", KlasaIkony = "bi-wind", CzyWymagaUprawnien = true },
+                new RodzajUsterki { Id = 5, Nazwa = "Dźwigi i Windy", KlasaIkony = "bi-box-arrow-up-down", CzyWymagaUprawnien = true },
+                new RodzajUsterki { Id = 6, Nazwa = "Stolarka Okienna i Drzwiowa", KlasaIkony = "bi-door-open", CzyWymagaUprawnien = false },
+                new RodzajUsterki { Id = 7, Nazwa = "Dach, Rynny i Elewacja", KlasaIkony = "bi-house-exclamation", CzyWymagaUprawnien = false },
+                new RodzajUsterki { Id = 8, Nazwa = "Systemy Bezpieczeństwa i CCTV", KlasaIkony = "bi-shield-lock", CzyWymagaUprawnien = false },
+                new RodzajUsterki { Id = 9, Nazwa = "Prace Ogólnobudowlane", KlasaIkony = "bi-tools", CzyWymagaUprawnien = false },
+                new RodzajUsterki { Id = 10, Nazwa = "Teren Zewnętrzny i Zieleń", KlasaIkony = "bi-tree", CzyWymagaUprawnien = false }
+            );
+
+            modelBuilder.Entity<PriorytetUsterki>().HasData(
+                new PriorytetUsterki { Id = 1, Nazwa = "Niski", Poziom = 1, KodKoloru = "info", MaksCzasReakcjiGodziny = 72 },
+                new PriorytetUsterki { Id = 2, Nazwa = "Normalny", Poziom = 2, KodKoloru = "primary", MaksCzasReakcjiGodziny = 48 },
+                new PriorytetUsterki { Id = 3, Nazwa = "Wysoki", Poziom = 3, KodKoloru = "warning", MaksCzasReakcjiGodziny = 24 },
+                new PriorytetUsterki { Id = 4, Nazwa = "Krytyczny / Awaria", Poziom = 4, KodKoloru = "danger", MaksCzasReakcjiGodziny = 4 }
+            );
+
+            // --- ZIARNO DANYCH DLA RÓL ---
+            modelBuilder.Entity<Rola>().HasData(
+                new Rola { Id = 1, Nazwa = "Administrator" },
+                new Rola { Id = 2, Nazwa = "Zarządca Nieruchomości" },
+                new Rola { Id = 3, Nazwa = "Konserwator / Technik" },
+                new Rola { Id = 4, Nazwa = "Agent Najmu" }
+            );
+
+            // --- ZIARNO DANYCH DLA UPRAWNIEŃ ---
+            modelBuilder.Entity<Uprawnienie>().HasData(
+                new Uprawnienie { Id = 1, NazwaSystemowa = "Budynki.Odczyt", Opis = "Podgląd budynków i obiektów" },
+                new Uprawnienie { Id = 2, NazwaSystemowa = "Budynki.Edycja", Opis = "Zarządzanie i edycja budynków" },
+                new Uprawnienie { Id = 3, NazwaSystemowa = "Lokale.Zarzadzanie", Opis = "Zarządzanie lokalami i rzutami" },
+                new Uprawnienie { Id = 4, NazwaSystemowa = "Awarie.Odczyt", Opis = "Podgląd zgłoszeń awarii i usterek" },
+                new Uprawnienie { Id = 5, NazwaSystemowa = "Awarie.Obsluga", Opis = "Konserwacja i obsługa usterek" },
+                new Uprawnienie { Id = 6, NazwaSystemowa = "Przeglady.Zarzadzanie", Opis = "Zarządzanie przeglądami technicznymi" },
+                new Uprawnienie { Id = 7, NazwaSystemowa = "Remonty.Zarzadzanie", Opis = "Zarządzanie pracami remontowymi" },
+                new Uprawnienie { Id = 8, NazwaSystemowa = "Najemcy.Zarzadzanie", Opis = "Zarządzanie bazą najemców" },
+                new Uprawnienie { Id = 9, NazwaSystemowa = "Umowy.Odczyt", Opis = "Podgląd umów najmu" },
+                new Uprawnienie { Id = 10, NazwaSystemowa = "Umowy.Zarzadzanie", Opis = "Rejestracja i edycja umów oraz aneksów" },
+                new Uprawnienie { Id = 11, NazwaSystemowa = "Uzytkownicy.Zarzadzanie", Opis = "Zarządzanie kontami użytkowników" },
+                new Uprawnienie { Id = 12, NazwaSystemowa = "Uprawnienia.Nadawanie", Opis = "Nadawanie ról i uprawnień" }
+            );
+        }
     }
 }

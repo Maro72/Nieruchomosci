@@ -1,11 +1,423 @@
-﻿@page "/"
+@page "/"
 @using Microsoft.AspNetCore.Authorization
+@using MudBlazor
+@using Mieszkaniec.Model.Entities
+@using Mieszkaniec.Services
+@using Mieszkaniec.Services.Interfaces
 @attribute [Authorize]
+@inject IObiektService ObiektService
+@inject IUsterkiBudService UsterkiService
+@inject IUmowaService UmowaService
+@inject IPrzegladService PrzegladService
+@inject ILokalWynajemService LokalService
+@inject NavigationManager NavigationManager
 
+<PageTitle>Pulpit - Mieszkaniec</PageTitle>
 
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <MudText Typo="Typo.h4" Class="fw-bold" Style="color: #1e1e80;">Pulpit Zarządczy</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary">Przegląd najważniejszych wskaźników, umów i spraw technicznych</MudText>
+    </div>
+    <div>
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Refresh" OnClick="LoadDataAsync">Odśwież dane</MudButton>
+    </div>
+</div>
 
-<PageTitle>Home</PageTitle>
+@if (_isLoading)
+{
+    <div class="d-flex justify-content-center align-items-center pa-10">
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+    </div>
+}
+else
+{
+    <!-- ========================================== -->
+    <!-- KAFELKI KPI                                -->
+    <!-- ========================================== -->
+    <MudGrid Class="mb-5">
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Class="pa-4 rounded-lg d-flex align-items-center justify-content-between cursor-pointer" Elevation="2" Style="border-left: 5px solid #1976d2;" @onclick='() => NavigateTo("fbudynki")'>
+                <div>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="fw-bold text-uppercase">Nieruchomości</MudText>
+                    <MudText Typo="Typo.h4" Class="fw-bold my-1">@LiczbaBudynkow</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Success">Aktywne obiekty</MudText>
+                </div>
+                <MudAvatar Color="Color.Primary" Variant="Variant.Filled" Size="Size.Large">
+                    <MudIcon Icon="@Icons.Material.Filled.Apartment" />
+                </MudAvatar>
+            </MudPaper>
+        </MudItem>
 
-<h1>Hello, world!</h1>
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Class="pa-4 rounded-lg d-flex align-items-center justify-content-between cursor-pointer" Elevation="2" Style="border-left: 5px solid #2e7d32;" @onclick='() => NavigateTo("wynajem")'>
+                <div>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="fw-bold text-uppercase">Wskaźnik Najmu</MudText>
+                    <MudText Typo="Typo.h4" Class="fw-bold my-1">@ProcentWynajetych%</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@WynajeteLokale / @WszystkieLokale lokali wynajęte</MudText>
+                </div>
+                <MudAvatar Color="Color.Success" Variant="Variant.Filled" Size="Size.Large">
+                    <MudIcon Icon="@Icons.Material.Filled.MeetingRoom" />
+                </MudAvatar>
+            </MudPaper>
+        </MudItem>
 
-Welcome to your new app.
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Class="pa-4 rounded-lg d-flex align-items-center justify-content-between cursor-pointer" Elevation="2" Style="border-left: 5px solid #ed6c02;" @onclick='() => NavigateTo("umowy")'>
+                <div>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="fw-bold text-uppercase">Aktywne Umowy</MudText>
+                    <MudText Typo="Typo.h4" Class="fw-bold my-1">@AktywneUmowy.Count</MudText>
+                    @if (UmowyWygasajace.Any())
+                    {
+                        <MudChip T="string" Color="Color.Warning" Size="Size.Small" Class="ma-0">@UmowyWygasajace.Count wygasa niedługo</MudChip>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.caption" Color="Color.Success">Wszystkie stabilne</MudText>
+                    }
+                </div>
+                <MudAvatar Color="Color.Warning" Variant="Variant.Filled" Size="Size.Large">
+                    <MudIcon Icon="@Icons.Material.Filled.Description" />
+                </MudAvatar>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Class="pa-4 rounded-lg d-flex align-items-center justify-content-between cursor-pointer" Elevation="2" Style="border-left: 5px solid #d32f2f;" @onclick='() => NavigateTo("fawarie")'>
+                <div>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="fw-bold text-uppercase">Otwarte Zgłoszenia</MudText>
+                    <MudText Typo="Typo.h4" Class="fw-bold my-1">@OtwarteUsterki.Count</MudText>
+                    @if (UsterkiPilne.Any())
+                    {
+                        <MudChip T="string" Color="Color.Error" Size="Size.Small" Class="ma-0">@UsterkiPilne.Count PILNYCH</MudChip>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.caption" Color="Color.Success">Brak zgłoszeń pilnych</MudText>
+                    }
+                </div>
+                <MudAvatar Color="Color.Error" Variant="Variant.Filled" Size="Size.Large">
+                    <MudIcon Icon="@Icons.Material.Filled.WarningAmber" />
+                </MudAvatar>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    <!-- ========================================== -->
+    <!-- GŁÓWNY OBSZAR (LEWA / PRAWA KOLUMNA)       -->
+    <!-- ========================================== -->
+    <MudGrid>
+        <!-- LEWA KOLUMNA: TABELE I WYKRESY -->
+        <MudItem xs="12" lg="8">
+            <!-- TABELA NAJNOWSZYCH USTEREK -->
+            <MudPaper Class="pa-4 mb-4 rounded-lg" Elevation="2">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <MudIcon Icon="@Icons.Material.Filled.Build" Color="Color.Primary" />
+                        <MudText Typo="Typo.h6" Class="fw-bold">Najnowsze Otwarte Usterki i Awarie</MudText>
+                    </div>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowForward" OnClick='() => NavigateTo("fawarie")'>
+                        Zobacz wszystkie
+                    </MudButton>
+                </div>
+
+                @if (!OtwarteUsterki.Any())
+                {
+                    <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Class="my-2">
+                        Brak otwartych usterek. Wszystkie obiekty funkcjonują prawidłowo!
+                    </MudAlert>
+                }
+                else
+                {
+                    <MudTable Items="@OtwarteUsterki.Take(5)" Hover="true" Elevation="0" Dense="true" Class="rounded">
+                        <HeaderContent>
+                            <MudTh>Data</MudTh>
+                            <MudTh>Obiekt</MudTh>
+                            <MudTh>Opis</MudTh>
+                            <MudTh>Priorytet</MudTh>
+                            <MudTh>Status</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Data">@context.DataZgloszenia.ToString("dd.MM.yyyy")</MudTd>
+                            <MudTd DataLabel="Obiekt">@(context.Obiekt?.Nazwa ?? $"Obiekt #{context.ObiektId}")</MudTd>
+                            <MudTd DataLabel="Opis">
+                                <MudText Typo="Typo.body2" Class="text-truncate" Style="max-width: 250px;">
+                                    @context.OpisZgłoszenia
+                                </MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Priorytet">
+                                @if (context.PriorytetUsterki?.Nazwa?.Contains("Wysoki", StringComparison.OrdinalIgnoreCase) == true || context.PriorytetUsterki?.Nazwa?.Contains("Krytyczny", StringComparison.OrdinalIgnoreCase) == true)
+                                {
+                                    <MudChip T="string" Color="Color.Error" Size="Size.Small">@context.PriorytetUsterki?.Nazwa</MudChip>
+                                }
+                                else
+                                {
+                                    <MudChip T="string" Color="Color.Info" Size="Size.Small">@(context.PriorytetUsterki?.Nazwa ?? "Normalny")</MudChip>
+                                }
+                            </MudTd>
+                            <MudTd DataLabel="Status">
+                                <MudChip T="string" Color="Color.Warning" Variant="Variant.Outlined" Size="Size.Small">@context.Status</MudChip>
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                }
+            </MudPaper>
+
+            <!-- STATYSTYKI I WYKRESY -->
+            <MudGrid>
+                <MudItem xs="12" sm="6">
+                    <MudPaper Class="pa-4 rounded-lg h-100" Elevation="2">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <MudText Typo="Typo.h6" Class="fw-bold">Struktura Lokali</MudText>
+                            <MudChip T="string" Color="Color.Success" Size="Size.Small" Class="ma-0">@ProcentWynajetych% wynajęte</MudChip>
+                        </div>
+
+                        @if (WszystkieLokale == 0)
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Brak zarejestrowanych lokali w bazie.</MudText>
+                        }
+                        else
+                        {
+                            <div class="d-flex align-items-center gap-3 py-1">
+                                <div style="width: 100px; height: 100px;" class="d-flex align-items-center justify-content-center flex-shrink-0">
+                                    <MudChart T="double" ChartType="ChartType.Donut" Width="95px" Height="95px" InputData="@ChartDonutData" InputLabels="@ChartDonutLabels" ChartOptions="@(new ChartOptions { ChartPalette = new string[] { "#2e7d32", "#ed6c02", "#0288d1" } })" />
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex align-items-center justify-content-between mb-1 pa-1 rounded bg-light">
+                                        <span class="small text-muted"><i class="bi bi-circle-fill text-success me-1" style="font-size: 0.6rem;"></i>Wynajęte</span>
+                                        <span class="fw-bold small text-success">@WynajeteLokale</span>
+                                    </div>
+                                    <div class="d-flex align-items-center justify-content-between mb-1 pa-1 rounded bg-light">
+                                        <span class="small text-muted"><i class="bi bi-circle-fill text-warning me-1" style="font-size: 0.6rem;"></i>Wolne</span>
+                                        <span class="fw-bold small text-warning">@WolneLokale</span>
+                                    </div>
+                                    <div class="d-flex align-items-center justify-content-between pa-1 rounded bg-light">
+                                        <span class="small text-muted"><i class="bi bi-circle-fill text-info me-1" style="font-size: 0.6rem;"></i>Zarezerwowane</span>
+                                        <span class="fw-bold small text-info">@ZarezerwowaneLokale</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-2 text-end">
+                                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick='() => NavigateTo("wynajem")'>
+                                    Zobacz lokale
+                                </MudButton>
+                            </div>
+                        }
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudPaper Class="pa-4 rounded-lg h-100" Elevation="2">
+                        <MudText Typo="Typo.h6" Class="fw-bold mb-3">Przeglądy i Obsługa Techniczna</MudText>
+                        <div class="d-flex align-items-center justify-content-between mb-2 pa-2 rounded bg-light">
+                            <div class="d-flex align-items-center gap-2">
+                                <MudIcon Icon="@Icons.Material.Filled.EventAvailable" Color="Color.Success" />
+                                <MudText Typo="Typo.body2">Aktualne przeglądy</MudText>
+                            </div>
+                            <MudText Typo="Typo.body1" Class="fw-bold">@ZaplanowanePrzeglady.Count</MudText>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between mb-2 pa-2 rounded bg-light">
+                            <div class="d-flex align-items-center gap-2">
+                                <MudIcon Icon="@Icons.Material.Filled.HourglassTop" Color="Color.Warning" />
+                                <MudText Typo="Typo.body2">Wygasające w 30 dni</MudText>
+                            </div>
+                            <MudText Typo="Typo.body1" Class="fw-bold text-warning">@PrzegladyWygasajace.Count</MudText>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between pa-2 rounded bg-light">
+                            <div class="d-flex align-items-center gap-2">
+                                <MudIcon Icon="@Icons.Material.Filled.ErrorOutline" Color="Color.Error" />
+                                <MudText Typo="Typo.body2">Po terminie</MudText>
+                            </div>
+                            <MudText Typo="Typo.body1" Class="fw-bold text-danger">@PrzegladyPoTerminie.Count</MudText>
+                        </div>
+
+                        <div class="mt-4 text-end">
+                            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick='() => NavigateTo("fprzeglady")'>
+                                Przejdź do przeglądów
+                            </MudButton>
+                        </div>
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+        </MudItem>
+
+        <!-- PRAWA KOLUMNA: SZYBKIE AKCJE I ALERTY -->
+        <MudItem xs="12" lg="4">
+            <!-- SZYBKIE AKCJE -->
+            <MudPaper Class="pa-4 mb-4 rounded-lg" Elevation="2">
+                <MudText Typo="Typo.h6" Class="fw-bold mb-3">Szybkie Akcje</MudText>
+                <div class="d-grid gap-2">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" StartIcon="@Icons.Material.Filled.AddAlert" Class="py-2" OnClick='() => NavigateTo("fawarie")'>
+                        Zgłoś Nową Usterkę
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" FullWidth="true" StartIcon="@Icons.Material.Filled.PostAdd" Class="py-2" OnClick='() => NavigateTo("umowy")'>
+                        Nowa Umowa Najmu
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Secondary" FullWidth="true" StartIcon="@Icons.Material.Filled.Event" Class="py-2" OnClick='() => NavigateTo("fprzeglady")'>
+                        Zaplanuj Przegląd
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Tertiary" FullWidth="true" StartIcon="@Icons.Material.Filled.Apartment" Class="py-2" OnClick='() => NavigateTo("fbudynki")'>
+                        Zarządzaj Budynkami
+                    </MudButton>
+                </div>
+            </MudPaper>
+
+            <!-- CENTRUM ALERTÓW -->
+            <MudPaper Class="pa-4 rounded-lg" Elevation="2">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <MudIcon Icon="@Icons.Material.Filled.NotificationsActive" Color="Color.Warning" />
+                    <MudText Typo="Typo.h6" Class="fw-bold">Centrum Ostrzeżeń</MudText>
+                </div>
+
+                @if (!UmowyWygasajace.Any() && !PrzegladyWygasajace.Any() && !PrzegladyPoTerminie.Any())
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                        Brak naglących ostrzeżeń w najbliższym czasie.
+                    </MudAlert>
+                }
+                else
+                {
+                    <MudList T="string" Dense="true">
+                        @foreach (var u in UmowyWygasajace.Take(3))
+                        {
+                            <MudListItem Icon="@Icons.Material.Filled.Description" IconColor="Color.Warning" OnClick='() => NavigateTo("umowy")'>
+                                <div>
+                                    <MudText Typo="Typo.body2" Class="fw-bold">Umowa @u.NumerUmowy wygasa niedługo</MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                        Termin: @(u.DataZakonczeniaDoOdliczania?.ToString("dd.MM.yyyy") ?? "brak") (@u.DniDoKonca dni)
+                                    </MudText>
+                                </div>
+                            </MudListItem>
+                        }
+
+                        @foreach (var p in PrzegladyPoTerminie.Take(3))
+                        {
+                            <MudListItem Icon="@Icons.Material.Filled.Warning" IconColor="Color.Error" OnClick='() => NavigateTo("fprzeglady")'>
+                                <div>
+                                    <MudText Typo="Typo.body2" Class="fw-bold">Przegląd po terminie!</MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Error">
+                                        Termin minął: @p.DataNastepnego.ToString("dd.MM.yyyy") (@(p.Obiekt?.Nazwa ?? "Budynek"))
+                                    </MudText>
+                                </div>
+                            </MudListItem>
+                        }
+
+                        @foreach (var p in PrzegladyWygasajace.Take(3))
+                        {
+                            <MudListItem Icon="@Icons.Material.Filled.EventRepeat" IconColor="Color.Info" OnClick='() => NavigateTo("fprzeglady")'>
+                                <div>
+                                    <MudText Typo="Typo.body2" Class="fw-bold">Nadchodzi przegląd</MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                        Planowany na: @p.DataNastepnego.ToString("dd.MM.yyyy")
+                                    </MudText>
+                                </div>
+                            </MudListItem>
+                        }
+                    </MudList>
+                }
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private bool _isLoading = true;
+
+    private int LiczbaBudynkow { get; set; }
+    private int WszystkieLokale { get; set; }
+    private int WynajeteLokale { get; set; }
+    private int WolneLokale { get; set; }
+    private int ZarezerwowaneLokale { get; set; }
+    private int ProcentWynajetych => WszystkieLokale > 0 ? (int)Math.Round((double)WynajeteLokale / WszystkieLokale * 100) : 0;
+
+    private List<UmowaNajmu> AktywneUmowy { get; set; } = new();
+    private List<UmowaNajmu> UmowyWygasajace { get; set; } = new();
+
+    private List<UsterkiBud> OtwarteUsterki { get; set; } = new();
+    private List<UsterkiBud> UsterkiPilne { get; set; } = new();
+
+    private List<Przeglad> ZaplanowanePrzeglady { get; set; } = new();
+    private List<Przeglad> PrzegladyWygasajace { get; set; } = new();
+    private List<Przeglad> PrzegladyPoTerminie { get; set; } = new();
+
+    private double[] ChartDonutData => new double[] { WynajeteLokale, WolneLokale, ZarezerwowaneLokale };
+    private string[] ChartDonutLabels => new string[] { "Wynajęte", "Wolne", "Zarezerwowane" };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        _isLoading = true;
+        try
+        {
+            // 1. Budynki / Obiekty
+            var budynki = await ObiektService.GetAllActiveAsync();
+            LiczbaBudynkow = budynki?.Count ?? 0;
+
+            // 2. Lokale i obłożenie
+            var lokale = await LokalService.PobierzWszystkieAsync();
+            if (lokale != null && lokale.Any())
+            {
+                WszystkieLokale = lokale.Count;
+                WynajeteLokale = lokale.Count(l => string.Equals(l.Status, "Wynajęty", StringComparison.OrdinalIgnoreCase));
+                WolneLokale = lokale.Count(l => string.Equals(l.Status, "Wolny", StringComparison.OrdinalIgnoreCase));
+                ZarezerwowaneLokale = lokale.Count(l => string.Equals(l.Status, "Zarezerwowany", StringComparison.OrdinalIgnoreCase));
+            }
+            else
+            {
+                WszystkieLokale = 0;
+                WynajeteLokale = 0;
+                WolneLokale = 0;
+                ZarezerwowaneLokale = 0;
+            }
+
+            // 3. Umowy Najmu
+            var umowy = await UmowaService.PobierzWszystkieUmowyAsync(statusAktywnosci: true);
+            if (umowy != null)
+            {
+                AktywneUmowy = umowy.Where(u => u.CzyAktywna).ToList();
+                UmowyWygasajace = AktywneUmowy.Where(u => u.CzyWygasaWkrotce).ToList();
+            }
+
+            // 4. Usterki i Awarie
+            var usterki = await UsterkiService.GetUsterkiAsync(status: null, czyArchiwum: false);
+            if (usterki != null)
+            {
+                OtwarteUsterki = usterki
+                    .Where(u => !string.Equals(u.Status, "Zakończone", StringComparison.OrdinalIgnoreCase) && !string.Equals(u.Status, "Zakonczone", StringComparison.OrdinalIgnoreCase))
+                    .OrderByDescending(u => u.DataZgloszenia)
+                    .ToList();
+
+                UsterkiPilne = OtwarteUsterki
+                    .Where(u => u.PriorytetUsterki?.Nazwa?.Contains("Wysoki", StringComparison.OrdinalIgnoreCase) == true || u.PriorytetUsterki?.Nazwa?.Contains("Krytyczny", StringComparison.OrdinalIgnoreCase) == true)
+                    .ToList();
+            }
+
+            // 5. Przeglądy Techniczne
+            var przeglady = await PrzegladService.GetAllWithDetailsAsync();
+            if (przeglady != null)
+            {
+                ZaplanowanePrzeglady = przeglady.Where(p => string.Equals(p.Status, "Planowany", StringComparison.OrdinalIgnoreCase)).ToList();
+                PrzegladyPoTerminie = przeglady.Where(p => p.DataNastepnego < DateTime.Today && !string.Equals(p.Status, "Wykonany", StringComparison.OrdinalIgnoreCase)).ToList();
+                PrzegladyWygasajace = przeglady.Where(p => p.DataNastepnego >= DateTime.Today && p.DataNastepnego <= DateTime.Today.AddDays(30) && !string.Equals(p.Status, "Wykonany", StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Błąd podczas ładowania danych Pulpitu: {ex.Message}");
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void NavigateTo(string uri)
+    {
+        NavigationManager.NavigateTo(uri);
+    }
+}

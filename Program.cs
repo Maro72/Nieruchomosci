@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Mieszkaniec;
@@ -32,23 +32,32 @@ builder.Services.AddCascadingAuthenticationState();
 // Rola Administrator automatycznie omija wszystkie polityki
 builder.Services.AddAuthorizationCore(options =>
 {
-    options.AddPolicy("ZarzadzanieUzytkownikami", policy =>
-        policy.RequireAssertion(ctx =>
-            ctx.User.IsInRole("Administrator") ||
-            ctx.User.HasClaim("Permission", "ZarzadzanieUzytkownikami")));
-    options.AddPolicy("ZarzadzanieBudynkami", policy =>
-        policy.RequireAssertion(ctx =>
-            ctx.User.IsInRole("Administrator") ||
-            ctx.User.HasClaim("Permission", "ZarzadzanieBudynkami")));
-    options.AddPolicy("ZarzadzanieUmowami", policy =>
-        policy.RequireAssertion(ctx =>
-            ctx.User.IsInRole("Administrator") ||
-            ctx.User.HasClaim("Permission", "ZarzadzanieUmowami")));
-    options.AddPolicy("OdczytBudynkow", policy =>
-        policy.RequireAssertion(ctx =>
-            ctx.User.IsInRole("Administrator") ||
-            ctx.User.HasClaim("Permission", "OdczytBudynkow") ||
-            ctx.User.HasClaim("Permission", "ZarzadzanieBudynkami")));
+    // Funkcja pomocnicza sprawdzająca uprawnienie lub rolę Administratora
+    bool HasPerm(System.Security.Claims.ClaimsPrincipal user, params string[] permNames)
+    {
+        if (user.IsInRole("Administrator")) return true;
+        return permNames.Any(p => user.HasClaim("Permission", p));
+    }
+
+    // Nowe polityki granularne:
+    options.AddPolicy("Budynki.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Budynki.Odczyt", "Budynki.Edycja", "OdczytBudynkow", "ZarzadzanieBudynkami")));
+    options.AddPolicy("Budynki.Edycja", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Budynki.Edycja", "ZarzadzanieBudynkami")));
+    options.AddPolicy("Lokale.Zarzadzanie", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Lokale.Zarzadzanie", "ZarzadzanieUmowami")));
+    options.AddPolicy("Awarie.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Awarie.Odczyt", "Awarie.Obsluga", "OdczytBudynkow", "ZarzadzanieBudynkami")));
+    options.AddPolicy("Awarie.Obsluga", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Awarie.Obsluga", "OdczytBudynkow", "ZarzadzanieBudynkami")));
+    options.AddPolicy("Przeglady.Zarzadzanie", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Przeglady.Zarzadzanie", "OdczytBudynkow", "ZarzadzanieBudynkami")));
+    options.AddPolicy("Remonty.Zarzadzanie", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Remonty.Zarzadzanie", "OdczytBudynkow", "ZarzadzanieBudynkami")));
+    options.AddPolicy("Najemcy.Zarzadzanie", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Najemcy.Zarzadzanie", "ZarzadzanieUmowami")));
+    options.AddPolicy("Umowy.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Umowy.Odczyt", "Umowy.Zarzadzanie", "ZarzadzanieUmowami")));
+    options.AddPolicy("Umowy.Zarzadzanie", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Umowy.Zarzadzanie", "ZarzadzanieUmowami")));
+    options.AddPolicy("Uzytkownicy.Zarzadzanie", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Uzytkownicy.Zarzadzanie", "ZarzadzanieUzytkownikami")));
+    options.AddPolicy("Uprawnienia.Nadawanie", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Uprawnienia.Nadawanie", "ZarzadzanieUzytkownikami")));
+
+    // Kompatybilność ze starszymi nazwami polityk:
+    options.AddPolicy("ZarzadzanieUzytkownikami", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Uzytkownicy.Zarzadzanie", "Uprawnienia.Nadawanie", "ZarzadzanieUzytkownikami")));
+    options.AddPolicy("ZarzadzanieBudynkami", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Budynki.Edycja", "ZarzadzanieBudynkami")));
+    options.AddPolicy("ZarzadzanieUmowami", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Umowy.Zarzadzanie", "ZarzadzanieUmowami")));
+    options.AddPolicy("OdczytBudynkow", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Budynki.Odczyt", "Awarie.Odczyt", "OdczytBudynkow", "ZarzadzanieBudynkami")));
 });
 
 // Rejestracja z podzia�em na interfejs oraz serwis implementuj�cy

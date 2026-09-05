@@ -17,12 +17,12 @@
 
 <MudLayout>
     @* ── GÓRNA BELKA ── *@
-    <MudAppBar Elevation="1" Fixed="true" Dense="true" Style="background-color: #ffffff; color: #1e293b; border-bottom: 1px solid #e2e8f0;">
+    <MudAppBar Elevation="0" Fixed="true" Dense="true" Style="background-color: #ffffff; color: #19324b; border-bottom: 1px solid #d8e4ef;">
         <MudIconButton Icon="@Icons.Material.Filled.Menu"
                        Color="Color.Inherit" Edge="Edge.Start"
                        OnClick="@DrawerToggle" />
 
-        <MudText Typo="Typo.subtitle1" Class="ml-2 fw-bold" Style="color: #2c3e50;">
+        <MudText Typo="Typo.subtitle1" Class="ml-2 fw-bold" Style="color: #17324d;">
             BORYSZEW NIERUCHOMOŚCI<span class="text-primary">.</span>
         </MudText>
 
@@ -31,7 +31,7 @@
             <MudIcon Icon="@Icons.Material.Filled.ChevronRight"
                      Size="Size.Small" Class="mx-1" Color="Color.Default" />
             <MudText Typo="Typo.body2" Class="fw-bold text-uppercase"
-                     Style="letter-spacing: 1px; color: #64748b;">
+                     Style="letter-spacing: 1px; color: #637b91;">
                 @NazwaBiezacejStrony
             </MudText>
         }
@@ -43,12 +43,12 @@
             @* --- BLOK ZALOGOWANEGO UŻYTKOWNIKA --- *@
             <AuthorizeView>
                 <Authorized>
-                    <div class="d-flex align-items-center pe-3 me-2" style="border-right: 1px solid #e2e8f0;">
+                    <div class="d-flex align-items-center pe-3 me-2" style="border-right: 1px solid #d8e4ef;">
                         <MudAvatar Color="Color.Primary" Size="Size.Small" Class="me-2 fw-bold text-white">
                             @(context.User.Identity?.Name?.FirstOrDefault().ToString().ToUpper() ?? "U")
                         </MudAvatar>
                         <div class="d-flex flex-column justify-content-center">
-                            <MudText Typo="Typo.body2" Class="fw-bold mb-0" Style="line-height: 1.1; color: #1e293b;">
+                            <MudText Typo="Typo.body2" Class="fw-bold mb-0" Style="line-height: 1.1; color: #19324b;">
                                 @context.User.Identity?.Name
                             </MudText>
                             <MudLink Href="/wyloguj" Typo="Typo.caption" Color="Color.Error" Underline="Underline.Hover">
@@ -162,8 +162,17 @@
         },
         PaletteLight = new PaletteLight()
         {
-            Primary = "#D1D9E7",
-            AppbarBackground = "#ffffff"
+            Primary = "#1e6fa8",
+            PrimaryContrastText = "#ffffff",
+            Background = "#f4f8fc",
+            Surface = "#ffffff",
+            AppbarBackground = "#ffffff",
+            DrawerBackground = "#ffffff",
+            DrawerText = "#19324b",
+            DrawerIcon = "#1e6fa8",
+            TextPrimary = "#19324b",
+            TextSecondary = "#637b91",
+            Divider = "#d8e4ef"
         }
     };
 

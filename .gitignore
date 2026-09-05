@@ -1,9 +1,13 @@
 # .NET build output
 **/bin/
 **/obj/
+publish/
+.local/
+Library/
 
 # Visual Studio and VS Code user files
 .vs/
+.vscode/
 *.user
 *.suo
 

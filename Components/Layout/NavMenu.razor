@@ -6,44 +6,60 @@
         Strona Główna
     </MudNavLink>
 
-    <AuthorizeView Policy="OdczytBudynkow">
+    <AuthorizeView Policy="Budynki.Odczyt">
         <Authorized>
             <MudNavGroup Title="Nieruchomości" Expanded="false" Icon="@Icons.Material.Filled.Domain">
+                <MudNavLink Href="fbudynki" Icon="@Icons.Material.Filled.Apartment" Ripple="false">Budynki</MudNavLink>
+                <MudNavLink Href="historiausterek" Icon="@Icons.Material.Filled.ManageHistory" Ripple="false">Historia usterek</MudNavLink>
+            </MudNavGroup>
+        </Authorized>
+    </AuthorizeView>
+
+    <AuthorizeView Policy="Awarie.Odczyt">
+        <Authorized>
+            <MudNavGroup Title="Obsługa techniczna" Expanded="false" Icon="@Icons.Material.Filled.Build">
                 <MudNavLink Href="fprzeglady" Icon="@Icons.Material.Filled.EventNote" Ripple="false">Przeglądy</MudNavLink>
                 <MudNavLink Href="fawarie" Icon="@Icons.Material.Filled.WarningAmber" Ripple="false">Zgłoszenia usterek</MudNavLink>
-                <MudNavLink Href="historiausterek" Icon="@Icons.Material.Filled.ManageHistory" Ripple="false">Historia usterek</MudNavLink>
                 <MudNavLink Href="fremonbud" Icon="@Icons.Material.Filled.Handyman" Ripple="false">Prace remontowe</MudNavLink>
             </MudNavGroup>
         </Authorized>
     </AuthorizeView>
 
-    <AuthorizeView Policy="ZarzadzanieBudynkami">
+    <AuthorizeView Policy="Umowy.Odczyt">
         <Authorized>
-            <MudNavGroup Title="Słowniki" Expanded="false" Icon="@Icons.Material.Filled.MenuBook">
-                <MudNavLink Href="fterminy/terminy" Icon="@Icons.Material.Filled.MoreTime" Ripple="false">
-                    Definicje Terminów
-                </MudNavLink>
-                <MudNavLink Href="fbudynki" Icon="@Icons.Material.Filled.DomainAdd">Budynki</MudNavLink>
-            </MudNavGroup>
-        </Authorized>
-    </AuthorizeView>
-
-    <AuthorizeView Policy="ZarzadzanieUmowami">
-        <Authorized>
-            <MudNavGroup Title="Wynajmy" Expanded="false" Icon="@Icons.Material.Filled.CorporateFare">
-                <MudNavLink Href="wynajem" Icon="@Icons.Material.Filled.Apartment" Ripple="false">Pomieszczenia</MudNavLink>
-                <MudNavLink Href="najemcy" Icon="@Icons.Material.Filled.People" Ripple="false">Najemcy</MudNavLink>
+            <MudNavGroup Title="Najem i umowy" Expanded="false" Icon="@Icons.Material.Filled.Description">
+                <AuthorizeView Policy="Najemcy.Zarzadzanie" Context="innerCtx">
+                    <Authorized>
+                        <MudNavLink Href="najemcy" Icon="@Icons.Material.Filled.People" Ripple="false">Najemcy</MudNavLink>
+                    </Authorized>
+                </AuthorizeView>
                 <MudNavLink Href="umowy" Icon="@Icons.Material.Filled.Description" Ripple="false">Umowy</MudNavLink>
+                <AuthorizeView Policy="Lokale.Zarzadzanie" Context="innerCtx">
+                    <Authorized>
+                        <MudNavLink Href="wynajem" Icon="@Icons.Material.Filled.Receipt" Ripple="false">Lokale i pomieszczenia</MudNavLink>
+                    </Authorized>
+                </AuthorizeView>
             </MudNavGroup>
         </Authorized>
     </AuthorizeView>
 
-    <AuthorizeView Policy="ZarzadzanieUzytkownikami">
+    <AuthorizeView Policy="Budynki.Edycja">
         <Authorized>
-            <MudNavGroup Title="Administracja" Expanded="false" Icon="@Icons.Material.Filled.AddHome">
+            <MudNavGroup Title="Konfiguracja" Expanded="false" Icon="@Icons.Material.Filled.Settings">
+                <MudNavLink Href="fterminy/terminy" Icon="@Icons.Material.Filled.MoreTime" Ripple="false">Definicje terminów</MudNavLink>
+            </MudNavGroup>
+        </Authorized>
+    </AuthorizeView>
+
+    <AuthorizeView Policy="Uzytkownicy.Zarzadzanie">
+        <Authorized>
+            <MudNavGroup Title="Administracja" Expanded="false" Icon="@Icons.Material.Filled.AdminPanelSettings">
                 <MudNavLink Href="uzytkownicy" Icon="@Icons.Material.Filled.People" Ripple="false">Lista użytkowników</MudNavLink>
-                <MudNavLink Href="role" Icon="@Icons.Material.Filled.Security" Ripple="false">Role</MudNavLink>
-                <MudNavLink Href="uprawnienia" Icon="@Icons.Material.Filled.VerifiedUser" Ripple="false">Uprawnienia</MudNavLink>
+                <AuthorizeView Policy="Uprawnienia.Nadawanie" Context="innerCtx">
+                    <Authorized>
+                        <MudNavLink Href="uprawnienia" Icon="@Icons.Material.Filled.VerifiedUser" Ripple="false">Uprawnienia</MudNavLink>
+                    </Authorized>
+                </AuthorizeView>
             </MudNavGroup>
         </Authorized>
     </AuthorizeView>

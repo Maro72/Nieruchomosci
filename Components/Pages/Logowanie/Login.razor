@@ -4,6 +4,7 @@
 @using MudBlazor
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.JSInterop
+@using System.Data.Common
 @using Mieszkaniec.Model.Context
 @using Microsoft.AspNetCore.Components.Authorization
 
@@ -29,59 +30,62 @@
                 <MudText Typo="Typo.body2" Class="text-muted mt-1">Wprowadź swoje dane, aby kontynuować</MudText>
             </div>
 
-            <MudTextField @bind-Value="WpisanyLogin" 
-                          Label="Użytkownik (Login)" 
-                          Variant="Variant.Outlined" 
-                          Required="true" 
-                          RequiredError="Login jest wymagany!"
-                          Class="mb-4"
-                          Adornment="Adornment.Start"
-                          AdornmentIcon="@Icons.Material.Filled.Person"
-                          AdornmentColor="Color.Primary" />
-                          
-            <MudTextField @bind-Value="WpisaneHaslo" 
-                          Label="Hasło" 
-                          InputType="InputType.Password" 
-                          Variant="Variant.Outlined" 
-                          Required="true" 
-                          RequiredError="Hasło jest wymagane!"
-                          Class="mb-5"
-                          Adornment="Adornment.Start"
-                          AdornmentIcon="@Icons.Material.Filled.VpnKey"
-                          AdornmentColor="Color.Primary" />
+            <form @onsubmit="ZalogujSie" @onsubmit:preventDefault="true">
+                <MudTextField @bind-Value="WpisanyLogin" 
+                              Label="Użytkownik (Login)" 
+                              Variant="Variant.Outlined" 
+                              Required="true" 
+                              RequiredError="Login jest wymagany!"
+                              Class="mb-4"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Person"
+                              AdornmentColor="Color.Primary" />
+                              
+                <MudTextField @bind-Value="WpisaneHaslo" 
+                              Label="Hasło" 
+                              InputType="InputType.Password" 
+                              Variant="Variant.Outlined" 
+                              Required="true" 
+                              RequiredError="Hasło jest wymagane!"
+                              Class="mb-5"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.VpnKey"
+                              AdornmentColor="Color.Primary" />
 
-            @if (!string.IsNullOrEmpty(KomunikatBledu))
-            {
-                <MudAlert Severity="Severity.Error" Class="mb-5" Elevation="1" Variant="Variant.Filled">
-                    @KomunikatBledu
-                </MudAlert>
-            }
+                @if (!string.IsNullOrEmpty(KomunikatBledu))
+                {
+                    <MudAlert Severity="Severity.Error" Class="mb-5" Elevation="1" Variant="Variant.Filled">
+                        @KomunikatBledu
+                    </MudAlert>
+                }
 
-            <div class="d-flex gap-4">
-                <MudButton Variant="Variant.Outlined" 
-                           Color="Color.Dark" 
-                           Size="Size.Large" 
-                           FullWidth="true" 
-                           OnClick="Zrezygnuj">
-                    Anuluj
-                </MudButton>
+                <div class="d-flex gap-4">
+                    <MudButton Variant="Variant.Outlined" 
+                               Color="Color.Dark" 
+                               Size="Size.Large" 
+                               FullWidth="true" 
+                               ButtonType="ButtonType.Button"
+                               OnClick="Zrezygnuj">
+                        Anuluj
+                    </MudButton>
 
-                <MudButton Variant="Variant.Filled" 
-                           Color="Color.Primary" 
-                           Size="Size.Large" 
-                           FullWidth="true" 
-                           OnClick="ZalogujSie" 
-                           Disabled="CzyLaduje">
-                    @if (CzyLaduje)
-                    {
-                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
-                    }
-                    else
-                    {
-                        <span class="fw-bold">Zaloguj się</span>
-                    }
-                </MudButton>
-            </div>
+                    <MudButton Variant="Variant.Filled" 
+                               Color="Color.Primary" 
+                               Size="Size.Large" 
+                               FullWidth="true" 
+                               ButtonType="ButtonType.Submit"
+                               Disabled="CzyLaduje">
+                        @if (CzyLaduje)
+                        {
+                            <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                        }
+                        else
+                        {
+                            <span class="fw-bold">Zaloguj się</span>
+                        }
+                    </MudButton>
+                </div>
+            </form>
         </MudPaper>
     </MudContainer>
 </MudContainer>
@@ -97,45 +101,57 @@
         CzyLaduje = true;
         KomunikatBledu = string.Empty;
 
-        var uzytkownik = await DbContext.Uzytkownicy
-            .FirstOrDefaultAsync(u => u.Login == WpisanyLogin);
-
-        bool isValid = false;
-        if (uzytkownik != null)
+        try
         {
-            try
-            {
-                // Próbujemy zweryfikować hasło jako hash BCrypt (dla normalnych użytkowników)
-                isValid = BCrypt.Net.BCrypt.Verify(WpisaneHaslo, uzytkownik.HasloHash);
-            }
-            catch
-            {
-                // Jeśli hasło w bazie nie jest prawidłowym hashem BCrypt (np. admin ma hasło otwartym tekstem),
-                // porównujemy bezpośrednio tekstowo.
-                isValid = uzytkownik.HasloHash == WpisaneHaslo;
-            }
-        }
+            var uzytkownik = await DbContext.Uzytkownicy
+                .FirstOrDefaultAsync(u => u.Login == WpisanyLogin);
 
-        if (uzytkownik != null && isValid)
-        {
-            if (uzytkownik.CzyAktywny)
+            bool isValid = false;
+            if (uzytkownik != null)
             {
-                var authProvider = (Mieszkaniec.Services.MieszkaniecAuthStateProvider)AuthStateProvider;
-                await authProvider.ZalogujUzytkownika(uzytkownik.Login);
+                try
+                {
+                    isValid = BCrypt.Net.BCrypt.Verify(WpisaneHaslo, uzytkownik.HasloHash);
+                }
+                catch
+                {
+                    isValid = uzytkownik.HasloHash == WpisaneHaslo;
+                }
+            }
 
-                NavigationManager.NavigateTo("/");
+            if (uzytkownik != null && isValid)
+            {
+                if (uzytkownik.CzyAktywny)
+                {
+                    var authProvider = (Mieszkaniec.Services.MieszkaniecAuthStateProvider)AuthStateProvider;
+                    await authProvider.ZalogujUzytkownika(uzytkownik.Login);
+
+                    NavigationManager.NavigateTo("/");
+                }
+                else
+                {
+                    KomunikatBledu = "To konto zostało zablokowane.";
+                }
             }
             else
             {
-                KomunikatBledu = "To konto zostało zablokowane.";
+                KomunikatBledu = "Nieprawidłowy login lub hasło.";
             }
         }
-        else
+        catch (Exception ex) when (ex is DbException || ex.InnerException is DbException)
         {
-            KomunikatBledu = "Nieprawidłowy login lub hasło.";
+            KomunikatBledu = "Nie można połączyć się z bazą danych. Sprawdź, czy serwer bazy danych jest uruchomiony.";
+            Console.Error.WriteLine($"Błąd połączenia z bazą podczas logowania: {ex.Message}");
         }
-        
-        CzyLaduje = false;
+        catch (Exception ex)
+        {
+            KomunikatBledu = "Wystąpił błąd podczas logowania. Spróbuj ponownie później.";
+            Console.Error.WriteLine($"Błąd logowania: {ex.Message}");
+        }
+        finally
+        {
+            CzyLaduje = false;
+        }
     }
 
     private async Task Zrezygnuj()

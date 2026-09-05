@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 
 using Mieszkaniec.Model.Context;
 using Mieszkaniec.Model.Entities;
@@ -162,13 +162,53 @@ namespace Mieszkaniec.Services.Implementations
         public async Task<List<RodzajUsterki>> GetRodzajeAsync()
         {
             using var db = await _factory.CreateDbContextAsync();
-            return await db.RodzajeUsterek.OrderBy(r => r.Nazwa).ToListAsync();
+            var lista = await db.RodzajeUsterek.OrderBy(r => r.Nazwa).ToListAsync();
+
+            if (!lista.Any())
+            {
+                var domyslne = new List<RodzajUsterki>
+                {
+                    new RodzajUsterki { Nazwa = "Instalacje Elektryczne", KlasaIkony = "bi-lightning-charge", CzyWymagaUprawnien = true },
+                    new RodzajUsterki { Nazwa = "Instalacje Wodno-Kanalizacyjne", KlasaIkony = "bi-droplet-fill", CzyWymagaUprawnien = true },
+                    new RodzajUsterki { Nazwa = "Instalacje Gazowe i C.O.", KlasaIkony = "bi-fire", CzyWymagaUprawnien = true },
+                    new RodzajUsterki { Nazwa = "Wentylacja i Klimatyzacja", KlasaIkony = "bi-wind", CzyWymagaUprawnien = true },
+                    new RodzajUsterki { Nazwa = "Dźwigi i Windy", KlasaIkony = "bi-box-arrow-up-down", CzyWymagaUprawnien = true },
+                    new RodzajUsterki { Nazwa = "Stolarka Okienna i Drzwiowa", KlasaIkony = "bi-door-open", CzyWymagaUprawnien = false },
+                    new RodzajUsterki { Nazwa = "Dach, Rynny i Elewacja", KlasaIkony = "bi-house-exclamation", CzyWymagaUprawnien = false },
+                    new RodzajUsterki { Nazwa = "Systemy Bezpieczeństwa i CCTV", KlasaIkony = "bi-shield-lock", CzyWymagaUprawnien = false },
+                    new RodzajUsterki { Nazwa = "Prace Ogólnobudowlane", KlasaIkony = "bi-tools", CzyWymagaUprawnien = false },
+                    new RodzajUsterki { Nazwa = "Teren Zewnętrzny i Zieleń", KlasaIkony = "bi-tree", CzyWymagaUprawnien = false }
+                };
+
+                db.RodzajeUsterek.AddRange(domyslne);
+                await db.SaveChangesAsync();
+                return domyslne.OrderBy(r => r.Nazwa).ToList();
+            }
+
+            return lista;
         }
 
         public async Task<List<PriorytetUsterki>> GetPriorytetyAsync()
         {
             using var db = await _factory.CreateDbContextAsync();
-            return await db.PriorytetyUsterek.OrderBy(p => p.Poziom).ToListAsync();
+            var lista = await db.PriorytetyUsterek.OrderBy(p => p.Poziom).ToListAsync();
+
+            if (!lista.Any())
+            {
+                var domyslne = new List<PriorytetUsterki>
+                {
+                    new PriorytetUsterki { Nazwa = "Niski", Poziom = 1, KodKoloru = "info", MaksCzasReakcjiGodziny = 72 },
+                    new PriorytetUsterki { Nazwa = "Normalny", Poziom = 2, KodKoloru = "primary", MaksCzasReakcjiGodziny = 48 },
+                    new PriorytetUsterki { Nazwa = "Wysoki", Poziom = 3, KodKoloru = "warning", MaksCzasReakcjiGodziny = 24 },
+                    new PriorytetUsterki { Nazwa = "Krytyczny / Awaria", Poziom = 4, KodKoloru = "danger", MaksCzasReakcjiGodziny = 4 }
+                };
+
+                db.PriorytetyUsterek.AddRange(domyslne);
+                await db.SaveChangesAsync();
+                return domyslne.OrderBy(p => p.Poziom).ToList();
+            }
+
+            return lista;
         }
 
         /// <summary>

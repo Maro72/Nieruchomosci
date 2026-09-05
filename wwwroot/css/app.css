@@ -16,9 +16,9 @@ body {
     width: 100%;
     min-height: 100vh;
     overflow-x: hidden;
-    font-family: 'Inter', sans-serif !important;
+    font-family: 'Manrope', sans-serif !important;
     font-size: 14px !important;
-    background-color: #f1f5f9;
+    background-color: #f4f8fc;
 }
 
 h1:focus {
@@ -49,16 +49,16 @@ h1:focus {
 }
 
 ::-webkit-scrollbar-track {
-    background: #f1f5f9;
+    background: #edf3f8;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
+    background: #b6cada;
     border-radius: 4px;
 }
 
     ::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8;
+        background: #7894aa;
     }
 
 /* =========================================================
@@ -68,8 +68,26 @@ h1:focus {
     min-height: 40px !important;
     height: 40px !important;
     background-color: #ffffff !important;
-    color: #333333 !important;
-    border-bottom: 1px solid #e2e8f0;
+    color: #19324b !important;
+    border-bottom: 1px solid #d8e4ef;
+}
+
+.mud-drawer {
+    background-color: #ffffff !important;
+    border-right: 1px solid #304558 !important;
+}
+
+.mud-drawer .mud-drawer-content {
+    height: 100%;
+    overflow-y: auto !important;
+    overflow-x: hidden;
+    scrollbar-width: auto;
+    scrollbar-color: #7894aa #edf3f8;
+}
+
+.mud-drawer .mud-navmenu {
+    padding: 0.75rem 0.5rem;
+    min-height: 100%;
 }
 
     .mud-appbar .mud-icon-button {
@@ -79,116 +97,156 @@ h1:focus {
 /* =========================================================
    5. MENU BOCZNE � RESET
    ========================================================= */
-.mud-navmenu {
-    padding-top: 0;
-}
-
-    .mud-navmenu a,
-    .mud-navmenu .mud-nav-link,
-    .mud-navmenu .mud-nav-link:hover,
-    .mud-navmenu .mud-nav-link:focus,
-    .mud-navmenu .mud-nav-link:active,
-    .mud-navmenu .mud-nav-link .mud-nav-link-text {
+.mud-drawer .mud-navmenu a,
+.mud-drawer .mud-navmenu .mud-nav-link,
+.mud-drawer .mud-navmenu .mud-nav-link:hover,
+.mud-drawer .mud-navmenu .mud-nav-link:focus,
+.mud-drawer .mud-navmenu .mud-nav-link:active,
+.mud-drawer .mud-navmenu .mud-nav-link .mud-nav-link-text {
         text-decoration: none !important;
-    }
+}
 
         /* =========================================================
    5b. WY��CZENIE RIPPLE MudBlazor NA MENU BOCZNYM pod�wietlenie bez focusa wy�aczone
    ========================================================= */
-        .mud-navmenu .mud-nav-link::before,
-        .mud-navmenu .mud-nav-link::after {
-            display: none !important;
-            opacity: 0 !important;
-            content: none !important;
-        }
+.mud-drawer .mud-navmenu > .mud-nav-link::before,
+.mud-drawer .mud-navmenu > .mud-nav-link::after,
+.mud-drawer .mud-nav-group > .mud-nav-link::before,
+.mud-drawer .mud-nav-group > .mud-nav-link::after {
+    display: none !important;
+    opacity: 0 !important;
+    content: none !important;
+}
 
 /* =========================================================
    6. MENU BOCZNE � DOMY�LNY WYGL�D LINK�W
    ========================================================= */
-.mud-nav-link {
-    color: #4a4a4a !important;
+.mud-drawer .mud-nav-link {
+    color: #34526b !important;
     font-size: 0.85rem !important;
-    padding: 10px 16px;
-    padding-left: 8px !important;
+    min-height: 42px;
+    margin: 2px 0;
+    padding: 10px 12px !important;
     border: none !important;
-    border-radius: 0 !important;
+    border-radius: 5px !important;
     justify-content: flex-start !important;
-    transition: background-color 0.2s ease-in-out;
+    transition: background-color 0.18s ease-in-out, color 0.18s ease-in-out;
     background-color: transparent !important;
 }
 
-    .mud-nav-link .mud-icon-root {
-        color: #6e6e6e;
-    }
+.mud-drawer .mud-nav-link .mud-icon-root,
+.mud-drawer .mud-nav-link .mud-nav-link-expand-icon {
+    color: #1e6fa8 !important;
+}
 
 /* Wci�cie + linia drzewa dla element�w wewn�trz grup */
-.mud-nav-group .mud-collapse .mud-nav-link {
-    padding-left: 32px !important;
-    border-left: 2px solid transparent;
+.mud-drawer .mud-nav-group .mud-collapse .mud-nav-link {
+    min-height: 38px;
+    position: relative;
+    padding-left: 1.65rem !important;
+    font-size: 0.82rem !important;
+}
+
+.mud-drawer .mud-nav-group .mud-collapse {
+    position: relative;
+    margin: 0.25rem 0 0.45rem 1.6rem;
+}
+
+.mud-drawer .mud-nav-group .mud-collapse::before {
+    position: absolute;
+    top: 0;
+    bottom: 1rem;
+    left: 0;
+    width: 1px;
+    background: #b8d2e5;
+    content: "";
+}
+
+.mud-drawer .mud-nav-group .mud-collapse .mud-nav-link::after {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    display: block !important;
+    width: 0.8rem;
+    height: 1px;
+    background: #b8d2e5;
+    content: "" !important;
 }
 
 /* =========================================================
    7. MENU BOCZNE � HOVER (tylko prawdziwe linki)
    ========================================================= */
-a.mud-nav-link[href]:not(.active):hover {
-    background-color: #f1f5f9 !important;
+.mud-drawer a.mud-nav-link[href]:not(.active):hover {
+    background-color: #edf6fd !important;
 }
 
-.mud-nav-group .mud-collapse .mud-nav-link:not(.active):hover {
-    border-left: 2px solid var(--mud-palette-primary);
+.mud-drawer .mud-nav-group .mud-collapse .mud-nav-link:not(.active):hover {
+    color: #17324d !important;
 }
 
 /* =========================================================
    8. MENU BOCZNE � STAN AKTYWNY (WYBRANA STRONA)
    ========================================================= */
-a.mud-nav-link.active,
-a.mud-nav-link.active:focus,
-a.mud-nav-link.active:hover {
-    background-color: #e3f2fd !important;
-    color: #1976d2 !important;
+.mud-drawer a.mud-nav-link.active,
+.mud-drawer a.mud-nav-link.active:focus,
+.mud-drawer a.mud-nav-link.active:hover {
+    background-color: #dceefd !important;
+    color: #17324d !important;
+    font-weight: 700 !important;
 }
 
-    a.mud-nav-link.active .mud-icon-root {
-        color: #1976d2 !important;
-    }
+.mud-drawer a.mud-nav-link.active .mud-icon-root {
+    color: #1e6fa8 !important;
+}
 
-.mud-nav-group .mud-collapse .mud-nav-link.active {
-    border-left: 2px solid var(--mud-palette-primary);
+.mud-drawer a.mud-nav-link.active .mud-nav-link-text {
+    color: #17324d !important;
 }
 
 /* =========================================================
    9. MENU BOCZNE � NAG��WKI GRUP
    ========================================================= */
-.mud-nav-group > .mud-nav-link,
-.mud-nav-group > .mud-nav-link .mud-nav-link-text {
+.mud-drawer .mud-nav-group > .mud-nav-link,
+.mud-drawer .mud-nav-group > .mud-nav-link .mud-nav-link-text {
     font-weight: 700 !important;
-    color: #292727 !important;
+    color: #19324b !important;
 }
 
-.mud-nav-group.mud-nav-group-expanded > .mud-nav-link .mud-icon-root,
-.mud-nav-group.mud-nav-group-expanded > .mud-nav-link .mud-nav-link-expand-icon {
-    color: #1976d2 !important;
+.mud-drawer .mud-nav-group > .mud-nav-link {
+    min-height: 44px;
+    margin-top: 0.6rem;
+    padding-left: 0.75rem !important;
+    border-left: 3px solid #1e6fa8 !important;
+    background: #eaf2f8 !important;
+    font-size: 0.8rem !important;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.mud-drawer .mud-nav-group.mud-nav-group-expanded > .mud-nav-link .mud-icon-root,
+.mud-drawer .mud-nav-group.mud-nav-group-expanded > .mud-nav-link .mud-nav-link-expand-icon {
+    color: #1e6fa8 !important;
 }
 
 /* =========================================================
    10. MENU BOCZNE � NAG��WKI GRUP BEZ T�A I HOVER
    ========================================================= */
-.mud-navmenu .mud-nav-group > .mud-nav-link,
-.mud-navmenu .mud-nav-group > .mud-nav-link.active,
-.mud-navmenu .mud-nav-group.mud-nav-group-expanded > .mud-nav-link,
-.mud-navmenu .mud-nav-group > .mud-nav-link:focus,
-.mud-navmenu .mud-nav-group > .mud-nav-link:focus-visible,
-.mud-navmenu .mud-nav-group > .mud-nav-link:hover {
-    background-color: transparent !important;
-    cursor: default;
+.mud-drawer .mud-navmenu .mud-nav-group > .mud-nav-link,
+.mud-drawer .mud-navmenu .mud-nav-group > .mud-nav-link.active,
+.mud-drawer .mud-navmenu .mud-nav-group.mud-nav-group-expanded > .mud-nav-link,
+.mud-drawer .mud-navmenu .mud-nav-group > .mud-nav-link:focus,
+.mud-drawer .mud-navmenu .mud-nav-group > .mud-nav-link:focus-visible,
+.mud-drawer .mud-navmenu .mud-nav-group > .mud-nav-link:hover {
+    background-color: #dceefd !important;
+    cursor: pointer;
 }
 
 /* =========================================================
    11. TABELA � NAG��WEK
    ========================================================= */
 .mud-table-head .mud-table-cell {
-    background-color: #E7EAEF !important;
-    color: #1e293b !important;
+    background-color: #eaf2f8 !important;
+    color: #19324b !important;
     font-weight: 700 !important;
     white-space: nowrap !important;
     padding-left: 12px !important;
@@ -199,7 +257,7 @@ a.mud-nav-link.active:hover {
    12. TABELA � POD�WIETLENIE WYBRANEGO WIERSZA
    ========================================================= */
 .mud-table-row.selected-row-highlight {
-    background-color: #BED1F1 !important;
+    background-color: #dceefd !important;
 }
 
 /* =========================================================
@@ -209,8 +267,8 @@ a.mud-nav-link.active:hover {
     .custom-toolbar-buttons button:hover:not(:disabled),
     .custom-toolbar-buttons .btn:hover:not(:disabled),
     .custom-toolbar-buttons .btn-link:hover:not(:disabled) {
-        background-color: #C2C3B3 !important;
-        color: #0f172a !important;
+        background-color: #dceefd !important;
+        color: #17324d !important;
         transform: translateY(-1px) !important;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
         border-radius: 6px !important;

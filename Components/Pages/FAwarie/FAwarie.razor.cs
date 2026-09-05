@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.JSInterop;
 using Mieszkaniec.Model.Context;
@@ -21,6 +21,7 @@ namespace Mieszkaniec.Components.Pages.FAwarie
 
         // Wstrzyknięcie serwisu do okienek
         [Inject] protected IDialogService DialogService { get; set; } = default!;
+        [Inject] protected ISnackbar Snackbar { get; set; } = default!;
 
         protected List<UsterkiBud> ListaUsterek { get; set; } = new();
         protected List<Obiekt> ListaObiektow { get; set; } = new();
@@ -92,7 +93,21 @@ namespace Mieszkaniec.Components.Pages.FAwarie
 
         protected void OpenCreateDialog()
         {
-            EdytowanyModel = new UsterkiBud { Id = 0, Status = "Nowe", DataZgloszenia = DateTime.Now };
+            EdytowanyModel = new UsterkiBud
+            {
+                Id = 0,
+                ObiektId = 0,
+                RodzajUsterkiId = 0,
+                PriorytetUsterkiId = 0,
+                OsobaZglaszajaca = string.Empty,
+                OpisZgłoszenia = string.Empty,
+                Status = "Nowe",
+                DataZgloszenia = DateTime.Now,
+                DataZakonczeniaNaprawy = null,
+                UwagiKonserwatora = null,
+                CzyArchiwum = false,
+                Zalaczniki = new List<Zalacznik>()
+            };
             IsDialogVisible = true;
             StateHasChanged();
         }
@@ -136,10 +151,38 @@ namespace Mieszkaniec.Components.Pages.FAwarie
 
         protected void ZazadajPotwierdzeniaZapisu()
         {
+            if (EdytowanyModel == null) return;
+
+            if (EdytowanyModel.ObiektId <= 0)
+            {
+                Snackbar.Add("Proszę wybrać nieruchomość/budynek.", Severity.Warning);
+                return;
+            }
+            if (EdytowanyModel.RodzajUsterkiId <= 0)
+            {
+                Snackbar.Add("Proszę wybrać kategorię usterki.", Severity.Warning);
+                return;
+            }
+            if (EdytowanyModel.PriorytetUsterkiId <= 0)
+            {
+                Snackbar.Add("Proszę wybrać priorytet usterki.", Severity.Warning);
+                return;
+            }
+            if (string.IsNullOrWhiteSpace(EdytowanyModel.OsobaZglaszajaca))
+            {
+                Snackbar.Add("Proszę wpisać osobę zgłaszającą.", Severity.Warning);
+                return;
+            }
+            if (string.IsNullOrWhiteSpace(EdytowanyModel.OpisZgłoszenia))
+            {
+                Snackbar.Add("Proszę wpisać opis usterki.", Severity.Warning);
+                return;
+            }
+
             ObiektDoPrzetworzenia = EdytowanyModel;
             OczekujacaAkcja = TypAkcji.Zapis;
-            ConfirmTitle = "Zapis";
-            ConfirmMessage = "Czy na pewno chcesz zapisać zmiany w tym zgłoszeniu?";
+            ConfirmTitle = "Zapis zgłoszenia";
+            ConfirmMessage = "Czy na pewno chcesz zapisać usterkę?";
             ConfirmTheme = "primary";
             IsConfirmSaveVisible = true;
             StateHasChanged();
@@ -164,14 +207,31 @@ namespace Mieszkaniec.Components.Pages.FAwarie
             {
                 if (OczekujacaAkcja == TypAkcji.Zapis)
                 {
-                    await UsterkiService.SaveAsync(ObiektDoPrzetworzenia);
-                    IsDialogVisible = false;
+                    bool sukces = await UsterkiService.SaveAsync(ObiektDoPrzetworzenia);
+                    if (sukces)
+                    {
+                        Snackbar.Add("Zgłoszenie usterki zostało pomyślnie zapisane.", Severity.Success);
+                        IsDialogVisible = false;
+                        await RefreshGridAsync();
+                    }
+                    else
+                    {
+                        Snackbar.Add("Nie udało się zapisać usterki. Upewnij się, że wybrane pola są poprawne.", Severity.Error);
+                    }
                 }
                 else if (OczekujacaAkcja == TypAkcji.Usunięcie)
                 {
-                    await UsterkiService.DeleteAsync(ObiektDoPrzetworzenia.Id);
+                    bool sukces = await UsterkiService.DeleteAsync(ObiektDoPrzetworzenia.Id);
+                    if (sukces)
+                    {
+                        Snackbar.Add("Zgłoszenie usunięte.", Severity.Info);
+                        await RefreshGridAsync();
+                    }
+                    else
+                    {
+                        Snackbar.Add("Nie udało się usunąć zgłoszenia.", Severity.Error);
+                    }
                 }
-                await RefreshGridAsync();
             }
             StateHasChanged();
         }

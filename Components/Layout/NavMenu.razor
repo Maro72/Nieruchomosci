@@ -1,14 +1,16 @@
 @using MudBlazor
 @using Microsoft.AspNetCore.Components.Authorization
+<div class="navigation-tree">
 <MudNavMenu Class="pt-4">
 
-    <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard" Ripple="false">
-        Strona Główna
+    <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home" Ripple="false">
+        Menu
     </MudNavLink>
 
     <AuthorizeView Policy="Budynki.Odczyt">
         <Authorized>
             <MudNavGroup Title="Nieruchomości" Expanded="false" Icon="@Icons.Material.Filled.Domain">
+                <MudNavLink Href="dashboard" Icon="@Icons.Material.Filled.Dashboard" Ripple="false">Dashboard</MudNavLink>
                 <MudNavLink Href="fbudynki" Icon="@Icons.Material.Filled.Apartment" Ripple="false">Budynki</MudNavLink>
                 <MudNavLink Href="historiausterek" Icon="@Icons.Material.Filled.ManageHistory" Ripple="false">Historia usterek</MudNavLink>
             </MudNavGroup>
@@ -47,6 +49,7 @@
         <Authorized>
             <MudNavGroup Title="Konfiguracja" Expanded="false" Icon="@Icons.Material.Filled.Settings">
                 <MudNavLink Href="fterminy/terminy" Icon="@Icons.Material.Filled.MoreTime" Ripple="false">Definicje terminów</MudNavLink>
+                <MudNavLink Href="konfiguracja" Icon="@Icons.Material.Filled.Storage" Ripple="false">Baza danych i pliki</MudNavLink>
             </MudNavGroup>
         </Authorized>
     </AuthorizeView>
@@ -65,3 +68,4 @@
     </AuthorizeView>
 
 </MudNavMenu>
+</div>

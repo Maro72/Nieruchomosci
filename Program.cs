@@ -60,10 +60,11 @@ builder.Services.AddAuthorizationCore(options =>
     options.AddPolicy("OdczytBudynkow", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Budynki.Odczyt", "Awarie.Odczyt", "OdczytBudynkow", "ZarzadzanieBudynkami")));
 });
 
-// Rejestracja z podzia�em na interfejs oraz serwis implementuj�cy
+// Rejestracja z podziaem na interfejs oraz serwis implementujcy
+builder.Services.AddScoped<IDbConfigService, DbConfigService>();
 builder.Services.AddScoped<IPraceRemontoweService, PraceRemontoweService>();
 builder.Services.AddScoped<IUsterkiBudService, UsterkiBudService>();
-builder.Services.AddScoped<IDbConnectionService, DbConnectionService>(); // Rejestracja serwisu do sprawdzania po��czenia z baz� danych
+builder.Services.AddScoped<IDbConnectionService, DbConnectionService>(); // Rejestracja serwisu do sprawdzania poczenia z baz danych
 
 builder.Services.AddScoped<ILokalWynajemService, LokalWynajemService>();
 builder.Services.AddScoped<IUmowaService, UmowaService>();

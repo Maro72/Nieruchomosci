@@ -1,5 +1,5 @@
 /* =========================================================
-   1. GLOBALNE USTAWIENIA
+   1. GLOBALNE USTAWIENIA (STYLE MODERN ERP - SLATE / CHARCOAL)
    ========================================================= */
 *, *::before, *::after {
     box-sizing: border-box;
@@ -16,9 +16,10 @@ body {
     width: 100%;
     min-height: 100vh;
     overflow-x: hidden;
-    font-family: 'Manrope', sans-serif !important;
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
     font-size: 14px !important;
-    background-color: #f4f8fc;
+    background-color: #f8fafc;
+    color: #0f172a;
 }
 
 h1:focus {
@@ -29,248 +30,98 @@ h1:focus {
    2. WALIDACJA FORMULARZY
    ========================================================= */
 .valid.modified:not([type=checkbox]) {
-    outline: 1px solid #26b050;
+    outline: 1px solid #16a34a;
 }
 
 .invalid {
-    outline: 1px solid #e50000;
+    outline: 1px solid #dc2626;
 }
 
 .validation-message {
-    color: #e50000;
+    color: #dc2626;
 }
 
 /* =========================================================
-   3. SCROLLBAR
+   3. SCROLLBAR (STYL GRAFITOWY)
    ========================================================= */
 ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 7px;
+    height: 7px;
 }
 
 ::-webkit-scrollbar-track {
-    background: #edf3f8;
+    background: #f1f5f9;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #b6cada;
+    background: #cbd5e1;
     border-radius: 4px;
 }
 
-    ::-webkit-scrollbar-thumb:hover {
-        background: #7894aa;
-    }
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
 
 /* =========================================================
-   4. G�RNA BELKA (APPBAR)
+   4. GÓRNA BELKA (APPBAR)
    ========================================================= */
 .mud-appbar {
-    min-height: 40px !important;
-    height: 40px !important;
+    min-height: 48px !important;
+    height: 48px !important;
     background-color: #ffffff !important;
-    color: #19324b !important;
-    border-bottom: 1px solid #d8e4ef;
+    color: #0f172a !important;
+    border-bottom: 1px solid #e2e8f0;
 }
 
 .mud-drawer {
     background-color: #ffffff !important;
-    border-right: 1px solid #304558 !important;
+    border-right: 1px solid #e2e8f0 !important;
 }
 
 .mud-drawer .mud-drawer-content {
     height: 100%;
     overflow-y: auto !important;
     overflow-x: hidden;
-    scrollbar-width: auto;
-    scrollbar-color: #7894aa #edf3f8;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f1f5f9;
 }
 
-.mud-drawer .mud-navmenu {
-    padding: 0.75rem 0.5rem;
-    min-height: 100%;
-}
-
-    .mud-appbar .mud-icon-button {
-        padding: 4px !important;
-    }
-
-/* =========================================================
-   5. MENU BOCZNE � RESET
-   ========================================================= */
-.mud-drawer .mud-navmenu a,
-.mud-drawer .mud-navmenu .mud-nav-link,
-.mud-drawer .mud-navmenu .mud-nav-link:hover,
-.mud-drawer .mud-navmenu .mud-nav-link:focus,
-.mud-drawer .mud-navmenu .mud-nav-link:active,
-.mud-drawer .mud-navmenu .mud-nav-link .mud-nav-link-text {
-        text-decoration: none !important;
-}
-
-        /* =========================================================
-   5b. WY��CZENIE RIPPLE MudBlazor NA MENU BOCZNYM pod�wietlenie bez focusa wy�aczone
-   ========================================================= */
-.mud-drawer .mud-navmenu > .mud-nav-link::before,
-.mud-drawer .mud-navmenu > .mud-nav-link::after,
-.mud-drawer .mud-nav-group > .mud-nav-link::before,
-.mud-drawer .mud-nav-group > .mud-nav-link::after {
-    display: none !important;
-    opacity: 0 !important;
-    content: none !important;
+.mud-appbar .mud-icon-button {
+    padding: 6px !important;
+    color: #334155 !important;
 }
 
 /* =========================================================
-   6. MENU BOCZNE � DOMY�LNY WYGL�D LINK�W
-   ========================================================= */
-.mud-drawer .mud-nav-link {
-    color: #34526b !important;
-    font-size: 0.85rem !important;
-    min-height: 42px;
-    margin: 2px 0;
-    padding: 10px 12px !important;
-    border: none !important;
-    border-radius: 5px !important;
-    justify-content: flex-start !important;
-    transition: background-color 0.18s ease-in-out, color 0.18s ease-in-out;
-    background-color: transparent !important;
-}
-
-.mud-drawer .mud-nav-link .mud-icon-root,
-.mud-drawer .mud-nav-link .mud-nav-link-expand-icon {
-    color: #1e6fa8 !important;
-}
-
-/* Wci�cie + linia drzewa dla element�w wewn�trz grup */
-.mud-drawer .mud-nav-group .mud-collapse .mud-nav-link {
-    min-height: 38px;
-    position: relative;
-    padding-left: 1.65rem !important;
-    font-size: 0.82rem !important;
-}
-
-.mud-drawer .mud-nav-group .mud-collapse {
-    position: relative;
-    margin: 0.25rem 0 0.45rem 1.6rem;
-}
-
-.mud-drawer .mud-nav-group .mud-collapse::before {
-    position: absolute;
-    top: 0;
-    bottom: 1rem;
-    left: 0;
-    width: 1px;
-    background: #b8d2e5;
-    content: "";
-}
-
-.mud-drawer .mud-nav-group .mud-collapse .mud-nav-link::after {
-    position: absolute;
-    top: 50%;
-    left: 0;
-    display: block !important;
-    width: 0.8rem;
-    height: 1px;
-    background: #b8d2e5;
-    content: "" !important;
-}
-
-/* =========================================================
-   7. MENU BOCZNE � HOVER (tylko prawdziwe linki)
-   ========================================================= */
-.mud-drawer a.mud-nav-link[href]:not(.active):hover {
-    background-color: #edf6fd !important;
-}
-
-.mud-drawer .mud-nav-group .mud-collapse .mud-nav-link:not(.active):hover {
-    color: #17324d !important;
-}
-
-/* =========================================================
-   8. MENU BOCZNE � STAN AKTYWNY (WYBRANA STRONA)
-   ========================================================= */
-.mud-drawer a.mud-nav-link.active,
-.mud-drawer a.mud-nav-link.active:focus,
-.mud-drawer a.mud-nav-link.active:hover {
-    background-color: #dceefd !important;
-    color: #17324d !important;
-    font-weight: 700 !important;
-}
-
-.mud-drawer a.mud-nav-link.active .mud-icon-root {
-    color: #1e6fa8 !important;
-}
-
-.mud-drawer a.mud-nav-link.active .mud-nav-link-text {
-    color: #17324d !important;
-}
-
-/* =========================================================
-   9. MENU BOCZNE � NAG��WKI GRUP
-   ========================================================= */
-.mud-drawer .mud-nav-group > .mud-nav-link,
-.mud-drawer .mud-nav-group > .mud-nav-link .mud-nav-link-text {
-    font-weight: 700 !important;
-    color: #19324b !important;
-}
-
-.mud-drawer .mud-nav-group > .mud-nav-link {
-    min-height: 44px;
-    margin-top: 0.6rem;
-    padding-left: 0.75rem !important;
-    border-left: 3px solid #1e6fa8 !important;
-    background: #eaf2f8 !important;
-    font-size: 0.8rem !important;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-}
-
-.mud-drawer .mud-nav-group.mud-nav-group-expanded > .mud-nav-link .mud-icon-root,
-.mud-drawer .mud-nav-group.mud-nav-group-expanded > .mud-nav-link .mud-nav-link-expand-icon {
-    color: #1e6fa8 !important;
-}
-
-/* =========================================================
-   10. MENU BOCZNE � NAG��WKI GRUP BEZ T�A I HOVER
-   ========================================================= */
-.mud-drawer .mud-navmenu .mud-nav-group > .mud-nav-link,
-.mud-drawer .mud-navmenu .mud-nav-group > .mud-nav-link.active,
-.mud-drawer .mud-navmenu .mud-nav-group.mud-nav-group-expanded > .mud-nav-link,
-.mud-drawer .mud-navmenu .mud-nav-group > .mud-nav-link:focus,
-.mud-drawer .mud-navmenu .mud-nav-group > .mud-nav-link:focus-visible,
-.mud-drawer .mud-navmenu .mud-nav-group > .mud-nav-link:hover {
-    background-color: #dceefd !important;
-    cursor: pointer;
-}
-
-/* =========================================================
-   11. TABELA � NAG��WEK
+   11. TABELE ERP – GRAFITOWE NAGŁÓWKI I KRAWĘDZIE
    ========================================================= */
 .mud-table-head .mud-table-cell {
-    background-color: #eaf2f8 !important;
-    color: #19324b !important;
+    background-color: #f1f5f9 !important;
+    color: #0f172a !important;
     font-weight: 700 !important;
     white-space: nowrap !important;
     padding-left: 12px !important;
     padding-right: 12px !important;
+    border-bottom: 2px solid #e2e8f0 !important;
 }
 
 /* =========================================================
-   12. TABELA � POD�WIETLENIE WYBRANEGO WIERSZA
+   12. TABELE ERP – PODŚWIETLENIE WYBRANEGO WIERSZA
    ========================================================= */
 .mud-table-row.selected-row-highlight {
-    background-color: #dceefd !important;
+    background-color: #f1f5f9 !important;
 }
 
 /* =========================================================
-   13. TOOLBAR � PRZYCISKI AKCJI
+   13. TOOLBAR – PRZYCISKI AKCJI (ERP SLATE STYLE)
    ========================================================= */
 @media (hover: hover) {
     .custom-toolbar-buttons button:hover:not(:disabled),
     .custom-toolbar-buttons .btn:hover:not(:disabled),
     .custom-toolbar-buttons .btn-link:hover:not(:disabled) {
-        background-color: #dceefd !important;
-        color: #17324d !important;
+        background-color: #f1f5f9 !important;
+        color: #0f172a !important;
         transform: translateY(-1px) !important;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08) !important;
         border-radius: 6px !important;
         text-decoration: none !important;
     }
@@ -290,41 +141,7 @@ h1:focus {
 }
 
 /* =========================================================
-   14. RESPONSYWNO��
-   ========================================================= */
-@media (max-width: 768px) {
-    .mud-main-content {
-        padding: 12px 8px !important;
-    }
-}
-
-@media (max-width: 480px) {
-    .mud-appbar .mud-typography {
-        max-width: 45vw;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-}
-
-/* =========================================================
-   15. DRUKOWANIE
-   ========================================================= */
-@media print {
-    .mud-appbar,
-    .mud-drawer {
-        display: none !important;
-    }
-
-    .mud-main-content {
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-}
-
-
-/* =========================================================
-   17. POMOCNICZE KLASY
+   14. POMOCNICZE KLASY I STATUSY
    ========================================================= */
 .ls-1 {
     letter-spacing: 1px;
@@ -348,16 +165,31 @@ h1:focus {
     height: 32px;
 }
 
-    .mysql-status-pill .status-dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        flex-shrink: 0;
+.mysql-status-pill .status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.mysql-status-pill .status-text {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #64748b;
+    line-height: 1;
+}
+
+/* =========================================================
+   15. DRUKOWANIE
+   ========================================================= */
+@media print {
+    .mud-appbar,
+    .mud-drawer {
+        display: none !important;
     }
 
-    .mysql-status-pill .status-text {
-        font-size: 0.75rem;
-        font-weight: 700;
-        color: #64748b;
-        line-height: 1;
+    .mud-main-content {
+        margin: 0 !important;
+        padding: 0 !important;
     }
+}

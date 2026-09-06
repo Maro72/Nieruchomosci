@@ -1,0 +1,363 @@
+@page "/konfiguracja"
+@attribute [Authorize(Policy = "Uzytkownicy.Zarzadzanie")]
+@using MudBlazor
+@using Mieszkaniec.Services.Interfaces
+@using System.IO
+@inject IDbConfigService DbConfigService
+@inject IWebHostEnvironment Env
+@inject ISnackbar Snackbar
+
+<PageTitle>Konfiguracja Bazy i Plików - Mieszkaniec</PageTitle>
+
+<div class="d-flex flex-column" style="min-height: calc(100vh - 64px); background-color: #f8fafc; overflow-y: auto;">
+
+    <!-- NAGŁÓWEK STRONY -->
+    <div class="px-4 pt-4 pb-2 d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center">
+            <div class="bg-white shadow-sm rounded p-2 me-3 border d-flex align-items-center justify-content-center text-primary">
+                <i class="bi bi-database-gear fs-4"></i>
+            </div>
+            <div>
+                <h5 class="fw-bold mb-0 text-dark">Konfiguracja Bazy Danych i Plików</h5>
+                <small class="text-muted">Parametry połączenia MySQL (appsettings.json) oraz diagnostyka magazynu załączników</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- ZAKŁADKI GŁÓWNE -->
+    <div class="px-4 py-3">
+        <MudPaper Elevation="2" Class="pa-4 rounded-lg">
+            <MudTabs ApplyEffectsToInnerViews="true" PanelClass="pa-4" Color="Color.Primary" Variant="Variant.Text">
+
+                <!-- ========================================== -->
+                <!-- ZAKŁADKA 1: BAZA DANYCH MYSQL              -->
+                <!-- ========================================== -->
+                <MudTabPanel Text="Baza Danych MySQL" Icon="@Icons.Material.Filled.Storage">
+                    <MudGrid>
+                        <!-- LEWA STRONA: FORMULARZ PARAMETRÓW -->
+                        <MudItem xs="12" md="7">
+                            <MudPaper Class="pa-4 border rounded-lg bg-light" Elevation="0">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <MudText Typo="Typo.h6" Class="fw-bold">Formularz Połączenia MySQL</MudText>
+                                    <MudChip T="string" Color="Color.Info" Size="Size.Small">appsettings.json</MudChip>
+                                </div>
+
+                                <EditForm Model="@_dbModel" OnValidSubmit="ZapiszIPrzelaczBaze">
+                                    <MudGrid Class="mb-3">
+                                        <MudItem xs="12" sm="8">
+                                            <MudTextField @bind-Value="_dbModel.Server" Label="Adres Serwera (Host)"
+                                                          Variant="Variant.Outlined" Margin="Margin.Dense" Required="true"
+                                                          Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Dns" />
+                                        </MudItem>
+                                        <MudItem xs="12" sm="4">
+                                            <MudNumericField @bind-Value="_dbModel.Port" Label="Port SQL"
+                                                            Variant="Variant.Outlined" Margin="Margin.Dense" Required="true" />
+                                        </MudItem>
+
+                                        <MudItem xs="12">
+                                            <MudTextField @bind-Value="_dbModel.Database" Label="Nazwa Bazy Danych"
+                                                          Variant="Variant.Outlined" Margin="Margin.Dense" Required="true"
+                                                          Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Folder" />
+                                        </MudItem>
+
+                                        <MudItem xs="12" sm="6">
+                                            <MudTextField @bind-Value="_dbModel.User" Label="Użytkownik MySQL"
+                                                          Variant="Variant.Outlined" Margin="Margin.Dense" Required="true"
+                                                          Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Person" />
+                                        </MudItem>
+
+                                        <MudItem xs="12" sm="6">
+                                            <MudTextField @bind-Value="_dbModel.Password" Label="Hasło MySQL"
+                                                          InputType="@_passwordInputType" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                                          Adornment="Adornment.End" AdornmentIcon="@_passwordIcon" OnAdornmentClick="TogglePasswordVisibility" />
+                                        </MudItem>
+                                    </MudGrid>
+
+                                    <!-- STATUS TESTU W FORMULARZU -->
+                                    @if (_testWykonano)
+                                    {
+                                        <MudAlert Severity="@(_testSukces ? Severity.Success : Severity.Error)" Class="mb-3" Variant="Variant.Outlined">
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <span>@_testWiadomosc</span>
+                                                @if (_testSukces && _pingMs >= 0)
+                                                {
+                                                    <span class="fw-bold">@_pingMs ms</span>
+                                                }
+                                            </div>
+                                        </MudAlert>
+                                    }
+
+                                    <div class="d-flex justify-content-between align-items-center pt-3 border-top gap-2 flex-wrap">
+                                        <MudButton Variant="Variant.Outlined" Color="Color.Info" Disabled="@_isProcessing"
+                                                   StartIcon="@Icons.Material.Filled.ElectricalServices" OnClick="TestujPolaczenie">
+                                            @if (_isTesting)
+                                            {
+                                                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="me-2" />
+                                                <span>Testowanie...</span>
+                                            }
+                                            else
+                                            {
+                                                <span>Testuj połączenie</span>
+                                            }
+                                        </MudButton>
+
+                                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Disabled="@_isProcessing"
+                                                   StartIcon="@Icons.Material.Filled.Save">
+                                            Zapisz i zastosuj w appsettings.json
+                                        </MudButton>
+                                    </div>
+                                </EditForm>
+                            </MudPaper>
+                        </MudItem>
+
+                        <!-- PRAWA STRONA: PODGLĄD AKTUALNEGO STANU -->
+                        <MudItem xs="12" md="5">
+                            <MudPaper Class="pa-4 border rounded-lg bg-light" Elevation="0">
+                                <MudText Typo="Typo.h6" Class="fw-bold mb-3">Status i Diagnostyka</MudText>
+
+                                <div class="p-3 mb-3 bg-white rounded border d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <MudIcon Icon="@(_isDbOnline ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.Error)"
+                                                 Color="@(_isDbOnline ? Color.Success : Color.Error)" Size="Size.Large" />
+                                        <div>
+                                            <MudText Typo="Typo.subtitle2" Class="fw-bold">
+                                                @(_isDbOnline ? "Baza MySQL Aktywna" : "Brak Połączenia")
+                                            </MudText>
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">EF Core Context Status</MudText>
+                                        </div>
+                                    </div>
+                                    @if (_pingMs >= 0)
+                                    {
+                                        <MudChip T="string" Color="Color.Success" Size="Size.Small">@_pingMs ms</MudChip>
+                                    }
+                                </div>
+
+                                <div class="bg-white p-3 rounded border">
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="fw-bold text-uppercase d-block mb-2">Wygenerowany Connection String:</MudText>
+                                    <code class="d-block text-break small p-2 bg-light rounded border">
+                                        @_dbModel.BuildConnectionString()
+                                    </code>
+                                </div>
+                            </MudPaper>
+                        </MudItem>
+                    </MudGrid>
+                </MudTabPanel>
+
+                <!-- ========================================== -->
+                <!-- ZAKŁADKA 2: MAGAZYN PLIKÓW I UPLOADS       -->
+                <!-- ========================================== -->
+                <MudTabPanel Text="Magazyn Plików (Uploads)" Icon="@Icons.Material.Filled.FolderZip">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <MudText Typo="Typo.h6" Class="fw-bold">Diagnostyka Magazynu Załączników na Dysku</MudText>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Refresh" OnClick="SkanujMagazynPlikow">
+                            Odśwież statystyki dysku
+                        </MudButton>
+                    </div>
+
+                    <MudGrid>
+                        <!-- KATALOG 1: ZAŁĄCZNIKI USTEREK -->
+                        <MudItem xs="12" md="6">
+                            <MudPaper Class="pa-4 border rounded-lg bg-light" Elevation="0">
+                                <div class="d-flex align-items-center gap-2 mb-3">
+                                    <MudIcon Icon="@Icons.Material.Filled.FolderSpecial" Color="Color.Warning" Size="Size.Large" />
+                                    <div>
+                                        <MudText Typo="Typo.subtitle1" Class="fw-bold">Załączniki Usterek i Awarii</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">Ścieżka: <code>Shared/uploads</code></MudText>
+                                    </div>
+                                </div>
+
+                                <div class="row g-2 mb-3 text-center">
+                                    <div class="col-6">
+                                        <div class="bg-white p-3 rounded border">
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">Liczba plików</MudText>
+                                            <MudText Typo="Typo.h5" Class="fw-bold text-primary">@_liczbaPlikowUsterki</MudText>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="bg-white p-3 rounded border">
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">Rozmiar na dysku</MudText>
+                                            <MudText Typo="Typo.h5" Class="fw-bold text-success">@_rozmiarUsterkiMB MB</MudText>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                                    Katalog przechowuje protokoły odbioru prac oraz skany zdjęć z napraw budowlanych.
+                                </MudAlert>
+                            </MudPaper>
+                        </MudItem>
+
+                        <!-- KATALOG 2: ZAŁĄCZNIKI UMÓW -->
+                        <MudItem xs="12" md="6">
+                            <MudPaper Class="pa-4 border rounded-lg bg-light" Elevation="0">
+                                <div class="d-flex align-items-center gap-2 mb-3">
+                                    <MudIcon Icon="@Icons.Material.Filled.FolderShared" Color="Color.Info" Size="Size.Large" />
+                                    <div>
+                                        <MudText Typo="Typo.subtitle1" Class="fw-bold">Załączniki Umów i Aneksów</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">Ścieżka: <code>Shared/upload_umowy</code></MudText>
+                                    </div>
+                                </div>
+
+                                <div class="row g-2 mb-3 text-center">
+                                    <div class="col-6">
+                                        <div class="bg-white p-3 rounded border">
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">Liczba plików</MudText>
+                                            <MudText Typo="Typo.h5" Class="fw-bold text-primary">@_liczbaPlikowUmowy</MudText>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="bg-white p-3 rounded border">
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">Rozmiar na dysku</MudText>
+                                            <MudText Typo="Typo.h5" Class="fw-bold text-success">@_rozmiarUmowyMB MB</MudText>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                                    Katalog przechowuje podpisane cyfrowo lub zeskanowane umowy najmu lokali i aneksów.
+                                </MudAlert>
+                            </MudPaper>
+                        </MudItem>
+                    </MudGrid>
+                </MudTabPanel>
+
+            </MudTabs>
+        </MudPaper>
+    </div>
+</div>
+
+@code {
+    private DbConnectionModel _dbModel = new();
+    private bool _isDbOnline = false;
+    private bool _isTesting = false;
+    private bool _isProcessing = false;
+
+    private bool _testWykonano = false;
+    private bool _testSukces = false;
+    private string _testWiadomosc = "";
+    private long _pingMs = -1;
+
+    private InputType _passwordInputType = InputType.Password;
+    private string _passwordIcon = Icons.Material.Filled.VisibilityOff;
+
+    private int _liczbaPlikowUsterki = 0;
+    private double _rozmiarUsterkiMB = 0;
+
+    private int _liczbaPlikowUmowy = 0;
+    private double _rozmiarUmowyMB = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _dbModel = DbConfigService.PobierzAktualnaKonfiguracje();
+        await TestujPolaczenie();
+        SkanujMagazynPlikow();
+    }
+
+    private void TogglePasswordVisibility()
+    {
+        if (_passwordInputType == InputType.Password)
+        {
+            _passwordInputType = InputType.Text;
+            _passwordIcon = Icons.Material.Filled.Visibility;
+        }
+        else
+        {
+            _passwordInputType = InputType.Password;
+            _passwordIcon = Icons.Material.Filled.VisibilityOff;
+        }
+    }
+
+    private async Task TestujPolaczenie()
+    {
+        _isTesting = true;
+        _testWykonano = false;
+        StateHasChanged();
+
+        var wynik = await DbConfigService.TestujPolaczenieAsync(_dbModel);
+
+        _testSukces = wynik.CzySukces;
+        _testWiadomosc = wynik.Wiadomosc;
+        _pingMs = wynik.PingMs;
+        _isDbOnline = wynik.CzySukces;
+        _testWykonano = true;
+        _isTesting = false;
+
+        if (_testSukces)
+            Snackbar.Add($"Połączenie udane! Czas odpowiedzi: {_pingMs} ms", Severity.Success);
+        else
+            Snackbar.Add("Błąd połączenia z bazą MySQL!", Severity.Error);
+
+        StateHasChanged();
+    }
+
+    private async Task ZapiszIPrzelaczBaze()
+    {
+        _isProcessing = true;
+        try
+        {
+            // 1. Najpierw testujemy nowe parametry
+            var wynikTestu = await DbConfigService.TestujPolaczenieAsync(_dbModel);
+            if (!wynikTestu.CzySukces)
+            {
+                Snackbar.Add($"Nie można zapisać niepoprawnej konfiguracji. {wynikTestu.Wiadomosc}", Severity.Error);
+                return;
+            }
+
+            // 2. Zapisujemy do appsettings.json
+            bool zapisano = await DbConfigService.ZapiszKonfiguracjeAsync(_dbModel);
+            if (zapisano)
+            {
+                Snackbar.Add("Pomyślnie zaktualizowano parametry bazy w pliku appsettings.json!", Severity.Success);
+                _isDbOnline = true;
+                _pingMs = wynikTestu.PingMs;
+            }
+            else
+            {
+                Snackbar.Add("Błąd zapisu pliku appsettings.json na serwerze.", Severity.Error);
+            }
+        }
+        finally
+        {
+            _isProcessing = false;
+        }
+    }
+
+    private void SkanujMagazynPlikow()
+    {
+        try
+        {
+            // Skan katalogu Usterki
+            var pathUsterki = Path.Combine(Env.ContentRootPath, "Shared", "uploads");
+            if (Directory.Exists(pathUsterki))
+            {
+                var files = Directory.GetFiles(pathUsterki);
+                _liczbaPlikowUsterki = files.Length;
+                long totalBytes = 0;
+                foreach (var f in files)
+                {
+                    totalBytes += new FileInfo(f).Length;
+                }
+                _rozmiarUsterkiMB = Math.Round((double)totalBytes / (1024 * 1024), 2);
+            }
+
+            // Skan katalogu Umowy
+            var pathUmowy = Path.Combine(Env.ContentRootPath, "Shared", "upload_umowy");
+            if (Directory.Exists(pathUmowy))
+            {
+                var files = Directory.GetFiles(pathUmowy);
+                _liczbaPlikowUmowy = files.Length;
+                long totalBytes = 0;
+                foreach (var f in files)
+                {
+                    totalBytes += new FileInfo(f).Length;
+                }
+                _rozmiarUmowyMB = Math.Round((double)totalBytes / (1024 * 1024), 2);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Błąd skanowania katalogów magazynu: {ex.Message}");
+        }
+    }
+}
+

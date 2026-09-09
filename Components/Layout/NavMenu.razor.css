@@ -1,0 +1,259 @@
+﻿.navigation-tree {
+	min-height: 100%;
+	--mud-palette-primary: #6b7280;
+	--mud-palette-primary-rgb: 107, 114, 128;
+}
+
+.navigation-tree ::deep .mud-navmenu {
+	min-height: 100%;
+	padding: 0.5rem 0.4rem;
+}
+
+.navigation-tree ::deep .mud-nav-link,
+.navigation-tree ::deep .mud-nav-link:hover,
+.navigation-tree ::deep .mud-nav-link:focus,
+.navigation-tree ::deep .mud-nav-link:active,
+.navigation-tree ::deep .mud-nav-link .mud-nav-link-text {
+	color: #475569 !important;
+	text-decoration: none !important;
+}
+
+.navigation-tree ::deep .mud-nav-link {
+	min-height: 38px;
+	margin: 2px 0;
+	padding: 8px 12px !important;
+	border: none !important;
+	border-radius: 6px !important;
+	background-color: transparent !important;
+	font-size: 0.85rem !important;
+	font-weight: 500 !important;
+}
+
+.navigation-tree ::deep .mud-nav-link .mud-icon-root,
+.navigation-tree ::deep .mud-nav-link .mud-nav-link-expand-icon {
+	color: #475569 !important;
+}
+
+.navigation-tree ::deep .mud-navmenu > .mud-nav-link::before,
+.navigation-tree ::deep .mud-navmenu > .mud-nav-link::after,
+.navigation-tree ::deep .mud-nav-group > .mud-nav-link::before,
+.navigation-tree ::deep .mud-nav-group > .mud-nav-link::after {
+	display: none !important;
+	content: none !important;
+	opacity: 0 !important;
+}
+
+.navigation-tree ::deep .mud-nav-group .mud-collapse {
+	position: relative;
+	margin: 0.2rem 0 0.4rem 1.2rem;
+}
+
+.navigation-tree ::deep .mud-nav-group .mud-collapse::before {
+	position: absolute;
+	top: 0;
+	bottom: 0.8rem;
+	left: 0;
+	width: 1px;
+	background: #cbd5e1;
+	content: "";
+}
+
+.navigation-tree ::deep .mud-nav-group .mud-collapse .mud-nav-link {
+	position: relative;
+	min-height: 36px;
+	padding-left: 1.5rem !important;
+	font-size: 0.83rem !important;
+}
+
+/* Pozycje rozwijanego podmenu są treścią, a nie nagłówkami grup, dlatego nie są pogrubione. */
+.navigation-tree ::deep .mud-nav-group .mud-collapse .mud-nav-link,
+.navigation-tree ::deep .mud-nav-group .mud-collapse .mud-nav-link .mud-nav-link-text {
+	font-weight: 400 !important;
+}
+
+.navigation-tree ::deep .mud-nav-group .mud-collapse .mud-nav-link::after {
+	position: absolute;
+	top: 50%;
+	left: 0;
+	display: block !important;
+	width: 0.75rem;
+	height: 1px;
+	background: #cbd5e1;
+	content: "" !important;
+}
+
+.navigation-tree ::deep a.mud-nav-link[href]:not(.active):hover {
+	background-color: #e5e7eb !important;
+	color: #1f2937 !important;
+}
+
+.navigation-tree ::deep a.mud-nav-link[href]:not(.active):hover .mud-icon-root {
+	color: #374151 !important;
+}
+
+.navigation-tree ::deep a.mud-nav-link.active,
+.navigation-tree ::deep a.mud-nav-link.active:focus,
+.navigation-tree ::deep a.mud-nav-link.active:hover {
+	background-color: #d1d5db !important;
+	color: #111827 !important;
+	font-weight: 700 !important;
+	border-left: 3px solid #4b5563 !important;
+}
+
+.navigation-tree ::deep a.mud-nav-link.active .mud-icon-root,
+.navigation-tree ::deep a.mud-nav-link.active .mud-nav-link-text {
+	color: #374151 !important;
+}
+
+.navigation-tree ::deep .mud-nav-group > .mud-nav-link,
+.navigation-tree ::deep .mud-nav-group > .mud-nav-link .mud-nav-link-text {
+	color: #374151 !important;
+	font-weight: 700 !important;
+}
+
+.navigation-tree ::deep .mud-nav-group > .mud-nav-link {
+	min-height: 42px;
+	margin-top: 0.75rem;
+	margin-bottom: 0.25rem;
+	padding-left: 0.75rem !important;
+	border-left: 4px solid #6b7280 !important;
+	border-radius: 4px !important;
+	background-color: #f3f4f6 !important;
+	font-size: 0.8rem !important;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+}
+
+.navigation-tree ::deep .mud-nav-group > .mud-nav-link .mud-icon-root,
+.navigation-tree ::deep .mud-nav-group > .mud-nav-link .mud-nav-link-expand-icon {
+	color: #4b5563 !important;
+}
+
+.navigation-tree ::deep .mud-nav-group > .mud-nav-link.mud-expanded,
+.navigation-tree ::deep .mud-nav-group.mud-nav-group-expanded > .mud-nav-link,
+.navigation-tree ::deep .mud-nav-group > .mud-nav-link:hover {
+	background-color: #e5e7eb !important;
+	border-left-color: #374151 !important;
+}
+
+.navigation-tree ::deep .mud-nav-group > .mud-nav-link.mud-expanded,
+.navigation-tree ::deep .mud-nav-group > .mud-nav-link.mud-expanded .mud-nav-link-text,
+.navigation-tree ::deep .mud-nav-group > .mud-nav-link.mud-expanded .mud-icon-root,
+.navigation-tree ::deep .mud-nav-group > .mud-nav-link.mud-expanded .mud-nav-link-expand-icon {
+	color: #1f2937 !important;
+}
+
+.navigation-tree ::deep .mud-ripple {
+	background-color: rgba(107, 114, 128, 0.2) !important;
+}
+
+.navigation-tree.dark-mode ::deep .mud-nav-link {
+	background-color: transparent !important;
+	color: #d6e6f2 !important;
+}
+
+.navigation-tree.dark-mode ::deep .mud-nav-link .mud-nav-link-text {
+	background-color: transparent !important;
+	border-left: 0 !important;
+	color: #eaf6ff !important;
+}
+
+.navigation-tree.dark-mode ::deep .mud-nav-link .mud-icon-root,
+.navigation-tree.dark-mode ::deep .mud-nav-link .mud-nav-link-expand-icon {
+	color: #bfe4ff !important;
+}
+
+.navigation-tree.dark-mode ::deep .mud-navmenu > .mud-nav-link,
+.navigation-tree.dark-mode ::deep .mud-nav-group > .mud-nav-link {
+	background-color: #102c44 !important;
+	border-left: 3px solid #5aa9e6 !important;
+	color: #eaf6ff !important;
+}
+
+.navigation-tree.dark-mode ::deep .mud-navmenu > .mud-nav-link.active,
+.navigation-tree.dark-mode ::deep .mud-nav-group > .mud-nav-link.mud-expanded,
+.navigation-tree.dark-mode ::deep .mud-nav-group.mud-nav-group-expanded > .mud-nav-link,
+.navigation-tree.dark-mode ::deep .mud-nav-link:hover {
+	background-color: #1d4c70 !important;
+	border-left-color: #7dd3fc !important;
+	color: #ffffff !important;
+}
+
+.navigation-tree.dark-mode ::deep .mud-nav-link:hover .mud-nav-link-text,
+.navigation-tree.dark-mode ::deep .mud-nav-link.active .mud-nav-link-text,
+.navigation-tree.dark-mode ::deep .mud-nav-link:hover .mud-icon-root,
+.navigation-tree.dark-mode ::deep .mud-nav-link.active .mud-icon-root {
+	background-color: transparent !important;
+	color: #ffffff !important;
+}
+
+/* Aktywna pozycja podmenu także zachowuje normalną grubość tekstu. */
+.navigation-tree ::deep .mud-nav-group .mud-collapse .mud-nav-link.active,
+.navigation-tree ::deep .mud-nav-group .mud-collapse .mud-nav-link.active .mud-nav-link-text,
+.navigation-tree.dark-mode ::deep .mud-nav-group .mud-collapse .mud-nav-link.active,
+.navigation-tree.dark-mode ::deep .mud-nav-group .mud-collapse .mud-nav-link.active .mud-nav-link-text {
+	font-weight: 400 !important;
+}
+
+/* Kontrast menu w granatowym trybie ciemnym. */
+body:has(.mud-theme-dark) .navigation-tree ::deep .mud-nav-link,
+body:has(.mud-theme-dark) .navigation-tree ::deep .mud-nav-link:hover,
+body:has(.mud-theme-dark) .navigation-tree ::deep .mud-nav-link:focus,
+body:has(.mud-theme-dark) .navigation-tree ::deep .mud-nav-link:active,
+body:has(.mud-theme-dark) .navigation-tree ::deep .mud-nav-link .mud-nav-link-text {
+	color: #d6e6f2 !important;
+}
+
+body:has(.mud-theme-dark) .navigation-tree ::deep .mud-nav-link .mud-icon-root,
+body:has(.mud-theme-dark) .navigation-tree ::deep .mud-nav-link .mud-nav-link-expand-icon {
+	color: #9fc3dc !important;
+}
+
+body:has(.mud-theme-dark) .navigation-tree ::deep a.mud-nav-link[href]:not(.active):hover {
+	background-color: rgba(90, 169, 230, 0.18) !important;
+	color: #ffffff !important;
+}
+
+body:has(.mud-theme-dark) .navigation-tree ::deep a.mud-nav-link[href]:not(.active):hover .mud-icon-root {
+	color: #bfe4ff !important;
+}
+
+body:has(.mud-theme-dark) .navigation-tree ::deep a.mud-nav-link.active,
+body:has(.mud-theme-dark) .navigation-tree ::deep a.mud-nav-link.active:focus,
+body:has(.mud-theme-dark) .navigation-tree ::deep a.mud-nav-link.active:hover {
+	background-color: #1d4c70 !important;
+	color: #ffffff !important;
+	border-left-color: #7dd3fc !important;
+}
+
+body:has(.mud-theme-dark) .navigation-tree ::deep a.mud-nav-link.active .mud-icon-root,
+body:has(.mud-theme-dark) .navigation-tree ::deep a.mud-nav-link.active .mud-nav-link-text {
+	color: #ffffff !important;
+}
+
+body:has(.mud-theme-dark) .navigation-tree ::deep .mud-nav-group > .mud-nav-link,
+body:has(.mud-theme-dark) .navigation-tree ::deep .mud-nav-group > .mud-nav-link .mud-nav-link-text {
+	color: #eaf6ff !important;
+}
+
+body:has(.mud-theme-dark) .navigation-tree ::deep .mud-nav-group > .mud-nav-link {
+	background-color: #102c44 !important;
+	border-left-color: #5aa9e6 !important;
+}
+
+body:has(.mud-theme-dark) .navigation-tree ::deep .mud-nav-group > .mud-nav-link .mud-icon-root,
+body:has(.mud-theme-dark) .navigation-tree ::deep .mud-nav-group > .mud-nav-link .mud-nav-link-expand-icon {
+	color: #bfe4ff !important;
+}
+
+body:has(.mud-theme-dark) .navigation-tree ::deep .mud-nav-group > .mud-nav-link.mud-expanded,
+body:has(.mud-theme-dark) .navigation-tree ::deep .mud-nav-group.mud-nav-group-expanded > .mud-nav-link,
+body:has(.mud-theme-dark) .navigation-tree ::deep .mud-nav-group > .mud-nav-link:hover {
+	background-color: #16405f !important;
+	border-left-color: #7dd3fc !important;
+}
+
+body:has(.mud-theme-dark) .navigation-tree ::deep .mud-nav-group .mud-collapse::before,
+body:has(.mud-theme-dark) .navigation-tree ::deep .mud-nav-group .mud-collapse .mud-nav-link::after {
+	background-color: #2f5c78 !important;
+}

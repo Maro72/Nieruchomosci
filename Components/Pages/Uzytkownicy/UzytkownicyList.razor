@@ -1,0 +1,97 @@
+﻿@page "/uzytkownicy"
+@attribute [Authorize(Policy = "ZarzadzanieUzytkownikami")]
+@using Mieszkaniec.Components.UI
+@using MudBlazor
+@using Mieszkaniec.Model.Entities
+@* Opcjonalnie: @attribute [Authorize(Roles = "Administrator")] *@
+
+<div class="d-flex flex-column modern-grid-scroll" style="height: calc(100vh - 64px); background-color: #f8fafc;">
+    
+    @if (Uzytkownicy == null)
+    {
+        <div class="flex-grow-1 d-flex flex-column align-center justify-center gap-3">
+            <MudProgressCircular Color="Color.Primary" Size="Size.Small" Indeterminate="true" />
+            <MudText Typo="Typo.body1" Class="text-muted">Wczytywanie listy użytkowników...</MudText>
+        </div>
+    }
+    else
+    {
+        <div class="flex-grow-1 overflow-auto px-4 mt-4">
+            <FGrid TItem="Uzytkownik"
+                   Items="@Uzytkownicy"
+                   Title="Zarządzanie Użytkownikami"
+                   ShowToolbar="true"
+                   ShowSearch="true"
+                   OnAdd="OpenDodajDialog"
+                   OnEdit="OpenEdytujDialog">
+
+                <ExtraActions>
+                    <div class="d-flex align-items-center gap-3 me-2 ms-auto py-1">
+                        <button type="button" class="btn btn-sm btn-link text-secondary p-1 border-0 d-flex align-items-center justify-content-center rounded-circle" @onclick="OdswiezListe" title="Odśwież listę">
+                            <i class="bi bi-arrow-clockwise fs-5"></i>
+                        </button>
+                    </div>
+                </ExtraActions>
+
+                <GridColumns>
+                    <MudBlazor.PropertyColumn T="Uzytkownik" TProperty="string" Property="x => x.Login" Title="E-mail (Login)" />
+                    
+                    <MudBlazor.TemplateColumn T="Uzytkownik" Title="Imię i Nazwisko">
+                        <CellTemplate Context="ctx">
+                            <span class="fw-medium text-dark">@ctx.Item.Imie @ctx.Item.Nazwisko</span>
+                        </CellTemplate>
+                    </MudBlazor.TemplateColumn>
+
+                    <MudBlazor.TemplateColumn T="Uzytkownik" Title="Role">
+                        <CellTemplate Context="ctx">
+                            @if (ctx.Item.Role != null && ctx.Item.Role.Any())
+                            {
+                                @foreach (var rola in ctx.Item.Role)
+                                {
+                                    <MudChip T="string" Color="@(rola.Nazwa == "Administrator" ? Color.Error : Color.Primary)" Size="Size.Small" Class="ma-1">
+                                        @rola.Nazwa
+                                    </MudChip>
+                                }
+                            }
+                            else
+                            {
+                                <span class="text-muted small">- brak -</span>
+                            }
+                        </CellTemplate>
+                    </MudBlazor.TemplateColumn>
+
+                    <MudBlazor.TemplateColumn T="Uzytkownik" Title="Uprawnienia (Strony)">
+                        <CellTemplate Context="ctx">
+                            @if (ctx.Item.Uprawnienia != null && ctx.Item.Uprawnienia.Any())
+                            {
+                                <MudTooltip Text="@string.Join(", ", ctx.Item.Uprawnienia.Select(u => u.Opis))">
+                                    <MudChip T="string" Color="Color.Dark" Variant="Variant.Outlined" Size="Size.Small">
+                                        @(ctx.Item.Uprawnienia.Count) przypisane
+                                    </MudChip>
+                                </MudTooltip>
+                            }
+                            else
+                            {
+                                <span class="text-muted small">- brak -</span>
+                            }
+                        </CellTemplate>
+                    </MudBlazor.TemplateColumn>
+
+                    <MudBlazor.TemplateColumn T="Uzytkownik" Title="Status">
+                        <CellTemplate Context="ctx">
+                            <MudChip T="string" Color="@(ctx.Item.CzyAktywny ? Color.Success : Color.Error)" Size="Size.Small">
+                                @(ctx.Item.CzyAktywny ? "Aktywny" : "Zablokowany")
+                            </MudChip>
+                        </CellTemplate>
+                    </MudBlazor.TemplateColumn>
+
+                    <MudBlazor.TemplateColumn T="Uzytkownik" Title="Akcje" CellClass="text-end">
+                        <CellTemplate Context="ctx">
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => UsunUzytkownika(ctx.Item.Id))" Title="Usuń" />
+                        </CellTemplate>
+                    </MudBlazor.TemplateColumn>
+                </GridColumns>
+            </FGrid>
+        </div>
+    }
+</div>

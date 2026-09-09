@@ -1,0 +1,58 @@
+﻿@page "/fterminy/terminy"
+@attribute [Authorize(Policy = "ZarzadzanieBudynkami")]
+@rendermode InteractiveServer
+@namespace Mieszkaniec.Components.Pages.FTerminy
+@using Mieszkaniec.Model.Entities
+@using Mieszkaniec.Components.UI
+@using MudBlazor
+
+<FGrid TItem="TerminDefinicja"
+       Title="Słownik: Definicje Terminów"
+       Items="@ListaDefinicji"
+       GridKey="@gridKey"
+       @bind-SelectedItem="WybranyTermin"
+       OnAdd="OpenCreateDialog"
+       OnEdit="OpenEditDialog"
+       OnDelete="RequestDelete"
+       OnExportToExcel="EksportujDoExcela">
+
+    <ToolbarLeftContent>
+        <div class="d-none d-md-block text-muted small-font align-self-center pt-1 ms-2">
+            Zarządzanie regułami i częstotliwością przeglądów technicznych.
+        </div>
+    </ToolbarLeftContent>
+
+    <GridColumns>
+        <PropertyColumn T="TerminDefinicja" TProperty="string" Property="x => x.NazwaTypu" Title="Typ Przeglądu">
+            <CellTemplate>
+                <div class="d-flex align-items-center w-100 font-weight-medium text-dark" style="cursor: pointer; min-height: 25px;" @onclick="@(() => WybierzWiersz(context.Item))">
+                    @context.Item.NazwaTypu
+                </div>
+            </CellTemplate>
+        </PropertyColumn>
+
+        <PropertyColumn T="TerminDefinicja" TProperty="int?" Property="x => x.CzestoscMiesiace" Title="Częstotliwość (m-ce)" HeaderClass="justify-center" CellClass="justify-center text-center">
+            <CellTemplate>
+                <div class="w-100" style="cursor: pointer; min-height: 25px;" @onclick="@(() => WybierzWiersz(context.Item))">
+                    <span class="badge bg-light text-dark border px-2 py-1">@context.Item.CzestoscMiesiace m-cy</span>
+                </div>
+            </CellTemplate>
+        </PropertyColumn>
+
+        <PropertyColumn T="TerminDefinicja" TProperty="int?" Property="x => x.DniPowiadomienia" Title="Wyprzedzenie (dni)" HeaderClass="justify-center" CellClass="justify-center text-center">
+            <CellTemplate>
+                <div class="w-100" style="cursor: pointer; min-height: 25px;" @onclick="@(() => WybierzWiersz(context.Item))">
+                    @context.Item.DniPowiadomienia dni
+                </div>
+            </CellTemplate>
+        </PropertyColumn>
+    </GridColumns>
+
+</FGrid>
+
+<PotwierdzenieDialog IsVisible="@IsConfirmVisible"
+                     Title="@ConfirmTitle"
+                     Message="@ConfirmMessage"
+                     ThemeClass="@ConfirmTheme"
+                     IconClass="@ConfirmIcon"
+                     OnAnswer="@HandleConfirmationAnswer" />

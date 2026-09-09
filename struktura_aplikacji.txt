@@ -1,0 +1,306 @@
+STRUKTURA APLIKACJI - ENCJE, KLASY I FUNKCJONALNOŒCI
+======================================================
+Data: 06/13/2026 13:34:49
+
+Plik: \BenchmarkSuite1\ObiektServiceBenchmark.cs
+Typ: Encja/Klasa
+Szczegó³y: Klasa: ObiektServiceBenchmark
+------------------------------------------------------
+Plik: \BenchmarkSuite1\Program.cs
+Typ: Serwis/Logika
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Layout\MainLayout.razor
+Typ: Widok/Komponent
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Layout\NavMenu.razor
+Typ: Widok/Komponent
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\BudynkFluent\FluBudynki.razor
+Typ: Widok/Komponent
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\BudynkFluent\FluBudynki.razor.cs
+Typ: Interfejs
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\BudynkFluent\FluBudynkiDialog.razor
+Typ: Widok/Komponent
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\BudynkFluent\FluBudynkiDialog.razor.cs
+Typ: Serwis/Logika
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\FAwarie\FAwarie.razor
+Typ: Widok/Komponent
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\FAwarie\FAwarie.razor.cs
+Typ: Interfejs
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\FAwarie\FAwarieDialog.razor
+Typ: Widok/Komponent
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\FAwarie\FAwarieDialog.razor.cs
+Typ: Serwis/Logika
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\FBudynki\FBudynki.razor
+Typ: Widok/Komponent
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\FBudynki\FBudynki.razor.cs
+Typ: Interfejs
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\FBudynki\FBudynkiDialog.razor
+Typ: Widok/Komponent
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\FHistoriaBud\FHistoriaBud.razor
+Typ: Widok/Komponent
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\FHistoriaBud\FHistoriaBud.razor.cs
+Typ: Interfejs
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\FPrzeglady\FPrzegladDialog.razor
+Typ: Widok/Komponent
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\FPrzeglady\FPrzegladyList.razor
+Typ: Widok/Komponent
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\FPrzeglady\FPrzegladyList.razor.cs
+Typ: Interfejs
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\FRemontBud\FRemonBud.razor
+Typ: Widok/Komponent
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\FRemontBud\FRemonBud.razor.cs
+Typ: Serwis/Logika
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\FRemontBud\FRemonBudDialog.razor
+Typ: Widok/Komponent
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\FRemontBud\FRemonBudDialog.razor.cs
+Typ: Serwis/Logika
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\FTerminy\FTerminDialog.razor
+Typ: Widok/Komponent
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\FTerminy\FTerminyList.razor
+Typ: Widok/Komponent
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\FTerminy\FTerminyList.razor.cs
+Typ: Interfejs
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\Komunikaty\PotwierdzenieDialog.razor
+Typ: Widok/Komponent
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\Obiekty\ObiektDialog.razor
+Typ: Widok/Komponent
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\Obiekty\ObiektyList.razor
+Typ: Widok/Komponent
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\Obiekty\ObiektyList.razor.cs
+Typ: Interfejs
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\Przeglady\Przeglad.razor
+Typ: Widok/Komponent
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\Przeglady\Przeglad.razor.cs
+Typ: Interfejs
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\Przeglady\PrzegladDialog.razor
+Typ: Widok/Komponent
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\Remonty\Remonty.razor
+Typ: Widok/Komponent
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\Remonty\Remonty.razor.cs
+Typ: Serwis/Logika
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\Remonty\RemontyDialog.razor
+Typ: Widok/Komponent
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\Slownik\TerminDefinicjaList.razor
+Typ: Widok/Komponent
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\Slownik\TerminDefinicjaList.razor.cs
+Typ: Interfejs
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\Slownik\TerminDialog.razor
+Typ: Widok/Komponent
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\Usterki\UsterkiHistoria.razor
+Typ: Widok/Komponent
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\Usterki\UsterkiHistoria.razor.cs
+Typ: Interfejs
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\ConfirmDialog.razor
+Typ: Widok/Komponent
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\ConnectionGuard.razor
+Typ: Widok/Komponent
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\Error.razor
+Typ: Widok/Komponent
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\Home.razor
+Typ: Widok/Komponent
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Pages\ZalacznikiDialog.razor
+Typ: Widok/Komponent
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\UI\FGrid\FGrid.razor
+Typ: Widok/Komponent
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\UI\FGrid\FGrid.razor.cs
+Typ: Serwis/Logika
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\UI\Gid\MGrid.razor
+Typ: Widok/Komponent
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\UI\Gid\MGrid.razor.cs
+Typ: Serwis/Logika
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\App.razor
+Typ: Widok/Komponent
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\Routes.razor
+Typ: Widok/Komponent
+------------------------------------------------------
+Plik: \Mieszkaniec\Components\_Imports.razor
+Typ: Widok/Komponent
+------------------------------------------------------
+Plik: \Mieszkaniec\Migrations\20260606062107_InitOdNowa.cs
+Typ: Serwis/Logika
+------------------------------------------------------
+Plik: \Mieszkaniec\Migrations\20260606062107_InitOdNowa.Designer.cs
+Typ: Serwis/Logika
+------------------------------------------------------
+Plik: \Mieszkaniec\Migrations\MieszkaniecDbContextModelSnapshot.cs
+Typ: Serwis/Logika
+------------------------------------------------------
+Plik: \Mieszkaniec\Model\Context\MieszkaniecDbContext.cs
+Typ: Encja/Klasa
+Szczegó³y: Klasa: MieszkaniecDbContext
+------------------------------------------------------
+Plik: \Mieszkaniec\Model\Context\MieszkaniecDbContextFactory.cs
+Typ: Encja/Klasa
+Szczegó³y: Klasa: MieszkaniecDbContextFactory
+------------------------------------------------------
+Plik: \Mieszkaniec\Model\Entities\KosztorysMaterial.cs
+Typ: Encja/Klasa
+Szczegó³y: Klasa: KosztorysMaterial
+------------------------------------------------------
+Plik: \Mieszkaniec\Model\Entities\Obiekt.cs
+Typ: Encja/Klasa
+Szczegó³y: Klasa: Obiekt
+------------------------------------------------------
+Plik: \Mieszkaniec\Model\Entities\PraceRemontowe.cs
+Typ: Encja/Klasa
+Szczegó³y: Klasa: PraceRemontowe
+------------------------------------------------------
+Plik: \Mieszkaniec\Model\Entities\PriorytetUsterki.cs
+Typ: Encja/Klasa
+Szczegó³y: Klasa: PriorytetUsterki
+------------------------------------------------------
+Plik: \Mieszkaniec\Model\Entities\Przeglad.cs
+Typ: Encja/Klasa
+Szczegó³y: Klasa: Przeglad
+------------------------------------------------------
+Plik: \Mieszkaniec\Model\Entities\RodzajUsterki.cs
+Typ: Encja/Klasa
+Szczegó³y: Klasa: RodzajUsterki
+------------------------------------------------------
+Plik: \Mieszkaniec\Model\Entities\TerminDefinicja.cs
+Typ: Encja/Klasa
+Szczegó³y: Klasa: TerminDefinicja
+------------------------------------------------------
+Plik: \Mieszkaniec\Model\Entities\UsterkiBud.cs
+Typ: Encja/Klasa
+Szczegó³y: Klasa: UsterkiBud
+------------------------------------------------------
+Plik: \Mieszkaniec\Model\Entities\UsterkiSummary.cs
+Typ: Encja/Klasa
+Szczegó³y: Klasa: UsterkiSummary
+------------------------------------------------------
+Plik: \Mieszkaniec\Model\Entities\WinFormsMenuItem.cs
+Typ: Encja/Klasa
+Szczegó³y: Klasa: WinFormsMenuItem
+------------------------------------------------------
+Plik: \Mieszkaniec\Model\Entities\Zalacznik.cs
+Typ: Encja/Klasa
+Szczegó³y: Klasa: Zalacznik
+------------------------------------------------------
+Plik: \Mieszkaniec\Services\Implementations\DatabaseHealthService.cs
+Typ: Encja/Klasa
+Szczegó³y: Klasa: DatabaseHealthService
+------------------------------------------------------
+Plik: \Mieszkaniec\Services\Implementations\DbConnectionService.cs
+Typ: Encja/Klasa
+Szczegó³y: Klasa: DbConnectionService
+------------------------------------------------------
+Plik: \Mieszkaniec\Services\Implementations\ExcelExporter.cs
+Typ: Serwis/Logika
+------------------------------------------------------
+Plik: \Mieszkaniec\Services\Implementations\ExportdoExcela.cs
+Typ: Serwis/Logika
+------------------------------------------------------
+Plik: \Mieszkaniec\Services\Implementations\FileService.cs
+Typ: Encja/Klasa
+Szczegó³y: Klasa: FileService
+------------------------------------------------------
+Plik: \Mieszkaniec\Services\Implementations\ObiektService.cs
+Typ: Encja/Klasa
+Szczegó³y: Klasa: ObiektService
+------------------------------------------------------
+Plik: \Mieszkaniec\Services\Implementations\PraceRemontoweService.cs
+Typ: Encja/Klasa
+Szczegó³y: Klasa: PraceRemontoweService
+------------------------------------------------------
+Plik: \Mieszkaniec\Services\Implementations\PrzegladService.cs
+Typ: Encja/Klasa
+Szczegó³y: Klasa: PrzegladService
+------------------------------------------------------
+Plik: \Mieszkaniec\Services\Implementations\StorageService.cs
+Typ: Encja/Klasa
+Szczegó³y: Klasa: StorageService
+------------------------------------------------------
+Plik: \Mieszkaniec\Services\Implementations\SyncfusionLocalizer.cs
+Typ: Encja/Klasa
+Szczegó³y: Klasa: SyncfusionLocalizer
+------------------------------------------------------
+Plik: \Mieszkaniec\Services\Implementations\TerminDefinicjaService.cs
+Typ: Encja/Klasa
+Szczegó³y: Klasa: TerminDefinicjaService
+------------------------------------------------------
+Plik: \Mieszkaniec\Services\Implementations\UsterkiBudService.cs
+Typ: Encja/Klasa
+Szczegó³y: Klasa: UsterkiBudService
+------------------------------------------------------
+Plik: \Mieszkaniec\Services\Interfaces\IFileService.cs
+Typ: Interfejs
+------------------------------------------------------
+Plik: \Mieszkaniec\Services\Interfaces\IObiektService.cs
+Typ: Interfejs
+------------------------------------------------------
+Plik: \Mieszkaniec\Services\Interfaces\IPraceRemontoweService.cs
+Typ: Interfejs
+------------------------------------------------------
+Plik: \Mieszkaniec\Services\Interfaces\IPrzegladService.cs
+Typ: Interfejs
+------------------------------------------------------
+Plik: \Mieszkaniec\Services\Interfaces\IStorageService.cs
+Typ: Interfejs
+------------------------------------------------------
+Plik: \Mieszkaniec\Services\Interfaces\ITerminDefinicjaService.cs
+Typ: Interfejs
+------------------------------------------------------
+Plik: \Mieszkaniec\Services\Interfaces\IUsterkiBudService.cs
+Typ: Interfejs
+------------------------------------------------------
+Plik: \Mieszkaniec\Services\RemontySummary.cs
+Typ: Encja/Klasa
+Szczegó³y: Klasa: RemontySummary
+------------------------------------------------------
+Plik: \Mieszkaniec\Program.cs
+Typ: Interfejs
+------------------------------------------------------
+Plik: \Mieszkaniec.Tests\UnitTest1.cs
+Typ: Encja/Klasa
+Szczegó³y: Klasa: PrzegladStatusTests
+------------------------------------------------------

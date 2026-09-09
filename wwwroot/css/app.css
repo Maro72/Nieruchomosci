@@ -1,0 +1,816 @@
+/* =========================================================
+   1. GLOBALNE USTAWIENIA (STYLE MODERN ERP - SLATE / CHARCOAL)
+   ========================================================= */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100vh;
+    overflow-x: hidden;
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    font-size: 14px !important;
+    background-color: #f8fafc;
+    color: #0f172a;
+}
+
+h1:focus {
+    outline: none;
+}
+
+/* =========================================================
+   2. WALIDACJA FORMULARZY
+   ========================================================= */
+.valid.modified:not([type=checkbox]) {
+    outline: 1px solid #16a34a;
+}
+
+.invalid {
+    outline: 1px solid #dc2626;
+}
+
+.validation-message {
+    color: #dc2626;
+}
+
+/* =========================================================
+   3. SCROLLBAR (STYL GRAFITOWY)
+   ========================================================= */
+::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* =========================================================
+   4. GÓRNA BELKA (APPBAR)
+   ========================================================= */
+.mud-appbar {
+    min-height: 48px !important;
+    height: 48px !important;
+    background-color: var(--mud-palette-appbar-background) !important;
+    color: var(--mud-palette-text-primary) !important;
+    border-bottom: 1px solid var(--mud-palette-divider);
+}
+
+.mud-drawer {
+    background-color: var(--mud-palette-drawer-background) !important;
+    border-right: 1px solid var(--mud-palette-divider) !important;
+}
+
+.mud-drawer .mud-drawer-content {
+    height: 100%;
+    overflow-y: auto !important;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: var(--mud-palette-lines-default) var(--mud-palette-background);
+}
+
+.mud-appbar .mud-icon-button {
+    padding: 6px !important;
+    color: var(--mud-palette-text-primary) !important;
+}
+
+/* =========================================================
+   11. TABELE ERP – GRAFITOWE NAGŁÓWKI I KRAWĘDZIE
+   ========================================================= */
+.mud-table-head .mud-table-cell {
+    background-color: var(--mud-palette-background-grey) !important;
+    color: var(--mud-palette-text-primary) !important;
+    font-weight: 700 !important;
+    white-space: nowrap !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    border-bottom: 2px solid var(--mud-palette-divider) !important;
+}
+
+/* =========================================================
+   12. TABELE ERP – PODŚWIETLENIE WYBRANEGO WIERSZA
+   ========================================================= */
+.mud-table-row.selected-row-highlight {
+    background-color: var(--mud-palette-background-grey) !important;
+}
+
+/* =========================================================
+   13. TOOLBAR – PRZYCISKI AKCJI (ERP SLATE STYLE)
+   ========================================================= */
+@media (hover: hover) {
+    .custom-toolbar-buttons button:hover:not(:disabled),
+    .custom-toolbar-buttons .btn:hover:not(:disabled),
+    .custom-toolbar-buttons .btn-link:hover:not(:disabled) {
+        background-color: #f1f5f9 !important;
+        color: #0f172a !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08) !important;
+        border-radius: 6px !important;
+        text-decoration: none !important;
+    }
+
+    .custom-toolbar-buttons .btn.text-danger:hover:not(:disabled) {
+        background-color: #fee2e2 !important;
+        color: #dc2626 !important;
+    }
+
+    .custom-toolbar-buttons .btn:disabled:hover {
+        background-color: transparent !important;
+        color: #94a3b8 !important;
+        transform: none !important;
+        box-shadow: none !important;
+        cursor: not-allowed !important;
+    }
+}
+
+/* =========================================================
+   TRYB CIEMNY – POWIERZCHNIA GŁÓWNEJ TREŚCI
+   ========================================================= */
+body:has(.mud-theme-dark),
+body.mud-theme-dark {
+    background-color: var(--mud-palette-background);
+    color: var(--mud-palette-text-primary);
+}
+
+body:has(.mud-theme-dark) ::-webkit-scrollbar-track,
+body.mud-theme-dark ::-webkit-scrollbar-track {
+    background: var(--mud-palette-background);
+}
+
+body:has(.mud-theme-dark) ::-webkit-scrollbar-thumb,
+body.mud-theme-dark ::-webkit-scrollbar-thumb {
+    background: var(--mud-palette-lines-default);
+}
+
+.app-dark-content {
+    background-color: var(--mud-palette-background);
+    color: var(--mud-palette-text-primary);
+}
+
+.app-dark-content .mud-paper,
+.app-dark-content .mud-card,
+.app-dark-content .mud-table-container,
+.app-dark-content .mud-expansion-panel,
+.app-dark-content .mud-dialog,
+.app-dark-content .mud-input-control,
+.app-dark-content .mud-input-slot,
+.app-dark-content .mud-select,
+.app-dark-content .mud-picker {
+    background-color: var(--mud-palette-surface) !important;
+    color: var(--mud-palette-text-primary) !important;
+}
+
+.app-dark-content .mud-table,
+.app-dark-content .mud-table-row,
+.app-dark-content .mud-table-cell,
+.app-dark-content .mud-table-head .mud-table-cell,
+.app-dark-content .mud-data-grid,
+.app-dark-content .mud-data-grid-header,
+.app-dark-content .mud-data-grid-cell {
+    background-color: var(--mud-palette-surface) !important;
+    color: var(--mud-palette-text-primary) !important;
+    border-color: var(--mud-palette-divider) !important;
+}
+
+.app-dark-content .mud-table-head .mud-table-cell,
+.app-dark-content .mud-data-grid-header {
+    background-color: var(--mud-palette-background-grey) !important;
+}
+
+.app-dark-content .mud-input-outlined-border,
+.app-dark-content .mud-input-underline:before,
+.app-dark-content .mud-input-underline:after,
+.app-dark-content .mud-divider,
+.app-dark-content .border,
+.app-dark-content .border-top,
+.app-dark-content .border-end {
+    border-color: var(--mud-palette-divider) !important;
+}
+
+/* Tabele Bootstrap używane w starszych widokach, np. harmonogramie przeglądów. */
+.app-dark-content .table,
+.app-dark-content .table > :not(caption) > * > * {
+    --bs-table-bg: var(--mud-palette-surface);
+    --bs-table-color: var(--mud-palette-text-primary);
+    --bs-table-border-color: var(--mud-palette-divider);
+    background-color: var(--mud-palette-surface) !important;
+    color: var(--mud-palette-text-primary) !important;
+    border-color: var(--mud-palette-divider) !important;
+}
+
+.app-dark-content .table thead,
+.app-dark-content .table-light,
+.app-dark-content .table-light > th,
+.app-dark-content .table-light > td,
+.app-dark-content .table-light > tr > th,
+.app-dark-content .table-light > tr > td {
+    --bs-table-bg: var(--mud-palette-background-grey);
+    background-color: var(--mud-palette-background-grey) !important;
+    color: var(--mud-palette-text-primary) !important;
+}
+
+.app-dark-content .table-hover > tbody > tr:hover > *,
+.app-dark-content .hover-bg-light:hover,
+.app-dark-content .bg-light {
+    background-color: #173b57 !important;
+    color: #ffffff !important;
+}
+
+.app-dark-content .bg-white,
+.app-dark-content .table-responsive.bg-white {
+    background-color: var(--mud-palette-surface) !important;
+}
+
+/* Menu boczne: globalne reguły są potrzebne, ponieważ drawer MudBlazor
+   renderuje elementy poza zakresem izolowanego CSS NavMenu. */
+body:has(.mud-theme-dark) .navigation-tree .mud-nav-link,
+body:has(.mud-theme-dark) .navigation-tree .mud-nav-link .mud-nav-link-text {
+    color: #d6e6f2 !important;
+}
+
+body:has(.mud-theme-dark) .navigation-tree .mud-nav-link .mud-icon-root,
+body:has(.mud-theme-dark) .navigation-tree .mud-nav-link .mud-nav-link-expand-icon {
+    color: #9fc3dc !important;
+}
+
+body:has(.mud-theme-dark) .navigation-tree a.mud-nav-link[href]:not(.active):hover {
+    background-color: #173b57 !important;
+    color: #ffffff !important;
+}
+
+body:has(.mud-theme-dark) .navigation-tree a.mud-nav-link.active,
+body:has(.mud-theme-dark) .navigation-tree a.mud-nav-link.active:focus,
+body:has(.mud-theme-dark) .navigation-tree a.mud-nav-link.active:hover {
+    background-color: #1d4c70 !important;
+    border-left: 3px solid #7dd3fc !important;
+    color: #ffffff !important;
+}
+
+body:has(.mud-theme-dark) .navigation-tree a.mud-nav-link.active .mud-icon-root,
+body:has(.mud-theme-dark) .navigation-tree a.mud-nav-link.active .mud-nav-link-text {
+    color: #ffffff !important;
+}
+
+body:has(.mud-theme-dark) .navigation-tree .mud-nav-group > .mud-nav-link,
+body:has(.mud-theme-dark) .navigation-tree .mud-nav-group > .mud-nav-link .mud-nav-link-text {
+    background-color: #102c44 !important;
+    border-left: 3px solid #5aa9e6 !important;
+    color: #eaf6ff !important;
+}
+
+body:has(.mud-theme-dark) .navigation-tree .mud-nav-group > .mud-nav-link .mud-icon-root,
+body:has(.mud-theme-dark) .navigation-tree .mud-nav-group > .mud-nav-link .mud-nav-link-expand-icon {
+    color: #bfe4ff !important;
+}
+
+body:has(.mud-theme-dark) .navigation-tree .mud-nav-group > .mud-nav-link.mud-expanded,
+body:has(.mud-theme-dark) .navigation-tree .mud-nav-group.mud-nav-group-expanded > .mud-nav-link,
+body:has(.mud-theme-dark) .navigation-tree .mud-nav-group > .mud-nav-link:hover {
+    background-color: #16405f !important;
+    border-left-color: #7dd3fc !important;
+}
+
+/* Klasa jest nadawana bezpośrednio przez MainLayout, więc działa niezależnie
+   od miejsca, w którym MudBlazor umieści provider motywu w DOM. */
+.app-dark-menu .navigation-tree .mud-nav-link,
+.app-dark-menu .navigation-tree .mud-nav-link .mud-nav-link-text {
+    color: #d6e6f2 !important;
+}
+
+.app-dark-menu .navigation-tree .mud-nav-link .mud-icon-root,
+.app-dark-menu .navigation-tree .mud-nav-link .mud-nav-link-expand-icon {
+    color: #9fc3dc !important;
+}
+
+.app-dark-menu .navigation-tree a.mud-nav-link[href]:not(.active):hover {
+    background-color: #173b57 !important;
+    color: #ffffff !important;
+}
+
+.app-dark-menu .navigation-tree a.mud-nav-link.active,
+.app-dark-menu .navigation-tree a.mud-nav-link.active:focus,
+.app-dark-menu .navigation-tree a.mud-nav-link.active:hover {
+    background-color: #1d4c70 !important;
+    border-left: 3px solid #7dd3fc !important;
+    color: #ffffff !important;
+}
+
+.app-dark-menu .navigation-tree a.mud-nav-link.active .mud-icon-root,
+.app-dark-menu .navigation-tree a.mud-nav-link.active .mud-nav-link-text {
+    color: #ffffff !important;
+}
+
+.app-dark-menu .navigation-tree .mud-nav-group > .mud-nav-link,
+.app-dark-menu .navigation-tree .mud-nav-group .mud-nav-link {
+    background-color: #102c44 !important;
+    border-left: 3px solid #5aa9e6 !important;
+    color: #eaf6ff !important;
+}
+
+.app-dark-menu .navigation-tree .mud-nav-link .mud-nav-link-text {
+    background-color: transparent !important;
+    border-left: 0 !important;
+}
+
+.app-dark-menu .navigation-tree .mud-nav-group > .mud-nav-link .mud-icon-root,
+.app-dark-menu .navigation-tree .mud-nav-group > .mud-nav-link .mud-nav-link-expand-icon {
+    color: #bfe4ff !important;
+}
+
+.app-dark-menu .navigation-tree .mud-nav-group > .mud-nav-link.mud-expanded,
+.app-dark-menu .navigation-tree .mud-nav-group.mud-nav-group-expanded > .mud-nav-link,
+.app-dark-menu .navigation-tree .mud-nav-group > .mud-nav-link:hover {
+    background-color: #16405f !important;
+    border-left-color: #7dd3fc !important;
+}
+
+.app-dark-content .mud-typography,
+.app-dark-content label,
+.app-dark-content th,
+.app-dark-content td,
+.app-dark-content .text-dark,
+.app-dark-content .text-body {
+    color: var(--mud-palette-text-primary) !important;
+}
+
+/* Zastępuje jasne style inline pozostawione przez starsze widoki. */
+.app-dark-content [style*="background-color: #f8fafc"],
+.app-dark-content [style*="background-color: #f1f5f9"],
+.app-dark-content [style*="background-color: #ffffff"],
+.app-dark-content [style*="background-color: #fff"],
+.app-dark-content [style*="background-color: white"],
+.app-dark-content [style*="background: #ffffff"],
+.app-dark-content [style*="background: #fff"],
+.app-dark-content [style*="background: white"] {
+    background-color: var(--mud-palette-surface) !important;
+}
+
+.app-dark-content [style*="color: #0f172a"],
+.app-dark-content [style*="color: #1e293b"],
+.app-dark-content [style*="color: #19324b"],
+.app-dark-content [style*="color: #334155"] {
+    color: var(--mud-palette-text-primary) !important;
+}
+
+/* Dialog planowania przeglądu poza MudMainContent. */
+body:has(.mud-theme-dark) .review-dialog {
+    background-color: var(--mud-palette-surface) !important;
+    color: var(--mud-palette-text-primary) !important;
+}
+
+body:has(.mud-theme-dark) .review-dialog .mud-dialog-title,
+body:has(.mud-theme-dark) .review-dialog .mud-dialog-content,
+body:has(.mud-theme-dark) .review-dialog .mud-dialog-actions {
+    background-color: var(--mud-palette-surface) !important;
+    color: var(--mud-palette-text-primary) !important;
+}
+
+body:has(.mud-theme-dark) .review-dialog h5,
+body:has(.mud-theme-dark) .review-dialog .text-dark,
+body:has(.mud-theme-dark) .review-dialog .form-label,
+body:has(.mud-theme-dark) .review-dialog .mud-typography {
+    color: var(--mud-palette-text-primary) !important;
+}
+
+body:has(.mud-theme-dark) .review-dialog .text-muted,
+body:has(.mud-theme-dark) .review-dialog .text-secondary {
+    color: var(--mud-palette-text-secondary) !important;
+}
+
+body:has(.mud-theme-dark) .review-dialog .bg-light,
+body:has(.mud-theme-dark) .review-dialog .input-group-text,
+body:has(.mud-theme-dark) .review-dialog .form-control,
+body:has(.mud-theme-dark) .review-dialog .form-select {
+    background-color: #102c44 !important;
+    color: var(--mud-palette-text-primary) !important;
+    border-color: var(--mud-palette-divider) !important;
+}
+
+body:has(.mud-theme-dark) .review-dialog .form-control::placeholder,
+body:has(.mud-theme-dark) .review-dialog .form-select option {
+    color: var(--mud-palette-text-secondary) !important;
+}
+
+body:has(.mud-theme-dark) .review-dialog .form-control:focus,
+body:has(.mud-theme-dark) .review-dialog .form-select:focus {
+    background-color: #143a56 !important;
+    color: #ffffff !important;
+    border-color: #5aa9e6 !important;
+    box-shadow: 0 0 0 .2rem rgba(90, 169, 230, .2) !important;
+}
+
+body:has(.mud-theme-dark) .review-dialog .mud-dialog-close,
+body:has(.mud-theme-dark) .review-dialog .mud-dialog-title .mud-button-root {
+    color: #c9e6f8 !important;
+}
+
+body:has(.mud-theme-dark) .review-dialog .mud-button-root.text-dark {
+    background-color: #173b57 !important;
+    border-color: #5aa9e6 !important;
+    color: #eaf6ff !important;
+}
+
+/* Wspólny wygląd wszystkich dialogów i ich formularzy w trybie ciemnym. */
+body:has(.app-dark-content) .mud-dialog,
+body:has(.app-dark-content) .mud-dialog-container .mud-paper {
+    background-color: var(--mud-palette-surface) !important;
+    color: var(--mud-palette-text-primary) !important;
+    border: 1px solid var(--mud-palette-divider);
+}
+
+body:has(.app-dark-content) .mud-dialog-title,
+body:has(.app-dark-content) .mud-dialog-content,
+body:has(.app-dark-content) .mud-dialog-actions {
+    background-color: var(--mud-palette-surface) !important;
+    color: var(--mud-palette-text-primary) !important;
+}
+
+body:has(.app-dark-content) .mud-dialog h1,
+body:has(.app-dark-content) .mud-dialog h2,
+body:has(.app-dark-content) .mud-dialog h3,
+body:has(.app-dark-content) .mud-dialog h4,
+body:has(.app-dark-content) .mud-dialog h5,
+body:has(.app-dark-content) .mud-dialog h6,
+body:has(.app-dark-content) .mud-dialog .text-dark,
+body:has(.app-dark-content) .mud-dialog .form-label,
+body:has(.app-dark-content) .mud-dialog label,
+body:has(.app-dark-content) .mud-dialog .mud-typography {
+    color: var(--mud-palette-text-primary) !important;
+}
+
+body:has(.app-dark-content) .mud-dialog .text-muted,
+body:has(.app-dark-content) .mud-dialog .text-secondary {
+    color: var(--mud-palette-text-secondary) !important;
+}
+
+body:has(.app-dark-content) .mud-dialog .bg-light,
+body:has(.app-dark-content) .mud-dialog .bg-white,
+body:has(.app-dark-content) .mud-dialog .input-group-text,
+body:has(.app-dark-content) .mud-dialog .form-control,
+body:has(.app-dark-content) .mud-dialog .form-select,
+body:has(.app-dark-content) .mud-dialog textarea,
+body:has(.app-dark-content) .mud-dialog input[type="date"],
+body:has(.app-dark-content) .mud-dialog input[type="number"],
+body:has(.app-dark-content) .mud-dialog input[type="text"],
+body:has(.app-dark-content) .mud-dialog input[type="email"],
+body:has(.app-dark-content) .mud-dialog input[type="tel"],
+body:has(.app-dark-content) .mud-dialog input[type="file"] {
+    background-color: #102c44 !important;
+    color: var(--mud-palette-text-primary) !important;
+    border-color: var(--mud-palette-divider) !important;
+}
+
+body:has(.app-dark-content) .mud-dialog .mud-input-control,
+body:has(.app-dark-content) .mud-dialog .mud-input,
+body:has(.app-dark-content) .mud-dialog .mud-input-slot {
+    background-color: #102c44 !important;
+    color: var(--mud-palette-text-primary) !important;
+}
+
+body:has(.app-dark-content) .mud-dialog .mud-input-outlined-border,
+body:has(.app-dark-content) .mud-dialog .input-group,
+body:has(.app-dark-content) .mud-dialog .form-control,
+body:has(.app-dark-content) .mud-dialog .form-select,
+body:has(.app-dark-content) .mud-dialog .input-group-text {
+    border-color: #315875 !important;
+}
+
+body:has(.app-dark-content) .mud-dialog input::placeholder,
+body:has(.app-dark-content) .mud-dialog textarea::placeholder,
+body:has(.app-dark-content) .mud-dialog .mud-input-slot::placeholder {
+    color: #8fa7bd !important;
+    opacity: 1;
+}
+
+body:has(.app-dark-content) .mud-dialog .form-control:focus,
+body:has(.app-dark-content) .mud-dialog .form-select:focus,
+body:has(.app-dark-content) .mud-dialog textarea:focus,
+body:has(.app-dark-content) .mud-dialog .mud-input-control.mud-input-focused,
+body:has(.app-dark-content) .mud-dialog .mud-input-control:hover {
+    background-color: #143a56 !important;
+    border-color: #5aa9e6 !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 0 .2rem rgba(90, 169, 230, .16) !important;
+}
+
+body:has(.app-dark-content) .mud-dialog option {
+    background-color: #102c44 !important;
+    color: #f1f7fb !important;
+}
+
+body:has(.app-dark-content) .mud-dialog input:disabled,
+body:has(.app-dark-content) .mud-dialog select:disabled,
+body:has(.app-dark-content) .mud-dialog textarea:disabled,
+body:has(.app-dark-content) .mud-dialog .mud-input-control.mud-disabled {
+    background-color: #0b2237 !important;
+    color: #7892aa !important;
+    border-color: #23445e !important;
+    opacity: 1;
+}
+
+body:has(.app-dark-content) .mud-dialog .mud-dialog-close,
+body:has(.app-dark-content) .mud-dialog .mud-dialog-title .mud-button-root {
+    color: #c9e6f8 !important;
+}
+
+body:has(.app-dark-content) .mud-dialog .mud-button-root.text-dark,
+body:has(.app-dark-content) .mud-dialog .btn-light,
+body:has(.app-dark-content) .mud-dialog .btn-secondary {
+    background-color: #173b57 !important;
+    border: 1px solid #5a7890 !important;
+    color: #eaf6ff !important;
+}
+
+body:has(.app-dark-content) .mud-dialog .mud-button-root.text-dark:hover,
+body:has(.app-dark-content) .mud-dialog .btn-light:hover,
+body:has(.app-dark-content) .mud-dialog .btn-secondary:hover {
+    background-color: #1d4c70 !important;
+    border-color: #7dd3fc !important;
+    color: #ffffff !important;
+}
+
+/* Akcje wspólnego FGrid w ciemnym motywie. */
+body:has(.app-dark-content) .custom-toolbar-buttons .btn.btn-link {
+    min-height: 32px;
+    border: 1px solid #315875 !important;
+    border-radius: 7px !important;
+    background-color: #102c44 !important;
+    color: #d6e6f2 !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    transition: background-color .18s ease, border-color .18s ease, color .18s ease, transform .18s ease;
+}
+
+body:has(.app-dark-content) .custom-toolbar-buttons .btn.btn-link i {
+    color: #71d8ff !important;
+}
+
+body:has(.app-dark-content) .custom-toolbar-buttons .btn.btn-link:hover:not(:disabled) {
+    background-color: #1d4c70 !important;
+    border-color: #7dd3fc !important;
+    color: #ffffff !important;
+    transform: translateY(-1px);
+}
+
+body:has(.app-dark-content) .custom-toolbar-buttons .btn.btn-link:hover:not(:disabled) i {
+    color: #ffffff !important;
+}
+
+body:has(.app-dark-content) .custom-toolbar-buttons .btn.btn-link:disabled {
+    background-color: #0b2237 !important;
+    border-color: #23445e !important;
+    color: #71899f !important;
+    opacity: 1 !important;
+}
+
+body:has(.app-dark-content) .custom-toolbar-buttons .btn.btn-link:disabled i {
+    color: #71899f !important;
+}
+
+/* Lista użytkowników na stronie uprawnień nie może rozciągać się na drawer. */
+.uprawnienia-user-popover {
+    z-index: 1500 !important;
+    width: min(620px, calc(100vw - 32px)) !important;
+    max-width: calc(100vw - 32px) !important;
+}
+
+.uprawnienia-user-popover .mud-list {
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+body:has(.app-dark-content) .uprawnienia-user-popover {
+    background-color: #102c44 !important;
+    border: 1px solid #315875;
+    box-shadow: 0 14px 32px rgba(0, 0, 0, .35) !important;
+}
+
+body:has(.app-dark-content) .uprawnienia-user-popover .mud-list-item {
+    color: #d6e6f2 !important;
+}
+
+body:has(.app-dark-content) .uprawnienia-user-popover .mud-list-item:hover,
+body:has(.app-dark-content) .uprawnienia-user-popover .mud-list-item.mud-selected-item {
+    background-color: #1d4c70 !important;
+    color: #ffffff !important;
+}
+
+/* Czytelny przełącznik zakładek konfiguracji. */
+.configuration-tabs {
+    border: 1px solid var(--mud-palette-divider);
+    border-radius: 8px;
+    background-color: var(--mud-palette-surface);
+    overflow: hidden;
+}
+
+.configuration-tabs .mud-tabs-toolbar {
+    background-color: var(--mud-palette-background-grey) !important;
+    border-bottom: 1px solid var(--mud-palette-divider);
+}
+
+.configuration-tabs .mud-tab {
+    min-height: 46px;
+    color: var(--mud-palette-text-secondary) !important;
+    font-weight: 700;
+    opacity: 1 !important;
+}
+
+.configuration-tabs .mud-tab:hover {
+    background-color: rgba(90, 169, 230, .14) !important;
+    color: var(--mud-palette-text-primary) !important;
+}
+
+.configuration-tabs .mud-tab.mud-tab-active {
+    background-color: #1d4c70 !important;
+    color: #ffffff !important;
+    box-shadow: inset 0 -3px 0 #7dd3fc;
+}
+
+.configuration-tabs .mud-tab .mud-icon-root {
+    color: inherit !important;
+}
+
+/* Wzmocnione separatory zakładek, niezależne od koloru aktywnej palety. */
+.configuration-tabs .mud-tabs-toolbar,
+.configuration-tabs .mud-tabs-toolbar-inner,
+.configuration-tabs .mud-tabs-toolbar-content {
+    display: flex !important;
+    align-items: stretch !important;
+    background: #0d263d !important;
+    border-bottom: 2px solid #315875 !important;
+}
+
+.configuration-tabs .mud-tab {
+    position: relative !important;
+    flex: 0 0 auto !important;
+    min-width: 210px !important;
+    margin: 5px 0 !important;
+    padding: 12px 20px !important;
+    border: 1px solid #315875 !important;
+    border-radius: 7px !important;
+    background: #102c44 !important;
+    color: #b9cde0 !important;
+    text-align: center !important;
+}
+
+.configuration-tabs .mud-tab + .mud-tab {
+    margin-left: 8px !important;
+}
+
+.configuration-tabs .mud-tab.mud-tab-active {
+    background: #1d4c70 !important;
+    border-color: #7dd3fc !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 0 1px #7dd3fc, inset 0 -3px 0 #7dd3fc !important;
+}
+
+.configuration-tabs .mud-tab.mud-tab-active::after {
+    position: absolute;
+    right: 12px;
+    bottom: -7px;
+    left: 12px;
+    height: 3px;
+    border-radius: 3px;
+    background: #7dd3fc;
+    content: "";
+}
+
+/* Lista budynków w widoku historii usterek. */
+.app-dark-content .budynek-item {
+    margin: 3px 0;
+    padding: 10px 12px;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    color: #c9dbea !important;
+    font-size: .9rem;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.app-dark-content .budynek-item:hover {
+    background-color: #173b57 !important;
+    border-color: #315875;
+    color: #ffffff !important;
+}
+
+.app-dark-content .budynek-item--active,
+.app-dark-content .budynek-item--active:hover {
+    background-color: #1d4c70 !important;
+    border-color: #7dd3fc;
+    color: #ffffff !important;
+    font-weight: 800;
+    box-shadow: inset 3px 0 0 #7dd3fc;
+}
+
+/* Globalne nadpisanie stylu aktywnego podmenu MudBlazor. */
+body:has(.mud-theme-dark) .navigation-tree .mud-nav-group .mud-collapse .mud-nav-link,
+body:has(.mud-theme-dark) .navigation-tree .mud-nav-group .mud-collapse .mud-nav-link .mud-nav-link-text,
+.app-dark-menu .navigation-tree .mud-nav-group .mud-collapse .mud-nav-link,
+.app-dark-menu .navigation-tree .mud-nav-group .mud-collapse .mud-nav-link .mud-nav-link-text {
+    font-weight: 400 !important;
+}
+
+/* Bootstrapowy dialog potwierdzenia w ciemnym motywie. */
+body:has(.app-dark-content) .confirmation-modal,
+body:has(.app-dark-content) .confirmation-modal .modal-header,
+body:has(.app-dark-content) .confirmation-modal .modal-body,
+body:has(.app-dark-content) .confirmation-modal .modal-footer {
+    background-color: #102c44 !important;
+    color: #eaf6ff !important;
+    border-color: #315875 !important;
+}
+
+body:has(.app-dark-content) .confirmation-modal .modal-title {
+    color: #f1f7fb !important;
+}
+
+body:has(.app-dark-content) .confirmation-modal .text-secondary {
+    color: #c0d2e2 !important;
+}
+
+body:has(.app-dark-content) .confirmation-modal .btn-close {
+    filter: invert(1) grayscale(1) brightness(1.8);
+    opacity: .9;
+}
+
+body:has(.app-dark-content) .confirmation-modal .btn-outline-secondary {
+    border-color: #6f8da5 !important;
+    color: #d6e6f2 !important;
+}
+
+body:has(.app-dark-content) .confirmation-modal .btn-outline-secondary:hover {
+    background-color: #1d4c70 !important;
+    border-color: #7dd3fc !important;
+    color: #ffffff !important;
+}
+
+/* =========================================================
+   14. POMOCNICZE KLASY I STATUSY
+   ========================================================= */
+.ls-1 {
+    letter-spacing: 1px;
+}
+
+.extra-small {
+    font-size: 0.7rem;
+    letter-spacing: 0.5px;
+}
+
+.mysql-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 50px;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    flex-shrink: 0;
+    white-space: nowrap;
+    height: 32px;
+}
+
+.mysql-status-pill .status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.mysql-status-pill .status-text {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #64748b;
+    line-height: 1;
+}
+
+/* =========================================================
+   15. DRUKOWANIE
+   ========================================================= */
+@media print {
+    .mud-appbar,
+    .mud-drawer {
+        display: none !important;
+    }
+
+    .mud-main-content {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+}

@@ -1,0 +1,42 @@
+﻿@using Mieszkaniec.Services
+@inject IDbConnectionService DbService
+
+@if (isChecking)
+{
+    <div class="d-flex justify-content-center align-items-center vh-100">
+        <div class="spinner-border text-primary" role="status"></div>
+        <span class="ms-2">Sprawdzanie połączenia z bazą...</span>
+    </div>
+}
+else if (!isDbConnected)
+{
+    <div class="d-flex justify-content-center align-items-center vh-100 bg-light">
+        <div class="card p-5 shadow text-center" style="max-width: 500px;">
+            <h2 class="text-danger"><i class="bi bi-exclamation-triangle"></i> Brak połączenia</h2>
+            <p>Nie można nawiązać połączenia z bazą danych MySQL.</p>
+            <button class="btn btn-primary mt-3" @onclick="CheckConnection">Spróbuj ponownie</button>
+        </div>
+    </div>
+}
+else
+{
+    @ChildContent
+}
+
+@code {
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    private bool isDbConnected = false;
+    private bool isChecking = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CheckConnection();
+    }
+
+    private async Task CheckConnection()
+    {
+        isChecking = true;
+        isDbConnected = await DbService.CanConnectAsync();
+        isChecking = false;
+    }
+}

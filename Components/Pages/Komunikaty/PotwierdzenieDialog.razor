@@ -1,0 +1,32 @@
+@if (IsVisible)
+{
+    <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true" style="z-index: 99999;">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content confirmation-modal shadow-lg border-0">
+                <div class="modal-header border-bottom">
+                    <h5 class="modal-title fw-bold">@Title</h5>
+                    <button type="button" class="btn-close" aria-label="Close" @onclick="() => OnAnswer.InvokeAsync(false)"></button>
+                </div>
+                <div class="modal-body py-4">
+                    <p class="m-0 text-secondary fs-6">@Message</p>
+                </div>
+                <div class="modal-footer border-top bg-light">
+                    <button type="button" class="btn btn-sm btn-outline-secondary px-3 fw-medium" @onclick="() => OnAnswer.InvokeAsync(false)">Anuluj</button>
+                    <button type="button" class="btn btn-sm btn-@ThemeClass px-4 fw-bold shadow-sm" @onclick="() => OnAnswer.InvokeAsync(true)">Tak, kontynuuj</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show" style="z-index: 99998;"></div>
+}
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public string Title { get; set; } = "Potwierdzenie";
+    [Parameter] public string Message { get; set; } = "Czy na pewno chcesz wykonać tę operację?";
+
+    [Parameter] public string ThemeClass { get; set; } = "primary";
+    [Parameter] public string IconClass { get; set; } = "e-warning";
+
+    [Parameter] public EventCallback<bool> OnAnswer { get; set; }
+}

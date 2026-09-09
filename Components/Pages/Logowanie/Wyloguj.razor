@@ -1,0 +1,22 @@
+﻿@page "/wyloguj"
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager NavigationManager
+
+<div class="d-flex justify-content-center align-items-center" style="height: 100vh;">
+    <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+</div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        // Rzutujemy nasz dostawca na odpowiednią klasę i wywołujemy wylogowanie
+        if (AuthStateProvider is Mieszkaniec.Services.MieszkaniecAuthStateProvider authProvider)
+        {
+            await authProvider.WylogujUzytkownika();
+        }
+
+        // Przekierowanie do formularza logowania
+        NavigationManager.NavigateTo("/login", forceLoad: true);
+    }
+}

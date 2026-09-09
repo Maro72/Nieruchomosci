@@ -1,0 +1,235 @@
+﻿@page "/historiausterek"
+@attribute [Authorize(Policy = "OdczytBudynkow")]
+@namespace Mieszkaniec.Components.Pages.Usterki
+@using Mieszkaniec.Model.Entities
+@using Mieszkaniec.Components.UI
+@using MudBlazor
+
+@* --- NAGŁÓWEK STRONY --- *@
+<div class="mb-3">
+    <MudText Typo="Typo.h5" Color="Color.Dark" Class="fw-bold ma-0">Rejestr i Historia Eksploatacji</MudText>
+    <MudText Typo="Typo.caption" Color="Color.Secondary">
+        Wybierz nieruchomość z panelu bocznego, aby przefiltrować zgłoszenia.
+    </MudText>
+</div>
+
+@* --- UKŁAD DWUKOLUMNOWY (SIDEBAR + REJESTR) --- *@
+<MudGrid Spacing="3">
+
+    @* === LEWA STRONA: LISTA BUDYNKÓW === *@
+    <MudItem xs="12" md="2">
+        <MudPaper Elevation="1" Class="pa-3 d-flex flex-column"
+                  Style="min-height: 600px; max-height: calc(100vh - 160px); overflow: hidden;">
+
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="fw-bold">
+                    <MudIcon Icon="@Icons.Material.Filled.Apartment" Size="Size.Small" Class="me-1" />
+                    Wybór
+                </MudText>
+                @if (WybranyObiektId.HasValue)
+                {
+                    <MudButton Variant="Variant.Text"
+                               Color="Color.Error"
+                               Size="Size.Small"
+                               StartIcon="@Icons.Material.Filled.Cancel"
+                               OnClick="ResetujFiltr"
+                               Class="pa-0"
+                               Style="min-width: unset;">
+                        Wyczyść
+                    </MudButton>
+                }
+            </div>
+
+            <div class="flex-grow-1" style="overflow-y: auto;">
+                @foreach (var obiekt in FiltrowaneObiekty)
+                {
+                    var lokalnyObiekt = obiekt;
+                    <div class="budynek-item @(WybranyObiektId == lokalnyObiekt.Id ? "budynek-item--active" : "")"
+                         @onclick="@(() => OnBudynekWybrany(lokalnyObiekt))">
+                        @lokalnyObiekt.Nazwa
+                    </div>
+                }
+            </div>
+
+        </MudPaper>
+    </MudItem>
+
+    @* === PRAWA STRONA: STATYSTYKI I REJESTR USTEREK === *@
+    <MudItem xs="12" md="10">
+
+        @* --- MINI KARTY KPI --- *@
+        @* --- KONTENER FLEX ZAMIAST MUDGRID --- *@
+        <div class="d-flex flex-wrap gap-3 mb-3">
+
+            @* Karta 1: Nowe *@
+            <MudPaper Elevation="1" Class="pa-2 px-3 d-flex align-items-center justify-content-between" Style="width: 220px;">
+                <div>
+                    <MudText Typo="Typo.caption" Style="font-size: 0.8rem;">Nowe</MudText>
+                    <MudText Typo="Typo.h5" Color="Color.Dark" Class="fw-bold ma-0">@KpiStats.Nowe</MudText>
+                </div>
+                <MudIcon Icon="@Icons.Material.Filled.NotificationsActive" Color="Color.Error" Size="Size.Medium" />
+            </MudPaper>
+
+            @* Karta 2: W realizacji *@
+            <MudPaper Elevation="1" Class="pa-2 px-3 d-flex align-items-center justify-content-between" Style="width: 220px;">
+                <div>
+                    <MudText Typo="Typo.caption" Style="font-size: 0.8rem;">W realizacji</MudText>
+                    <MudText Typo="Typo.h5" Color="Color.Primary" Class="fw-bold ma-0">@KpiStats.WNaprawie</MudText>
+                </div>
+                <MudIcon Icon="@Icons.Material.Filled.Build" Color="Color.Primary" Size="Size.Medium" />
+            </MudPaper>
+
+            @* Karta 3: Zakończone *@
+            <MudPaper Elevation="1" Class="pa-2 px-3 d-flex align-items-center justify-content-between" Style="width: 220px;">
+                <div>
+                    <MudText Typo="Typo.caption" Style="font-size: 0.8rem;">Zakończone / Archiwum</MudText>
+                    <MudText Typo="Typo.h5" Color="Color.Success" Class="fw-bold ma-0">@KpiStats.Zakonczone</MudText>
+                </div>
+                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Medium" />
+            </MudPaper>
+
+        </div>
+
+        @* --- TABELA Z HISTORIĄ USTEREK --- *@
+        <MudPaper Elevation="1" Class="pa-0">
+
+            @* Pasek nad tabelą *@
+            <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom">
+                <MudText Typo="Typo.caption" Color="Color.Dark" Class="fw-bold">
+                    Rejestr zgłoszeń:
+                    <MudText Typo="Typo.caption" Color="Color.Primary" Inline="true">
+                        @WybranyBudynekNazwa
+                    </MudText>
+                </MudText>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="input-group input-group-sm" style="width: 180px;">
+                        <span class="input-group-text bg-light border-end-0 text-muted">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text"
+                               class="form-control form-control-sm border-start-0 bg-light"
+                               placeholder="Szukaj..."
+                               value="@_searchText"
+                               @oninput="@((e) => _searchText = e.Value?.ToString() ?? "")" />
+                    </div>
+                    <MudSwitch T="bool"
+                               Value="PokazujArchiwalne"
+                               Color="Color.Primary"
+                               Label="Archiwalne"
+                               LabelPlacement="Placement.End"
+                               ValueChanged="@(async (val) => { PokazujArchiwalne = val; await LadujHistorieUsterek(); })" />
+                </div>
+            </div>
+
+            @* Czysty MudDataGrid bez FGrid *@
+            <MudDataGrid T="UsterkiBud"
+                         @key="gridKey"
+                         Items="@FiltrowaneLista"
+                         Dense="true"
+                         Striped="true"
+                         Hover="true"
+                         Bordered="false"
+                         Elevation="0"
+                         RowsPerPage="10"
+                         Breakpoint="Breakpoint.None" >
+                
+
+                <Columns>
+
+                    <TemplateColumn T="UsterkiBud"
+                                    HeaderText="Status"
+                                    Title="Staus"
+                                    CellStyle="text-align:center; width:90px;"
+                                    HeaderStyle="font-size: 12px;">
+                        <CellTemplate>
+                            <MudChip T="string"
+                                     Size="Size.Small"
+                                     Color="@(context.Item.Status == "Nowe"
+                                                                                     ? Color.Error
+                                                                                     : context.Item.Status == "Zakończone"
+                                                                                         ? Color.Success
+                                                                                         : Color.Warning)"
+                                     Variant="Variant.Filled">
+                                @context.Item.Status
+                            </MudChip>
+                        </CellTemplate>
+                    </TemplateColumn>
+
+                    <PropertyColumn T="UsterkiBud" TProperty="DateTime"
+                                    Property="x => x.DataZgloszenia"
+                                    HeaderText="Data zgłosz." 
+                                    Title="Data Zgłoszenia"
+                                    HeaderStyle="font-size: 12px;"
+                                    CellStyle="font-size: 12px;"/>
+
+                    <PropertyColumn T="UsterkiBud" TProperty="string"
+                                    Property="x => x.Obiekt.Nazwa"
+                                    HeaderText="Budynek" 
+                                    Title="Budynek"
+                                    HeaderStyle="font-size: 12px;"
+                                    CellStyle="font-size: 12px;" />
+                                    
+
+                    <PropertyColumn T="UsterkiBud" TProperty="string"
+                                    Property="x => x.RodzajUsterki.Nazwa"
+                                    HeaderText="Branża"
+                                    Title="Branża"
+                                    HeaderStyle="font-size: 12px;"
+                                    CellStyle="font-size: 12px;" />
+
+                    <PropertyColumn T="UsterkiBud" TProperty="string"
+                                    Property="x => x.OpisZgłoszenia"
+                                    HeaderText="Opis awarii" 
+                                    Title="Opis"
+                                    HeaderStyle="font-size: 12px;"
+                                    CellStyle="font-size: 12px;" />
+
+                    <PropertyColumn T="UsterkiBud" TProperty="string"
+                                    Property="x => x.UwagiKonserwatora"
+                                    HeaderText="Komentarz"
+                                    Title="Komentarz"
+                                    HeaderStyle="font-size: 12px;"
+                                    CellStyle="font-size: 12px;" />
+
+                    <TemplateColumn T="UsterkiBud"
+                                    HeaderText="Data Zakończenia"
+                                    
+                                    CellStyle=" font-size: 12px;"
+                                    HeaderStyle="font-size: 12px;"
+                    Title="Data Zakończenia">
+                        <CellTemplate>
+                            <MudText Typo="Typo.body2" Color="Color.Success"  >
+                                @(context.Item.DataZakonczeniaNaprawy?.ToString("yyyy-MM-dd") ?? "-")
+                            </MudText>
+                        </CellTemplate>
+                    </TemplateColumn>
+
+                </Columns>
+
+                <PagerContent>
+                    <MudDataGridPager T="UsterkiBud"
+                                      RowsPerPageString="Rekordów na stronę:"
+                                      InfoFormat="{first_item}-{last_item} z {all_items}" />
+                </PagerContent>
+
+            </MudDataGrid>
+
+        </MudPaper>
+    </MudItem>
+
+</MudGrid>
+
+@code {
+    private UsterkiBud? _wybranaUsterka;
+    private string _searchText = "";
+
+    private IEnumerable<UsterkiBud> FiltrowaneLista =>
+        string.IsNullOrWhiteSpace(_searchText)
+            ? HistoriaUsterek
+            : HistoriaUsterek.Where(u =>
+                (u.OpisZgłoszenia?.Contains(_searchText, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (u.UwagiKonserwatora?.Contains(_searchText, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (u.Obiekt?.Nazwa?.Contains(_searchText, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (u.RodzajUsterki?.Nazwa?.Contains(_searchText, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (u.Status?.Contains(_searchText, StringComparison.OrdinalIgnoreCase) ?? false));
+}

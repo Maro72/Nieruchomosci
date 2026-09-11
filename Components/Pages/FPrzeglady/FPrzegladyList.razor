@@ -6,7 +6,7 @@
 @using Mieszkaniec.Components.UI
 @using MudBlazor
 
-<div class="d-flex flex-column" style="height: calc(100vh - 64px); background-color: #f8fafc; overflow-y: auto;">
+<div class="d-flex flex-column" style="height: calc(100vh - 64px); background-color: #f8fafc; overflow: hidden;">
 
     @* ── NAGŁÓWEK MODUŁU ── *@
     <div class="px-4 pt-4 pb-2 d-flex align-items-center justify-content-between">
@@ -97,7 +97,7 @@
     </MudPaper>
 
     @* ── WIDOK WŁAŚCIWY: GRUPOWANIE AKORDEONOWE PO BUDYNKACH ── *@
-    <div class="px-4 pb-4 pt-2">
+    <div class="px-4 pb-4 pt-2 flex-grow-1" style="min-height: 0; overflow-y: auto;">
         @if (ListaPrzegladow == null || !ListaPrzegladow.Any())
         {
             <div class="text-center py-5 bg-white border rounded shadow-sm">

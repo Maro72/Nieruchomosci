@@ -91,7 +91,7 @@
                Class="@(_isDarkMode ? "app-dark-menu" : string.Empty)"
                ClipMode="DrawerClipMode.Always"
                Variant="@DrawerVariant.Responsive">
-        <NavMenu IsDarkMode="_isDarkMode" />
+        <NavMenu IsDarkMode="_isDarkMode" CollapseSignal="_menuCollapseSignal" />
     </MudDrawer>
 
     @* ── GŁÓWNA TREŚĆ ── *@
@@ -161,6 +161,7 @@
 
 @code {
     private bool _drawerOpen = true;
+    private int _menuCollapseSignal;
     private string NazwaBiezacejStrony { get; set; } = "";
     private bool isOnline = true;
 
@@ -260,6 +261,8 @@
     private void DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
+        // Każde użycie przycisku menu zwija podmenu do samych głównych grup.
+        _menuCollapseSignal++;
     }
 
     private async Task PrzelaczMotyw()

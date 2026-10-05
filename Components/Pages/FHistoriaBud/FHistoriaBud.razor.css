@@ -66,27 +66,35 @@
 
 /* === LISTA BUDYNKÓW === */
 .budynek-item {
+    position: relative;
+    margin: 4px 0;
     padding: 8px 12px;
-    border-radius: 6px;
+    border: 1px solid transparent;
+    border-radius: 7px;
     cursor: pointer;
     font-size: 0.875rem;
     color: #444;
-    transition: background-color 0.15s ease;
+    transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, color 0.15s ease;
     user-select: none;
 }
 
 .budynek-item:hover {
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: #eef5fa;
+    border-color: #c6ddeb;
+    color: #15557f;
 }
 
 .budynek-item--active {
-    background-color: rgba(103, 58, 183, 0.12);
-    color: #673ab7;
-    font-weight: 600;
+    background-color: #dcecf7;
+    border-color: #7fb5d5;
+    color: #124d75;
+    font-weight: 800;
+    box-shadow: inset 4px 0 0 #1e6fa8, 0 2px 5px rgba(30, 111, 168, 0.16);
 }
 
 .budynek-item--active:hover {
-    background-color: rgba(103, 58, 183, 0.18);
+    background-color: #cfe5f3;
+    border-color: #5d9fc5;
 }
 
 /* === MUD DATA GRID - ROZSĄDNE ROZMIARY TEKSTU === */

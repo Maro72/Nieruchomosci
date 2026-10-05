@@ -1,0 +1,660 @@
+@page "/woda"
+@using Mieszkaniec.Model.Dto
+@using Mieszkaniec.Services.Interfaces
+@using Mieszkaniec.Model.Entities
+@using Mieszkaniec.Components.UI
+@inject ILicznikService LicznikService
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@using MudBlazor
+
+
+
+<MudText Typo="Typo.h5" Class="mb-4">Liczniki i Rozliczenia Wody</MudText>
+
+<MudTabs Class="water-tabs" ActivePanelIndex="1" Elevation="2" Rounded="true" ApplyEffectsToInnerViews="true" PanelClass="pa-4">
+    <MudTabPanel Text="Odczyty Liczników">
+        <div class="water-readings">
+            <MudGrid Spacing="3">
+                <MudItem xs="12" md="8">
+                    <div class="action-strip action-panel">
+                        <div>
+                            <MudText Class="action-label">Import danych</MudText>
+                            <MudText Typo="Typo.h6" Class="section-heading">Wczytaj odczyty z PDF</MudText>
+                            <MudText Class="reading-muted">Automatycznie rozpoznaj stany liczników i przygotuj je do zapisu.</MudText>
+                        </div>
+                        <MudFileUpload T="IBrowserFile" FilesChanged="PrzetworzPlik" Accept=".pdf">
+                            <CustomContent>
+                                <MudButton OnClick="@context.OpenFilePickerAsync" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.AutoAwesome" Title="Import odczytów z analizą AI">Wybierz plik PDF</MudButton>
+                            </CustomContent>
+                        </MudFileUpload>
+                        @if (trwaPrzetwarzanie) { <MudProgressLinear Color="Color.Primary" Indeterminate="true" /> }
+                    </div>
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <div class="action-strip action-panel">
+                        <div>
+                            <MudText Class="action-label">Konfiguracja</MudText>
+                            <MudText Typo="Typo.h6" Class="section-heading">Nowy licznik</MudText>
+                            <MudText Class="reading-muted">Dodaj urządzenie, którego nie ma jeszcze na liście.</MudText>
+                        </div>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="OtworzDialogDodajLicznik">
+                            Dodaj licznik
+                        </MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Link" OnClick="OtworzDialogPrzypiszLicznik">
+                            Przypisz licznik
+                        </MudButton>
+                    </div>
+                </MudItem>
+
+                @if (false && odczytyZPdf != null && odczytyZPdf.Any())
+                {
+                    <MudItem xs="12">
+                        <div class="data-section">
+                            <div class="data-section-header">
+                                <div>
+                                    <MudText Typo="Typo.h6" Class="section-heading">Podgląd danych do zapisu</MudText>
+                                    <MudText Class="reading-muted">Sprawdź rozpoznane wartości przed zapisaniem.</MudText>
+                                </div>
+                                <div class="d-flex align-center gap-2">
+                                    <MudChip T="string" Color="Color.Info" Variant="Variant.Outlined">@odczytyZPdf.Count pozycji</MudChip>
+                                    <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Save" OnClick="ZapiszOdczyty">Zapisz odczyty</MudButton>
+                                </div>
+                            </div>
+                            <div class="reading-summary">
+                                <div class="summary-item">
+                                    <span class="summary-label">Zużycie z liczników</span>
+                                    <span class="summary-value">@SumaZuzyciaOdczytow.ToString("N0") m³</span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="summary-label">Korekta</span>
+                                    <span class="summary-value correction-value">@SumaKorekt.ToString("N0") m³</span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="summary-label">Do faktury</span>
+                                    <span class="summary-value">@SumaDoFaktury.ToString("N0") m³</span>
+                                </div>
+                            </div>
+                            <MudTable Items="@odczytyZPdf" Hover="true" Dense="true" Class="flat-table preview-table">
+                                <HeaderContent>
+                                    <MudTh>Importuj</MudTh>
+                                    <MudTh>Miesiąc</MudTh>
+                                    <MudTh>Numer licznika</MudTh>
+                                    <MudTh>Budynek</MudTh>
+                                    <MudTh>Stan początkowy</MudTh>
+                                    <MudTh>Stan końcowy</MudTh>
+                                    <MudTh>Zużycie</MudTh>
+                                    <MudTh>Korekta</MudTh>
+                                    <MudTh>Do faktury</MudTh>
+                                    <MudTh>Uwagi</MudTh>
+                                </HeaderContent>
+                                <RowTemplate Context="odcCtx">
+                                    <MudTd DataLabel="Importuj"><MudCheckBox @bind-Value="odcCtx.Ignoruj" Color="Color.Primary" /></MudTd>
+                                    <MudTd DataLabel="Miesiąc">@($"{odcCtx.Miesiac:D2}/{odcCtx.Rok}")</MudTd>
+                                    <MudTd DataLabel="Numer licznika"><span class="meter-number">@odcCtx.NumerLicznika</span></MudTd>
+                                    <MudTd DataLabel="Budynek">
+                                        @if (odcCtx.JestNowy) { <span class="new-meter">Nowy licznik</span> }
+                                        else { <MudText>@odcCtx.ObiektNazwa</MudText> }
+                                    </MudTd>
+                                    <MudTd DataLabel="Stan początkowy"><MudNumericField @bind-Value="odcCtx.StanPoczatkowy" HideSpinButtons="true" Class="reading-input compact-number" /></MudTd>
+                                    <MudTd DataLabel="Stan końcowy"><MudNumericField @bind-Value="odcCtx.StanKoncowy" HideSpinButtons="true" Class="reading-input compact-number" /></MudTd>
+                                    <MudTd DataLabel="Zużycie"><MudNumericField @bind-Value="odcCtx.Zuzycie" HideSpinButtons="true" Class="reading-input compact-number" /></MudTd>
+                                    <MudTd DataLabel="Korekta" Class="correction-cell"><MudNumericField @bind-Value="odcCtx.Korekta" HideSpinButtons="true" Class="reading-input compact-number correction-cell" /></MudTd>
+                                    <MudTd DataLabel="Do faktury"><MudNumericField @bind-Value="odcCtx.IloscDoZafakturowania" HideSpinButtons="true" Class="reading-input compact-number" /></MudTd>
+                                    <MudTd DataLabel="Uwagi">
+                                        @if (odcCtx.NadmierneZuzycie) { <MudText Color="Color.Error">Nadmierne zużycie!</MudText> }
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
+                    </MudItem>
+                }
+
+                <MudItem xs="12" Class="mt-2">
+                    <div class="data-section">
+                        <div class="data-section-header">
+                            <div>
+                                <MudText Typo="Typo.h6" Class="section-heading">Miesięczne odczyty liczników</MudText>
+                                <MudText Class="reading-muted">Zużycie, korekta i ilość do faktury według budynku i licznika.</MudText>
+                            </div>
+                            @if (DostepneLata.Any())
+                            {
+                                <div class="d-flex align-items-center gap-2">
+                                    <MudSelect T="int" @bind-Value="RokWidoku" Dense="true" Label="Rok" Style="width: 130px">
+                                        @foreach (var rok in DostepneLata)
+                                        {
+                                            <MudSelectItem T="int" Value="@rok">@rok</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.Add" OnClick="OtworzDialogDodajOdczyt">
+                                        Dodaj odczyt
+                                    </MudButton>
+                                </div>
+                            }
+                        </div>
+                        @if (liczniki?.Any() == true && MiesiaceZOdczytami.Any())
+                        {
+                            <MudExpansionPanels MultiExpansion="true" Elevation="0" Class="d-flex flex-column gap-2">
+                                @foreach (var miesiac in MiesiaceZOdczytami)
+                                {
+                                  var odczytyMiesiaca = liczniki
+    .SelectMany(licznik => licznik.OdczytyWody
+        .Where(odczyt => odczyt.Rok == RokWidoku && odczyt.Miesiac == miesiac)
+        .Select(odczyt => new { Licznik = licznik, Odczyt = odczyt }))
+    .DistinctBy(x => x.Odczyt.Id)             // 1. Najpierw usuń ewentualne duplikaty
+    .OrderByDescending(x => x.Odczyt.Zuzycie) // 2. Główne sortowanie: zużycie malejąco
+    .ThenBy(x => x.Licznik.Obiekt?.Nazwa)     // 3. Dodatkowe sortowanie przy remisach
+    .ThenBy(x => x.Licznik.NumerLicznika)
+    .ToList();
+                                    <MudExpansionPanel Style="border: 1px solid #e2e8f0; border-radius: 8px !important; overflow: hidden; background-color: #ffffff;">
+                                        <TitleContent>
+                                            <div class="d-flex align-items-center justify-content-between w-100 pe-3">
+                                                <div class="d-flex align-items-center gap-3">
+                                                    <div class="bg-light p-2 rounded text-primary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                        <MudIcon Icon="@Icons.Material.Filled.WaterDrop" />
+                                                    </div>
+                                                    <div>
+                                                        <MudText Typo="Typo.subtitle1" Class="fw-bold mb-0 text-dark">@NazwaMiesiaca(miesiac) @RokWidoku</MudText>
+                                                        <small class="text-muted">Odczyty liczników wody</small>
+                                                    </div>
+                                                </div>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <span class="badge bg-light text-secondary border px-2 py-1.5 rounded-pill">@odczytyMiesiaca.Count odczytów</span>
+                                                    <span class="badge bg-primary text-white px-2 py-1.5 rounded-pill">@odczytyMiesiaca.Sum(x => x.Odczyt.IloscDoZafakturowania) m³</span>
+                                                </div>
+                                            </div>
+                                        </TitleContent>
+                                        <ChildContent>
+                                            <div class="table-responsive border-top bg-white">
+                                                <table class="table table-sm table-hover align-middle mb-0" style="font-size: 0.85rem;">
+                                                    <thead class="table-light text-secondary">
+                                                        <tr>
+                                                            <th class="ps-3">Budynek</th>
+                                                            <th>Nr licznika</th>
+                                                            <th class="text-end">Stan początkowy</th>
+                                                            <th class="text-end">Stan końcowy</th>
+                                                            <th class="text-end">Zużycie</th>
+                                                            <th class="text-end">Korekta</th>
+                                                            <th class="text-end">Do faktury</th>
+                                                            <th class="text-center pe-3">Akcje</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach (var pozycja in odczytyMiesiaca)
+                                                        {
+                                                            <tr>
+                                                                <td class="ps-3">@(pozycja.Licznik.Obiekt?.Nazwa ?? "Nieprzypisany")</td>
+                                                                <td class="text-start">@pozycja.Licznik.NumerLicznika</td>
+                                                                <td class="text-end ">@pozycja.Odczyt.StanPoczatkowy</td>
+                                                                <td class="text-end">@pozycja.Odczyt.StanKoncowy</td>
+                                                                <td class="text-end">@pozycja.Odczyt.Zuzycie m³</td>
+                                                                <td class="text-end text-danger">@(pozycja.Odczyt.Korekta?.ToString() ?? "-")</td>
+                                                                <td class="text-primary text-end fw-bold">@pozycja.Odczyt.IloscDoZafakturowania m³</td>
+                                                                <td class="text-center pe-3">
+                                                                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Primary" Title="Edytuj odczyt" OnClick="@(() => OtworzDialogEdycjiOdczytu(pozycja.Odczyt))" />
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                    <tfoot class="table-light">
+                                                        <tr class="fw-bold">
+                                                            <td colspan="4" class="ps-3">Razem</td>
+                                                            <td class="text-end">@odczytyMiesiaca.Sum(x => x.Odczyt.Zuzycie) m³</td>
+                                                            <td class="text-end">@odczytyMiesiaca.Sum(x => x.Odczyt.Korekta ?? 0)</td>
+                                                            <td class="text-end">@odczytyMiesiaca.Sum(x => x.Odczyt.IloscDoZafakturowania) m³</td>
+                                                            <td></td>
+                                                        </tr>
+                                                    </tfoot>
+                                                </table>
+                                            </div>
+                                        </ChildContent>
+                                    </MudExpansionPanel>
+                                }
+                            </MudExpansionPanels>
+                        }
+                        else
+                        {
+                            <MudText Class="pa-4 reading-muted">Brak zapisanych odczytów dla wybranego roku.</MudText>
+                        }
+                    </div>
+                </MudItem>
+            </MudGrid>
+        </div>
+    </MudTabPanel>
+
+    <MudTabPanel Text="Faktury i Podsumowanie">
+        <MudGrid>
+            <MudItem xs="12" sm="6">
+                <MudCard>
+                    <MudCardContent>
+                        <MudText Typo="Typo.h6">Wgraj fakturę z KSeF (PDF)</MudText>
+                        <MudFileUpload T="IBrowserFile" FilesChanged="PrzetworzFakturePdf" Accept=".pdf">
+                            <CustomContent>
+                                <MudButton OnClick="@context.OpenFilePickerAsync" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CloudUpload">Wybierz plik faktury</MudButton>
+                            </CustomContent>
+                        </MudFileUpload>
+                        @if (trwaPrzetwarzanieFaktury) { <MudProgressCircular Color="Color.Primary" Indeterminate="true" Class="mt-3"/> }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" Class="d-flex align-center">
+                <MudButton Variant="Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => OtworzDialogFaktura(null))">
+                Dodaj fakturę ręcznie
+            </MudButton>
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudCard>
+                <MudCardContent>
+                    <MudText Typo="Typo.h6">Podsumowanie Miesięczne Zużycia Wody</MudText>
+                    @if (podsumowania != null)
+                    {
+                        <MudTable Items="@podsumowania" Hover="true" Dense="true" Class="mt-4">
+                            <HeaderContent>
+                                <MudTh>Nr faktury</MudTh>
+                                <MudTh>Okres</MudTh>
+                                <MudTh>Ilość</MudTh>
+                                <MudTh>Netto</MudTh>
+                                <MudTh>Brutto</MudTh>
+                                <MudTh>Akcje</MudTh>
+                            </HeaderContent>
+                            <RowTemplate Context="podsumowanieCtx">
+                                <MudTd DataLabel="Nr faktury">@(podsumowanieCtx.Faktura?.NumerFaktury ?? "-")</MudTd>
+                                <MudTd DataLabel="Okres">@podsumowanieCtx.Okres</MudTd>
+                                <MudTd DataLabel="Ilość">
+                                    @if (podsumowanieCtx.Faktura is null)
+                                    {
+                                        <span>-</span>
+                                    }
+                                    else
+                                    {
+                                        <span>@podsumowanieCtx.Faktura.ZuzycieFakturowane_m3.ToString("N2") m³</span>
+                                    }
+                                </MudTd>
+                                <MudTd DataLabel="Netto">
+                                    @if (podsumowanieCtx.Faktura is null)
+                                    {
+                                        <span>-</span>
+                                    }
+                                    else
+                                    {
+                                        <span>@podsumowanieCtx.Faktura.WartoscNetto.ToString("N2") PLN</span>
+                                    }
+                                </MudTd>
+                                <MudTd DataLabel="Brutto">
+                                    @if (podsumowanieCtx.Faktura is null)
+                                    {
+                                        <span>-</span>
+                                    }
+                                    else
+                                    {
+                                        <span>@podsumowanieCtx.Faktura.WartoscBrutto.ToString("N2") PLN</span>
+                                    }
+                                </MudTd>
+                                <MudTd DataLabel="Akcje">
+                                    @if (podsumowanieCtx.Faktura is not null)
+                                    {
+                                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                        Color="Color.Primary"
+                                        Size="Size.Small"
+                                        Title="Edytuj fakturę"
+                                        OnClick="@(() => OtworzDialogEdycjiFaktury(podsumowanieCtx.Faktura))" />
+                                    }
+                                </MudTd>
+                            </RowTemplate>
+                            <FooterContent>
+                                <MudTd colspan="2"><strong>Razem</strong></MudTd>
+                                <MudTd><strong>@LacznaIloscFakturowana.ToString("N2") m³</strong></MudTd>
+                                <MudTd><strong>@LacznaWartoscNetto.ToString("N2") PLN</strong></MudTd>
+                                <MudTd><strong>@LacznaWartoscBrutto.ToString("N2") PLN</strong></MudTd>
+                                <MudTd></MudTd>
+                            </FooterContent>
+                        </MudTable>
+                    }
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <div class="data-section">
+                <div class="data-section-header">
+                    <div>
+                        <MudText Typo="Typo.h6" Class="section-heading">Zużycie wody w czasie</MudText>
+                        <MudText Class="reading-muted">Miesięczne zużycie wszystkich liczników.</MudText>
+                    </div>
+                </div>
+                @if (EtykietyZuzycia.Any())
+                {
+                    <MudChart T="double"
+                    ChartType="ChartType.Line"
+                    ChartLabels="@EtykietyZuzycia"
+                    ChartSeries="@SerieZuzycia"
+                    Width="100%"
+                    Height="320px"
+                    ChartOptions="@OpcjeWykresuZuzycia" />
+                }
+                else
+                {
+                    <MudText Class="pa-4 reading-muted">Brak zapisanych odczytów do wyświetlenia.</MudText>
+                }
+            </div>
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <div class="data-section">
+                <div class="data-section-header">
+                    <div>
+                        <MudText Typo="Typo.h6" Class="section-heading">Zużycie wody - wykres kolumnowy</MudText>
+                        <MudText Class="reading-muted">Porównanie miesięcznych ilości z faktur.</MudText>
+                    </div>
+                </div>
+                @if (EtykietyZuzycia.Any())
+                {
+                    <MudChart T="double"
+                    ChartType="ChartType.Bar"
+                    ChartLabels="@EtykietyZuzycia"
+                    ChartSeries="@SerieZuzycia"
+                    Width="100%"
+                    Height="320px"
+                    ChartOptions="@OpcjeWykresuKolumnowego" />
+                }
+                else
+                {
+                    <MudText Class="pa-4 reading-muted">Brak zapisanych odczytów do wyświetlenia.</MudText>
+                }
+            </div>
+        </MudItem>
+    </MudGrid>
+</MudTabPanel>
+</MudTabs>
+
+@code {
+    private bool trwaPrzetwarzanie = false;
+    private bool trwaPrzetwarzanieFaktury = false;
+    private List<OdczytZPdfDto> odczytyZPdf;
+    private List<Licznik> liczniki;
+    private List<PodsumowanieMiesiacaWody> podsumowania;
+    private int RokWidoku = DateTime.Now.Year;
+    private int gridKey;
+
+    private decimal LacznaIloscFakturowana => podsumowania?.Sum(x => x.Faktura?.ZuzycieFakturowane_m3 ?? 0m) ?? 0m;
+    private decimal LacznaWartoscNetto => podsumowania?.Sum(x => x.Faktura?.WartoscNetto ?? 0m) ?? 0m;
+    private decimal LacznaWartoscBrutto => podsumowania?.Sum(x => x.Faktura?.WartoscBrutto ?? 0m) ?? 0m;
+
+    private string[] EtykietyZuzycia => podsumowania?
+        .Where(x => x.Faktura is not null)
+        .OrderBy(x => x.Rok)
+        .ThenBy(x => x.Miesiac)
+        .Select(x => $"{x.Miesiac:D2}/{x.Rok}")
+        .ToArray() ?? Array.Empty<string>();
+
+    private double[] WartosciZuzycia => podsumowania?
+        .Where(x => x.Faktura is not null)
+        .OrderBy(x => x.Rok)
+        .ThenBy(x => x.Miesiac)
+        .Select(x => (double)x.Faktura!.ZuzycieFakturowane_m3)
+        .ToArray() ?? Array.Empty<double>();
+
+    private List<ChartSeries<double>> SerieZuzycia => new()
+    {
+        new ChartSeries<double>
+        {
+            Name = "Zużycie fakturowane (m³)",
+            Data = WartosciZuzycia
+        }
+    };
+
+    private ChartOptions OpcjeWykresuZuzycia { get; } = new()
+    {
+        ChartPalette = new[] { "#1976d2" }
+    };
+
+    private ChartOptions OpcjeWykresuKolumnowego { get; } = new()
+    {
+        ChartPalette = new[] { "#2e7d32" }
+    };
+
+    private int SumaZuzyciaOdczytow => odczytyZPdf?.Where(x => !x.Ignoruj).Sum(x => x.Zuzycie) ?? 0;
+    private int SumaKorekt => odczytyZPdf?.Where(x => !x.Ignoruj).Sum(x => x.Korekta ?? 0) ?? 0;
+    private int SumaDoFaktury => odczytyZPdf?.Where(x => !x.Ignoruj).Sum(x => x.IloscDoZafakturowania) ?? 0;
+
+    private IEnumerable<int> DostepneLata => liczniki?
+        .SelectMany(x => x.OdczytyWody)
+        .Select(x => x.Rok)
+        .Distinct()
+        .OrderByDescending(x => x) ?? Enumerable.Empty<int>();
+
+    private IEnumerable<int> MiesiaceZOdczytami => liczniki?
+        .SelectMany(x => x.OdczytyWody)
+        .Where(x => x.Rok == RokWidoku)
+        .Select(x => x.Miesiac)
+        .Distinct()
+        .OrderByDescending(x => x) ?? Enumerable.Empty<int>();
+
+    private static string NazwaMiesiaca(int miesiac) => miesiac switch
+    {
+        1 => "Styczeń",
+        2 => "Luty",
+        3 => "Marzec",
+        4 => "Kwiecień",
+        5 => "Maj",
+        6 => "Czerwiec",
+        7 => "Lipiec",
+        8 => "Sierpień",
+        9 => "Wrzesień",
+        10 => "Październik",
+        11 => "Listopad",
+        12 => "Grudzień",
+        _ => $"Miesiąc {miesiac}"
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await OdswiezDane();
+    }
+
+    private async Task OdswiezDane()
+    {
+        liczniki = await LicznikService.PobierzWszystkieLicznikiWodyAsync();
+        podsumowania = await LicznikService.PobierzPodsumowaniaAsync();
+        gridKey++;
+
+        if (DostepneLata.Any() && !DostepneLata.Contains(RokWidoku))
+        {
+            RokWidoku = DostepneLata.First();
+        }
+    }
+
+    private async Task OtworzDialogDodajLicznik()
+    {
+        var dialog = await DialogService.ShowAsync<LicznikDialog>("Dodaj nowy licznik");
+        var result = await dialog.Result;
+        if (!result.Canceled && result.Data != null)
+        {
+            await LicznikService.DodajLicznikAsync((Licznik)result.Data);
+            Snackbar.Add("Licznik został dodany.", Severity.Success);
+            await OdswiezDane();
+        }
+    }
+
+    private async Task OtworzDialogPrzypiszLicznik()
+    {
+        var dialog = await DialogService.ShowAsync<PrzypiszLicznikDialog>("Przypisz licznik do budynku",
+            new DialogParameters { ["Liczniki"] = liczniki ?? new List<Licznik>() });
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is Licznik przypisanyLicznik)
+        {
+            await LicznikService.AktualizujLicznikAsync(przypisanyLicznik);
+            Snackbar.Add("Licznik został przypisany do budynku.", Severity.Success);
+            await OdswiezDane();
+        }
+    }
+
+    private async Task OtworzDialogDodajOdczyt()
+    {
+        var param = new DialogParameters
+        {
+            ["Odczyt"] = new OdczytWody { Rok = RokWidoku, Miesiac = DateTime.Now.Month },
+            ["Liczniki"] = liczniki ?? new List<Licznik>()
+        };
+        var dialog = await DialogService.ShowAsync<OdczytDialog>("Dodaj ręczny odczyt", param);
+        var result = await dialog.Result;
+        if (!result.Canceled && result.Data != null)
+        {
+            await LicznikService.DodajOdczytAsync((OdczytWody)result.Data);
+            Snackbar.Add("Odczyt został dodany.", Severity.Success);
+            await OdswiezDane();
+        }
+    }
+
+    private async Task OtworzDialogEdycjiOdczytu(OdczytWody odczyt)
+    {
+        var kopiaOdczytu = new OdczytWody
+        {
+            Id = odczyt.Id,
+            LicznikId = odczyt.LicznikId,
+            Rok = odczyt.Rok,
+            Miesiac = odczyt.Miesiac,
+            StanPoczatkowy = odczyt.StanPoczatkowy,
+            StanKoncowy = odczyt.StanKoncowy,
+            Zuzycie = odczyt.Zuzycie,
+            Korekta = odczyt.Korekta,
+            IloscDoZafakturowania = odczyt.IloscDoZafakturowania
+        };
+        var dialog = await DialogService.ShowAsync<OdczytDialog>("Edytuj odczyt", new DialogParameters { ["Odczyt"] = kopiaOdczytu });
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is OdczytWody zaktualizowanyOdczyt)
+        {
+            await LicznikService.AktualizujOdczytAsync(zaktualizowanyOdczyt);
+            Snackbar.Add("Odczyt został zaktualizowany.", Severity.Success);
+            await OdswiezDane();
+        }
+    }
+
+    private async Task OtworzDialogFaktura(FakturaWody? nowaFaktura = null)
+    {
+        var param = new DialogParameters { ["Faktura"] = nowaFaktura ?? new FakturaWody { Rok = DateTime.Now.Year, Miesiac = DateTime.Now.Month } };
+        var dialog = await DialogService.ShowAsync<FakturaDialog>("Dodaj/Edytuj Fakturę", param);
+        var result = await dialog.Result;
+        if (!result.Canceled && result.Data != null)
+        {
+            await LicznikService.ZapiszFaktureAsync((FakturaWody)result.Data);
+            Snackbar.Add("Faktura została zapisana.", Severity.Success);
+            await OdswiezDane();
+        }
+    }
+
+    private async Task OtworzDialogEdycjiFaktury(FakturaWody faktura)
+    {
+        var param = new DialogParameters { ["Faktura"] = faktura };
+        var dialog = await DialogService.ShowAsync<FakturaDialog>("Edytuj Fakturę", param);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is FakturaWody zaktualizowanaFaktura)
+        {
+            await LicznikService.AktualizujFaktureAsync(zaktualizowanaFaktura);
+            Snackbar.Add("Faktura została zaktualizowana.", Severity.Success);
+            await OdswiezDane();
+        }
+    }
+
+    private async Task PrzetworzPlik(IBrowserFile file)
+    {
+        if (file != null)
+        {
+            trwaPrzetwarzanie = true;
+            try
+            {
+                odczytyZPdf = await LicznikService.PrzetworzSkanAsync(file);
+                if (odczytyZPdf.Count == 0) Snackbar.Add("Nie rozpoznano żadnych odczytów.", Severity.Warning);
+                else
+                {
+                    Snackbar.Add($"Pomyślnie rozpoznano {odczytyZPdf.Count} odczytów.", Severity.Success);
+                    await OtworzDialogOdczytow(odczytyZPdf);
+                }
+            }
+            catch (Exception ex) { Snackbar.Add("Błąd: " + ex.Message, Severity.Error); }
+            finally { trwaPrzetwarzanie = false; }
+        }
+    }
+
+    private async Task OtworzDialogOdczytow(List<OdczytZPdfDto> odczyty)
+    {
+        var param = new DialogParameters { ["Odczyty"] = odczyty };
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Large,
+            FullWidth = true,
+            CloseButton = true,
+            CloseOnEscapeKey = true
+        };
+        var dialog = await DialogService.ShowAsync<OdczytyDialog>("Odczyty liczników", param, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is List<OdczytZPdfDto> zatwierdzoneOdczyty)
+        {
+            odczytyZPdf = zatwierdzoneOdczyty;
+            await ZapiszOdczyty();
+        }
+        else
+        {
+            odczytyZPdf = null;
+        }
+    }
+
+    private async Task PrzetworzFakturePdf(IBrowserFile file)
+    {
+        if (file != null)
+        {
+            trwaPrzetwarzanieFaktury = true;
+            try
+            {
+                var wyekstrahowanaFaktura = await LicznikService.ParsujFaktureAsync(file);
+                if (wyekstrahowanaFaktura == null)
+                {
+                    Snackbar.Add("Nie udało się rozpoznać faktury automatycznie. Wypełnij ją ręcznie.", Severity.Warning);
+                    await OtworzDialogFaktura(); // Otwórz pusty dialog
+                }
+                else
+                {
+                    Snackbar.Add($"Wykryto fakturę. Zweryfikuj i zapisz.", Severity.Info);
+                    await OtworzDialogFaktura(wyekstrahowanaFaktura);
+                }
+            }
+            catch (Exception ex) { Snackbar.Add("Błąd: " + ex.Message, Severity.Error); }
+            finally { trwaPrzetwarzanieFaktury = false; }
+        }
+    }
+
+    private async Task ZapiszOdczyty()
+    {
+        if (odczytyZPdf == null || !odczytyZPdf.Any(x => !x.Ignoruj))
+        {
+            Snackbar.Add("Brak odczytów do zapisania.", Severity.Warning);
+            return;
+        }
+
+        var bezBudynku = odczytyZPdf
+            .Where(x => !x.Ignoruj && !x.ObiektId.HasValue)
+            .Select(x => x.NumerLicznika)
+            .Distinct()
+            .ToList();
+
+        if (bezBudynku.Any())
+        {
+            Snackbar.Add($"Nie można zapisać odczytów. Przypisz budynek dla liczników: {string.Join(", ", bezBudynku)}.", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            await LicznikService.ZapiszOdczytyAsync(odczytyZPdf);
+            Snackbar.Add("Odczyty zapisane do bazy danych.", Severity.Success);
+            odczytyZPdf = null;
+            await OdswiezDane();
+        }
+        catch (Exception ex) { Snackbar.Add("Błąd podczas zapisywania: " + ex.Message, Severity.Error); }
+    }
+}

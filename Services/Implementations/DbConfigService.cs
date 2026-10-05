@@ -15,16 +15,21 @@ namespace Mieszkaniec.Services.Implementations
     {
         private readonly IConfiguration _configuration;
         private readonly IWebHostEnvironment _env;
+        private readonly DbConnectionStringProvider _connectionStringProvider;
 
-        public DbConfigService(IConfiguration configuration, IWebHostEnvironment env)
+        public DbConfigService(
+            IConfiguration configuration,
+            IWebHostEnvironment env,
+            DbConnectionStringProvider connectionStringProvider)
         {
             _configuration = configuration;
             _env = env;
+            _connectionStringProvider = connectionStringProvider;
         }
 
         public DbConnectionModel PobierzAktualnaKonfiguracje()
         {
-            var connStr = _configuration.GetConnectionString("DefaultConnection") ?? "";
+            var connStr = _connectionStringProvider.ConnectionString;
             var model = new DbConnectionModel();
 
             try
@@ -87,6 +92,7 @@ namespace Mieszkaniec.Services.Implementations
                 var newJson = jsonNode.ToJsonString(options);
 
                 await File.WriteAllTextAsync(appSettingsPath, newJson);
+                _connectionStringProvider.Update(connStr);
                 return true;
             }
             catch (Exception ex)
@@ -124,4 +130,3 @@ namespace Mieszkaniec.Services.Implementations
         }
     }
 }
-

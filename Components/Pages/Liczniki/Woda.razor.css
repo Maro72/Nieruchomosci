@@ -1,0 +1,326 @@
+.water-readings {
+    --water-ink: var(--mud-palette-text-primary);
+    --water-muted: var(--mud-palette-text-secondary);
+    --water-line: var(--mud-palette-divider);
+    --water-soft: var(--mud-palette-background-grey);
+    color: var(--water-ink);
+}
+.water-readings .section-heading {
+    color: var(--water-ink);
+    font-weight: 700;
+    letter-spacing: 0;
+}
+.water-readings .action-strip {
+    border: 1px solid var(--water-line);
+    border-radius: 8px;
+    background: var(--mud-palette-surface);
+    padding: 16px;
+}
+.water-readings .action-panel {
+    min-height: 112px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 12px;
+}
+.water-readings .action-label {
+    color: var(--water-muted);
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.water-readings .data-section {
+    border: 1px solid var(--water-line);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--mud-palette-surface);
+}
+.water-readings .data-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--water-line);
+    background: var(--water-soft);
+}
+.water-readings .flat-table {
+    border: 0;
+    box-shadow: none;
+}
+.water-readings .flat-table .mud-table-head .mud-table-cell {
+    color: var(--water-muted);
+    background: var(--mud-palette-surface);
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-bottom: 1px solid var(--water-line);
+    white-space: nowrap;
+}
+.water-readings .flat-table .mud-table-cell {
+    padding: 10px 14px;
+    border-bottom: 1px solid #edf2f6;
+    vertical-align: middle;
+}
+.water-readings .flat-table .mud-table-row:last-child .mud-table-cell {
+    border-bottom: 0;
+}
+.water-readings .reading-number {
+    color: var(--water-ink);
+    font-weight: 700;
+    white-space: nowrap;
+}
+.water-readings .reading-muted {
+    color: var(--water-muted);
+    font-size: 0.82rem;
+}
+.water-readings .reading-input .mud-input-root {
+    min-height: 34px;
+    background: var(--mud-palette-surface);
+}
+.water-readings .preview-table .mud-table-cell {
+    padding: 5px 8px;
+    font-size: 0.78rem;
+}
+.water-readings .preview-table .mud-input-root {
+    min-height: 28px;
+    height: 28px;
+}
+.water-readings .preview-table .mud-input-slot {
+    padding-top: 1px !important;
+    padding-bottom: 1px !important;
+}
+.water-readings .preview-table .compact-number {
+    width: 70px;
+}
+.water-readings .preview-table .compact-number input {
+    font-size: 0.78rem;
+    text-align: right;
+}
+.water-readings .preview-table .meter-number {
+    color: var(--water-ink);
+    font-weight: 700;
+    white-space: nowrap;
+}
+.water-readings .preview-table .new-meter {
+    color: #b26a00;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+.water-readings .correction-cell,
+.water-readings .correction-cell .mud-input-root input {
+    color: #c62828 !important;
+    font-weight: 700;
+}
+.water-readings .reading-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(150px, 1fr));
+    gap: 1px;
+    margin: 14px 18px 0;
+    border: 1px solid var(--water-line);
+    background: var(--water-line);
+}
+.water-readings .summary-item {
+    padding: 10px 14px;
+    background: var(--mud-palette-surface);
+}
+.water-readings .summary-label {
+    display: block;
+    color: var(--water-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+.water-readings .summary-value {
+    color: var(--water-ink);
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+.water-readings .summary-value.correction-value {
+    color: #c62828;
+}
+
+/* Zmieniono @@media na @media */
+@media (max-width: 700px) {
+    .water-readings .reading-summary {
+        grid-template-columns: 1fr;
+    }
+}
+
+body:has(.mud-theme-dark) .water-readings,
+body.mud-theme-dark .water-readings {
+    --water-ink: var(--mud-palette-text-primary);
+    --water-muted: var(--mud-palette-text-secondary);
+    --water-line: var(--mud-palette-divider);
+    --water-soft: var(--mud-palette-background-grey);
+}
+body:has(.mud-theme-dark) .water-readings .action-strip,
+body.mud-theme-dark .water-readings .action-strip,
+body:has(.mud-theme-dark) .water-readings .data-section,
+body.mud-theme-dark .water-readings .data-section,
+body:has(.mud-theme-dark) .water-readings .summary-item,
+body.mud-theme-dark .water-readings .summary-item,
+body:has(.mud-theme-dark) .water-readings .flat-table .mud-table-cell,
+body.mud-theme-dark .water-readings .flat-table .mud-table-cell {
+    background: var(--mud-palette-surface) !important;
+    color: var(--mud-palette-text-primary) !important;
+}
+body:has(.mud-theme-dark) .water-readings .data-section-header,
+body.mud-theme-dark .water-readings .data-section-header,
+body:has(.mud-theme-dark) .water-readings .flat-table .mud-table-head .mud-table-cell,
+body.mud-theme-dark .water-readings .flat-table .mud-table-head .mud-table-cell {
+    background: var(--mud-palette-background-grey) !important;
+    color: var(--mud-palette-text-secondary) !important;
+}
+
+.meter-matrix-wrap {
+    overflow-x: auto;
+}
+
+.meter-grid .page-container {
+    padding: 0;
+}
+
+.meter-grid-scroll {
+    overflow-x: auto;
+}
+
+.meter-month-band {
+    display: grid;
+    grid-template-columns: 150px 115px repeat(48, 58px);
+    width: max-content;
+    min-width: 3049px;
+    height: 38px;
+    background: var(--mud-palette-surface);
+    border-bottom: 1px solid var(--water-line);
+}
+
+.meter-month-band .month-spacer {
+    border-right: 1px solid var(--water-line);
+}
+
+.meter-month-band .month-label {
+    grid-column: span 4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    background: var(--mud-palette-background-grey);
+    border-right: 1px solid var(--water-line);
+}
+
+.meter-grid .mud-table-container {
+    overflow-x: visible;
+}
+
+.meter-grid .mud-toolbar {
+    display: none !important;
+}
+
+.meter-grid .mud-table-root {
+    min-width: 980px;
+}
+
+.meter-grid .mud-table-cell {
+    white-space: nowrap;
+    padding: 5px 6px !important;
+}
+
+.meter-grid .meter-grid-number {
+    display: block;
+    width: 100%;
+    text-align: right;
+}
+
+.meter-grid .meter-grid-correction {
+    color: #c62828;
+    font-weight: 700;
+}
+
+.meter-grid .meter-grid-total {
+    font-weight: 700;
+    color: var(--water-ink);
+}
+
+.meter-grid .meter-grid-sum {
+    background-color: rgba(25, 118, 210, 0.08) !important;
+    border-left: 2px solid rgba(25, 118, 210, 0.28) !important;
+}
+
+.meter-grid .meter-grid-sum-header {
+    background-color: rgba(25, 118, 210, 0.14) !important;
+    border-left: 2px solid rgba(25, 118, 210, 0.36) !important;
+    color: #155a9c !important;
+}
+
+.meter-matrix {
+    border-collapse: collapse;
+    min-width: 980px;
+    width: 100%;
+    font-size: 0.78rem;
+}
+
+.meter-matrix th,
+.meter-matrix td {
+    border: 1px solid var(--water-line);
+    padding: 6px 8px;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.meter-matrix th:first-child,
+.meter-matrix th:nth-child(2),
+.meter-matrix td:first-child,
+.meter-matrix td:nth-child(2) {
+    text-align: left;
+    position: sticky;
+    background: var(--mud-palette-surface);
+    z-index: 1;
+}
+
+.meter-matrix th:first-child,
+.meter-matrix td:first-child {
+    left: 0;
+    min-width: 100px; /*budynek */
+}
+
+.meter-matrix th:nth-child(2),
+.meter-matrix td:nth-child(2) {
+    left: 150px;
+    min-width: 90px; /*numer licznika */
+}
+
+.meter-matrix .month-header {
+    background: var(--mud-palette-background-grey);
+    text-align: center;
+    font-weight: 700;
+}
+
+.meter-matrix .sub-header {
+    font-size: 0.68rem;
+    color: var(--water-muted);
+    text-align: center;
+    width: 4ch;
+    min-width: 4ch;
+    max-width: 4ch;
+}
+
+.meter-matrix tbody td:nth-child(n + 3) {
+    width: 4ch;
+    min-width: 4ch;
+    max-width: 4ch;
+}
+
+.meter-matrix .correction {
+    color: #c62828;
+}
+
+.meter-matrix .total-row td {
+    font-weight: 700;
+    background: var(--mud-palette-background-grey);
+}

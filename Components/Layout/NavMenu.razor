@@ -1,73 +1,114 @@
 @using MudBlazor
 @using Microsoft.AspNetCore.Components.Authorization
 <div class="navigation-tree @(IsDarkMode ? "dark-mode" : string.Empty)">
-<MudNavMenu Class="pt-4">
+    <MudNavMenu Class="pt-4">
 
-    <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home" Ripple="false">
-        Menu
-    </MudNavLink>
+        <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home" Ripple="false">
+            Menu
+        </MudNavLink>
 
-    <AuthorizeView Policy="Budynki.Odczyt">
-        <Authorized>
-            <MudNavGroup Title="Nieruchomości" @bind-Expanded="_nieruchomosciExpanded" Icon="@Icons.Material.Filled.Domain">
-                <MudNavLink Href="dashboard" Icon="@Icons.Material.Filled.Dashboard" Ripple="false">Dashboard</MudNavLink>
-                <MudNavLink Href="fbudynki" Icon="@Icons.Material.Filled.Apartment" Ripple="false">Budynki</MudNavLink>
-                <MudNavLink Href="historiausterek" Icon="@Icons.Material.Filled.ManageHistory" Ripple="false">Historia usterek</MudNavLink>
-            </MudNavGroup>
-        </Authorized>
-    </AuthorizeView>
+        <AuthorizeView Policy="Budynki.Odczyt">
+            <Authorized>
+                <MudNavGroup Title="Nieruchomości" @bind-Expanded="_nieruchomosciExpanded" Icon="@Icons.Material.Filled.Domain">
+                    <AuthorizeView Policy="Budynki.Edycja" Context="dashboardCtx">
+                        <Authorized>
+                            <MudNavLink Href="dashboard" Icon="@Icons.Material.Filled.Dashboard" Ripple="false">Dashboard</MudNavLink>
+                        </Authorized>
+                    </AuthorizeView>
+                    <MudNavLink Href="fbudynki" Icon="@Icons.Material.Filled.Apartment" Ripple="false">Budynki</MudNavLink>
+                </MudNavGroup>
+            </Authorized>
+        </AuthorizeView>
 
-    <AuthorizeView Policy="Awarie.Odczyt">
-        <Authorized>
-            <MudNavGroup Title="Obsługa techniczna" @bind-Expanded="_obslugaExpanded" Icon="@Icons.Material.Filled.Build">
-                <MudNavLink Href="fprzeglady" Icon="@Icons.Material.Filled.EventNote" Ripple="false">Przeglądy</MudNavLink>
-                <MudNavLink Href="fawarie" Icon="@Icons.Material.Filled.WarningAmber" Ripple="false">Zgłoszenia usterek</MudNavLink>
-                <MudNavLink Href="fremonbud" Icon="@Icons.Material.Filled.Handyman" Ripple="false">Prace remontowe</MudNavLink>
-            </MudNavGroup>
-        </Authorized>
-    </AuthorizeView>
+        <AuthorizeView Policy="Techniczny.Odczyt">
+            <Authorized>
+                <MudNavGroup Title="Obsługa techniczna" @bind-Expanded="_obslugaExpanded" Icon="@Icons.Material.Filled.Build">
+                    <AuthorizeView Policy="Przeglady.Odczyt" Context="przegladyCtx">
+                        <Authorized>
+                            <MudNavLink Href="fprzeglady" Icon="@Icons.Material.Filled.EventNote" Ripple="false">Przeglądy</MudNavLink>
+                        </Authorized>
+                    </AuthorizeView>
+                    <AuthorizeView Policy="Awarie.Odczyt" Context="awarieCtx">
+                        <Authorized>
+                            <MudNavLink Href="fawarie" Icon="@Icons.Material.Filled.WarningAmber" Ripple="false">Zgłoszenia usterek</MudNavLink>
+                        </Authorized>
+                    </AuthorizeView>
+                    <AuthorizeView Policy="Remonty.Odczyt" Context="remontyCtx">
+                        <Authorized>
+                            <MudNavLink Href="fremonbud" Icon="@Icons.Material.Filled.Handyman" Ripple="false">Prace remontowe</MudNavLink>
+                        </Authorized>
+                    </AuthorizeView>
+                    <AuthorizeView Policy="HistoriaUsterek.Odczyt" Context="historiaCtx">
+                        <Authorized>
+                            <MudNavLink Href="historiausterek" Icon="@Icons.Material.Filled.ManageHistory" Ripple="false">Historia usterek</MudNavLink>
+                        </Authorized>
+                    </AuthorizeView>
+                </MudNavGroup>
+            </Authorized>
+        </AuthorizeView>
 
-    <AuthorizeView Policy="Umowy.Odczyt">
-        <Authorized>
-            <MudNavGroup Title="Najem i umowy" @bind-Expanded="_umowyExpanded" Icon="@Icons.Material.Filled.Description">
-                <AuthorizeView Policy="Najemcy.Zarzadzanie" Context="innerCtx">
-                    <Authorized>
-                        <MudNavLink Href="najemcy" Icon="@Icons.Material.Filled.People" Ripple="false">Najemcy</MudNavLink>
-                    </Authorized>
-                </AuthorizeView>
-                <MudNavLink Href="umowy" Icon="@Icons.Material.Filled.Description" Ripple="false">Umowy</MudNavLink>
-                <AuthorizeView Policy="Lokale.Zarzadzanie" Context="innerCtx">
-                    <Authorized>
-                        <MudNavLink Href="wynajem" Icon="@Icons.Material.Filled.Receipt" Ripple="false">Lokale i pomieszczenia</MudNavLink>
-                    </Authorized>
-                </AuthorizeView>
-            </MudNavGroup>
-        </Authorized>
-    </AuthorizeView>
+        <AuthorizeView Policy="Najem.Odczyt">
+            <Authorized>
+                <MudNavGroup Title="Najem i umowy" @bind-Expanded="_umowyExpanded" Icon="@Icons.Material.Filled.Description">
+                    <AuthorizeView Policy="Najemcy.Odczyt" Context="najemcyCtx">
+                        <Authorized>
+                            <MudNavLink Href="najemcy" Icon="@Icons.Material.Filled.People" Ripple="false">Najemcy</MudNavLink>
+                        </Authorized>
+                    </AuthorizeView>
+                    <AuthorizeView Policy="Umowy.Odczyt" Context="umowyCtx">
+                        <Authorized>
+                            <MudNavLink Href="umowy" Icon="@Icons.Material.Filled.Description" Ripple="false">Umowy</MudNavLink>
+                        </Authorized>
+                    </AuthorizeView>
+                    <AuthorizeView Policy="Lokale.Odczyt" Context="lokaleCtx">
+                        <Authorized>
+                            <MudNavLink Href="wynajem" Icon="@Icons.Material.Filled.Receipt" Ripple="false">Lokale i pomieszczenia</MudNavLink>
+                        </Authorized>
+                    </AuthorizeView>
+                </MudNavGroup>
+            </Authorized>
+        </AuthorizeView>
 
-    <AuthorizeView Policy="Budynki.Edycja">
-        <Authorized>
-            <MudNavGroup Title="Konfiguracja" @bind-Expanded="_konfiguracjaExpanded" Icon="@Icons.Material.Filled.Settings">
-                <MudNavLink Href="fterminy/terminy" Icon="@Icons.Material.Filled.MoreTime" Ripple="false">Definicje terminów</MudNavLink>
-                <MudNavLink Href="konfiguracja" Icon="@Icons.Material.Filled.Storage" Ripple="false">Baza danych i pliki</MudNavLink>
-            </MudNavGroup>
-        </Authorized>
-    </AuthorizeView>
+        <AuthorizeView Policy="Budynki.Edycja">
+            <Authorized>
+                <MudNavGroup Title="Konfiguracja" @bind-Expanded="_konfiguracjaExpanded" Icon="@Icons.Material.Filled.Settings">
+                    <MudNavLink Href="fterminy/terminy" Icon="@Icons.Material.Filled.MoreTime" Ripple="false">Definicje terminów</MudNavLink>
+                    <MudNavLink Href="konfiguracja" Icon="@Icons.Material.Filled.Storage" Ripple="false">Baza danych i pliki</MudNavLink>
+                </MudNavGroup>
+            </Authorized>
+        </AuthorizeView>
 
-    <AuthorizeView Policy="Uzytkownicy.Zarzadzanie">
-        <Authorized>
-            <MudNavGroup Title="Administracja" @bind-Expanded="_administracjaExpanded" Icon="@Icons.Material.Filled.AdminPanelSettings">
-                <MudNavLink Href="uzytkownicy" Icon="@Icons.Material.Filled.People" Ripple="false">Lista użytkowników</MudNavLink>
-                <AuthorizeView Policy="Uprawnienia.Nadawanie" Context="innerCtx">
-                    <Authorized>
-                        <MudNavLink Href="uprawnienia" Icon="@Icons.Material.Filled.VerifiedUser" Ripple="false">Uprawnienia</MudNavLink>
-                    </Authorized>
-                </AuthorizeView>
-            </MudNavGroup>
-        </Authorized>
-    </AuthorizeView>
+        <AuthorizeView Policy="Administracja.Odczyt">
+            <Authorized>
+                <MudNavGroup Title="Administracja" @bind-Expanded="_administracjaExpanded" Icon="@Icons.Material.Filled.AdminPanelSettings">
+                    <AuthorizeView Policy="Uzytkownicy.Odczyt" Context="uzytkownicyCtx">
+                        <Authorized>
+                            <MudNavLink Href="uzytkownicy" Icon="@Icons.Material.Filled.People" Ripple="false">Lista użytkowników</MudNavLink>
+                        </Authorized>
+                    </AuthorizeView>
+                    <AuthorizeView Policy="Uprawnienia.Odczyt" Context="uprawnieniaCtx">
+                        <Authorized>
+                            <MudNavLink Href="uprawnienia" Icon="@Icons.Material.Filled.VerifiedUser" Ripple="false">Uprawnienia</MudNavLink>
+                        </Authorized>
+                    </AuthorizeView>
+                    <MudNavLink Href="administracja/liczniki" Icon="@Icons.Material.Filled.Speed" Ripple="false">Liczniki</MudNavLink>
+                </MudNavGroup>
+            </Authorized>
+        </AuthorizeView>
 
-</MudNavMenu>
+        <AuthorizeView Policy="Techniczny.Odczyt">
+            <Authorized>
+                <MudNavGroup Title="Liczniki" @bind-Expanded="_licznikiExpanded" Icon="@Icons.Material.Filled.ReceiptLong">
+                    <MudNavGroup Title="Woda" Icon="@Icons.Material.Filled.WaterDrop">
+                        <MudNavLink Href="woda" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.WaterDrop" Ripple="false">Odczyty i faktury</MudNavLink>
+                        <MudNavLink Href="woda/zuzycia" Icon="@Icons.Material.Filled.BarChart" Ripple="false">Zużycia</MudNavLink>
+                    </MudNavGroup>
+                    @*<MudNavLink Href="cieplo" Icon="@Icons.Material.Filled.LocalFireDepartment" Ripple="false">Ciepło</MudNavLink>*@
+                </MudNavGroup>
+            </Authorized>
+        </AuthorizeView>
+
+    </MudNavMenu>
 </div>
 
 @code {
@@ -80,6 +121,7 @@
     private int _lastCollapseSignal;
     private bool _nieruchomosciExpanded;
     private bool _obslugaExpanded;
+    private bool _licznikiExpanded;
     private bool _umowyExpanded;
     private bool _konfiguracjaExpanded;
     private bool _administracjaExpanded;
@@ -94,6 +136,7 @@
         _lastCollapseSignal = CollapseSignal;
         _nieruchomosciExpanded = false;
         _obslugaExpanded = false;
+        _licznikiExpanded = false;
         _umowyExpanded = false;
         _konfiguracjaExpanded = false;
         _administracjaExpanded = false;

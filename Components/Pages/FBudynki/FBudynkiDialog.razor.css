@@ -17,10 +17,43 @@
 ::deep .modern-dialog .mud-dialog-content {
     padding: 0 !important;
     background-color: #ffffff;
+    max-height: calc(100vh - 190px);
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .modern-form-container {
-    padding: 24px;
+    padding: 20px 24px 24px;
+}
+
+::deep .modern-dialog .mud-dialog-title {
+    flex-shrink: 0;
+}
+
+::deep .modern-dialog .mud-dialog-actions {
+    flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+    ::deep .modern-dialog .mud-dialog-content {
+        max-height: calc(100vh - 150px);
+    }
+
+    .modern-form-container {
+        padding: 16px 14px 18px;
+    }
+
+    ::deep .modern-dialog .mud-dialog-title > div {
+        padding: 14px 16px !important;
+    }
+
+    ::deep .modern-dialog .mud-dialog-title small {
+        display: none;
+    }
+
+    ::deep .modern-dialog .mud-dialog-content .row {
+        --bs-gutter-y: 0.65rem;
+    }
 }
 
 /* Okrąg z ikoną główną budynku */

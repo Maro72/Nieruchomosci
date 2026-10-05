@@ -56,27 +56,40 @@
 
                     @* 3. DATA WYKONANIA *@
                     <div class="col-md-6 mb-3 pe-md-2">
-                        <label class="form-label small fw-semibold text-secondary mb-1 d-block">Data Wykonania</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-calendar-event text-muted"></i></span>
-                            <input type="date" class="form-control border-start-0" style="border-left: none;" @bind="Model.DataWykonania" required />
-                        </div>
+                        <MudDatePicker @bind-Date="DataWykonaniaPicker"
+                                       Label="Data wykonania"
+                                       Variant="Variant.Text"
+                                       PickerVariant="PickerVariant.Inline"
+                                       DateFormat="dd.MM.yyyy"
+                                       Editable="true"
+                                       Required="true"
+                                       Adornment="Adornment.End"
+                                       AdornmentIcon="@Icons.Material.Filled.CalendarMonth"
+                                       Class="review-date-picker" />
                     </div>
 
                     <div class="col-md-6 mb-3 ps-md-2">
-                        <label class="form-label small fw-semibold text-secondary mb-1 d-block">Nr protokołu</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-file-earmark-text text-muted"></i></span>
-                            <input type="text" class="form-control border-start-0" style="border-left: none;" @bind="Model.NumerProtokołu" maxlength="100" placeholder="np. PROT/09/2026" />
-                        </div>
+                        <MudTextField @bind-Value="Model.NumerProtokołu"
+                                      Label="Nr protokołu"
+                                      Variant="Variant.Outlined"
+                                      Margin="Margin.Dense"
+                                      MaxLength="100"
+                                      Placeholder="np. PROT/09/2026"
+                                      Adornment="Adornment.End"
+                                      AdornmentIcon="@Icons.Material.Filled.Description" />
                     </div>
 
                     <div class="col-md-6 mb-3 pe-md-2">
-                        <label class="form-label small fw-semibold text-secondary mb-1 d-block">Data protokołu</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-calendar-check text-muted"></i></span>
-                            <input type="date" class="form-control border-start-0" style="border-left: none;" @bind="Model.DataProtokołu" />
-                        </div>
+                        <MudDatePicker @bind-Date="Model.DataProtokołu"
+                                       Label="Data protokołu"
+                                       Variant="Variant.Text"
+                                       PickerVariant="PickerVariant.Inline"
+                                       DateFormat="dd.MM.yyyy"
+                                       Editable="true"
+                                       Clearable="true"
+                                       Adornment="Adornment.End"
+                                       AdornmentIcon="@Icons.Material.Filled.Event"
+                                       Class="review-date-picker" />
                     </div>
 
                     @* 4. OCENA TECHNICZNA *@
@@ -155,6 +168,18 @@
     protected string WybranyPlikNazwa = string.Empty;
     protected long WybranyPlikRozmiarKB = 0;
 
+    private DateTime? DataWykonaniaPicker
+    {
+        get => Model.DataWykonania;
+        set
+        {
+            if (value.HasValue)
+            {
+                Model.DataWykonania = value.Value;
+            }
+        }
+    }
+
     protected override async Task OnInitializedAsync()
     {
         ListaObiektow = await ObiektService.GetAllActiveAsync();
@@ -227,6 +252,10 @@
 }
 
 <style>
+    .review-date-picker {
+        width: 100%;
+    }
+
     /* Dopasowanie systemowego krzyżyka zamykającego MudBlazor do jasnego nagłówka */
     ::deep .mud-dialog-title .mud-button-root {
         color: rgba(0, 0, 0, 0.54) !important;

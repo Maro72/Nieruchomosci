@@ -1,5 +1,5 @@
-﻿@page "/umowy-dialog"
-@attribute [Authorize(Policy = "ZarzadzanieUmowami")]
+@page "/umowy-dialog"
+@attribute [Authorize(Policy = "Umowy.Zarzadzanie")]
 @inherits UmowyDialogBase
 @using MudBlazor
 @using Mieszkaniec.Model.Entities
@@ -42,7 +42,7 @@
                                 <label class="form-label small fw-bold text-secondary mb-1">Kontrahent / Najemca</label>
                                 <div class="input-group input-group-sm shadow-sm">
                                     <span class="input-group-text bg-light text-muted"><i class="bi bi-person-badge"></i></span>
-                                    <select class="form-select" @bind="Model.NajemcaId" required>
+                                    <select class="form-select" value="@Model.NajemcaId" @onchange="OnNajemcaChanged" required>
                                         <option value="0" disabled>Wybierz najemcę...</option>
                                         @foreach (var n in ListaNajemcow)
                                         {
@@ -111,14 +111,15 @@
                             @* Formularz wyboru pomieszczenia *@
                             <div class="col-12 bg-light p-3 rounded border border-light shadow-sm mb-2">
                                 <div class="row g-2 align-items-end">
-                                    <div class="col-md-4">
-                                        <label class="form-label small fw-bold text-secondary mb-1">Wybierz Wolny Lokal</label>
+                                    <div class="col-md-5">
+                                        <label class="form-label small fw-bold text-secondary mb-1">Wybierz Lokal</label>
                                         <select class="form-select form-select-sm" value="@WybranyLokalId" @onchange="OnLokalChanged">
                                             <option value="0">-- Wybierz lokal z obiektu --</option>
-                                            @* Pokazujemy tylko lokale wolne lub już przypisane do tej umowy *@
-                                            @foreach (var l in ListaDostepnychLokali.Where(lok => lok.Status == "Wolny" || (Model.WynajmowaneLokale != null && Model.WynajmowaneLokale.Any(rl => rl.LokalWynajemId == lok.Id))))
+                                            @foreach (var l in DostepneLokaleDoWyboru)
                                             {
-                                                <option value="@l.Id">@l.NumerLokalu (@l.TypLokalu - @l.PowierzchniaM2 m²)</option>
+                                                <option value="@l.Id">
+                                                    @(l.Obiekt != null ? $"[{l.Obiekt.Nazwa}] " : "")@l.NumerLokalu (@l.TypLokalu, @l.PowierzchniaM2.ToString("N2") m², @l.CenaZaM2.ToString("N2") zł/m²) - @l.Status
+                                                </option>
                                             }
                                         </select>
                                     </div>
@@ -131,7 +132,7 @@
                                             <span style="font-size: 0.8rem;">Ryczałt</span>
                                         </MudCheckBox>
                                     </div>
-                                    <div class="col-md-3">
+                                    <div class="col-md-2">
                                         <button type="button" class="btn btn-sm btn-success w-100 fw-bold shadow-sm" @onclick="DodajLokalDoUmowy">
                                             <i class="bi bi-plus-circle me-1"></i> Przypisz
                                         </button>
@@ -145,10 +146,11 @@
 
                                 @if (Model.WynajmowaneLokale != null && Model.WynajmowaneLokale.Any())
                                 {
-                                    <div class="overflow-auto border rounded shadow-sm" style="max-height: 200px;">
+                                    <div class="overflow-auto border rounded shadow-sm" style="max-height: 250px;">
                                         <table class="table table-sm table-bordered table-hover align-middle mb-0" style="font-size: 0.85rem;">
                                             <thead class="table-light sticky-top">
                                                 <tr>
+                                                    <th>Budynek</th>
                                                     <th>Numer Lokalu</th>
                                                     <th>Typ</th>
                                                     <th>Powierzchnia</th>
@@ -162,6 +164,7 @@
                                                 @foreach (var rel in Model.WynajmowaneLokale)
                                                 {
                                                     <tr>
+                                                        <td class="text-secondary">@(rel.LokalWynajem?.Obiekt?.Nazwa ?? "-")</td>
                                                         <td class="fw-bold text-primary">@(rel.LokalWynajem?.NumerLokalu ?? $"ID: {rel.LokalWynajemId}")</td>
                                                         <td>@(rel.LokalWynajem?.TypLokalu ?? "-")</td>
                                                         <td>@($"{rel.LokalWynajem?.PowierzchniaM2:N2} m²")</td>
@@ -173,7 +176,7 @@
                                                         </td>
                                                         <td class="fw-bold">@($"{rel.WartoscCzynszuMiesiecznego:N2} zł")</td>
                                                         <td class="text-center">
-                                                            <button type="button" class="btn btn-sm btn-link text-danger p-0" @onclick="@(() => UsunLokalZUmowy(rel))">
+                                                            <button type="button" class="btn btn-sm btn-link text-danger p-0" @onclick="@(() => UsunLokalZUmowy(rel))" title="Usuń lokal z umowy">
                                                                 <i class="bi bi-trash"></i>
                                                             </button>
                                                         </td>

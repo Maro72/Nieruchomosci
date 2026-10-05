@@ -10,17 +10,22 @@ public sealed class BackupService : IBackupService
 {
     private readonly IConfiguration _configuration;
     private readonly IWebHostEnvironment _environment;
+    private readonly DbConnectionStringProvider _connectionStringProvider;
 
-    public BackupService(IConfiguration configuration, IWebHostEnvironment environment)
+    public BackupService(
+        IConfiguration configuration,
+        IWebHostEnvironment environment,
+        DbConnectionStringProvider connectionStringProvider)
     {
         _configuration = configuration;
         _environment = environment;
+        _connectionStringProvider = connectionStringProvider;
     }
 
     public async Task<(bool Success, string Message, string? ArchivePath)> CreateBackupAsync()
     {
         var settings = _configuration.GetSection("BackupSettings").Get<BackupSettings>() ?? new BackupSettings();
-        var connectionString = _configuration.GetConnectionString("DefaultConnection");
+        var connectionString = _connectionStringProvider.ConnectionString;
 
         if (string.IsNullOrWhiteSpace(connectionString))
             return (false, "Brak connection stringa bazy danych.", null);

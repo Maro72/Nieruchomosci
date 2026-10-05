@@ -1,12 +1,12 @@
 ﻿@page "/fprzeglady"
-@attribute [Authorize(Policy = "OdczytBudynkow")]
+@attribute [Authorize(Policy = "Przeglady.Odczyt")]
 @rendermode InteractiveServer
 @namespace Mieszkaniec.Components.Pages.FPrzeglady
 @using Mieszkaniec.Model.Entities
 @using Mieszkaniec.Components.UI
 @using MudBlazor
 
-<div class="d-flex flex-column" style="height: calc(100vh - 64px); background-color: #f8fafc; overflow: hidden;">
+<div class="review-schedule d-flex flex-column" style="height: calc(100vh - 64px); background-color: var(--mud-palette-background); overflow: hidden;">
 
     @* ── NAGŁÓWEK MODUŁU ── *@
     <div class="px-4 pt-4 pb-2 d-flex align-items-center justify-content-between">
@@ -155,6 +155,7 @@
                                                 <th>Typ Przeglądu / Kontroli</th>
                                                 <th style="text-align: center; width: 130px;">Ostatni Przegląd</th>
                                                 <th style="text-align: center; width: 180px;">Następny Termin</th>
+                                                <th style="text-align: left; width: 100px;">Uwagi</th>
                                                 <th style="text-align: center; width: 100px;">Załączniki</th>
                                                 <th style="text-align: center; width: 120px;">Akcje</th>
                                             </tr>
@@ -181,6 +182,16 @@
                                                         <small class="text-muted d-block" style="font-size: 0.73rem; font-weight: 500;">
                                                             @WyznaczDniTekst(p)
                                                         </small>
+                                                    </td>
+                                                    <td class="text-left">
+                                                        @if (!string.IsNullOrEmpty(p.Uwagi))
+                                                        {
+                                                            <span class="text-dark">@p.Uwagi</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="text-muted small">-</span>
+                                                        }
                                                     </td>
                                                     <td class="text-center">
                                                         @if (p.Zalaczniki != null && p.Zalaczniki.Any())

@@ -1,0 +1,64 @@
+@using Mieszkaniec.Model.Entities
+@using MudBlazor
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="form">
+            @if (Odczyt.Id == 0)
+            {
+                <MudSelect T="int?" @bind-Value="wybranyLicznikId" Label="Licznik" Required="true">
+                    @foreach (var licznik in Liczniki.OrderBy(x => x.Obiekt?.Nazwa).ThenBy(x => x.NumerLicznika))
+                    {
+                        <MudSelectItem T="int?" Value="@licznik.Id">@licznik.NumerLicznika</MudSelectItem>
+                    }
+                </MudSelect>
+            }
+            <MudNumericField @bind-Value="Odczyt.Rok" Label="Rok" Required="true" />
+            <MudNumericField @bind-Value="Odczyt.Miesiac" Label="Miesiąc" Required="true" Min="1" Max="12" />
+            
+            <MudNumericField @bind-Value="Odczyt.StanPoczatkowy" Label="Stan początkowy" Required="true" />
+            <MudNumericField @bind-Value="Odczyt.StanKoncowy" Label="Stan końcowy" Required="true" />
+            <MudNumericField @bind-Value="Odczyt.Zuzycie" Label="Zużycie" Required="true" />
+            <MudNumericField @bind-Value="Odczyt.Korekta" Label="Korekta" />
+            <MudNumericField @bind-Value="Odczyt.IloscDoZafakturowania" Label="Do zafakturowania" Required="true" />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Anuluj</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Zapisz</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public OdczytWody Odczyt { get; set; } = new OdczytWody { Rok = DateTime.Now.Year, Miesiac = DateTime.Now.Month };
+    [Parameter] public IEnumerable<Licznik> Liczniki { get; set; } = Array.Empty<Licznik>();
+
+    MudForm form;
+    private int? wybranyLicznikId;
+
+    protected override void OnParametersSet()
+    {
+        if (Odczyt.LicznikId > 0)
+        {
+            wybranyLicznikId = Odczyt.LicznikId;
+        }
+    }
+
+    private async Task Submit()
+    {
+        await form.Validate();
+        if (form.IsValid && (Odczyt.Id != 0 || wybranyLicznikId.HasValue))
+        {
+            if (wybranyLicznikId.HasValue)
+            {
+                Odczyt.LicznikId = wybranyLicznikId.Value;
+            }
+
+            MudDialog.Close(DialogResult.Ok(Odczyt));
+        }
+    }
+
+    void Cancel() => MudDialog.Cancel();
+}

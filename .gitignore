@@ -32,3 +32,4 @@ scratch/
 
 # macOS
 .DS_Store
+._*

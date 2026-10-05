@@ -61,6 +61,45 @@ namespace Mieszkaniec.Migrations
                     b.ToTable("AneksyUmow");
                 });
 
+            modelBuilder.Entity("Mieszkaniec.Model.Entities.FakturaWody", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("DataDodania")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("DataWystawienia")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("Miesiac")
+                        .HasColumnType("int");
+
+                    b.Property<string>("NumerFaktury")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<int>("Rok")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("WartoscBrutto")
+                        .HasColumnType("decimal(12,2)");
+
+                    b.Property<decimal>("WartoscNetto")
+                        .HasColumnType("decimal(12,2)");
+
+                    b.Property<decimal>("ZuzycieFakturowane_m3")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("faktury_wody");
+                });
+
             modelBuilder.Entity("Mieszkaniec.Model.Entities.KosztorysMaterial", b =>
                 {
                     b.Property<int>("Id")
@@ -96,6 +135,44 @@ namespace Mieszkaniec.Migrations
                     b.HasIndex("PraceRemontoweId");
 
                     b.ToTable("KosztorysMaterial");
+                });
+
+            modelBuilder.Entity("Mieszkaniec.Model.Entities.Licznik", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("CzyAktywny")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<DateTime>("DataDodania")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("NumerLicznika")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<int?>("ObiektId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Typ")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<string>("Uwagi")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ObiektId");
+
+                    b.ToTable("liczniki");
                 });
 
             modelBuilder.Entity("Mieszkaniec.Model.Entities.LokalWynajem", b =>
@@ -253,6 +330,51 @@ namespace Mieszkaniec.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("obiekty");
+                });
+
+            modelBuilder.Entity("Mieszkaniec.Model.Entities.OdczytWody", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("DataOdczytu")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("IloscDoZafakturowania")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Korekta")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LicznikId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Miesiac")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("OstrzezenieNadmierneZuzycie")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<int>("Rok")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StanKoncowy")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StanPoczatkowy")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Zuzycie")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LicznikId");
+
+                    b.ToTable("odczyty_wody");
                 });
 
             modelBuilder.Entity("Mieszkaniec.Model.Entities.PraceRemontowe", b =>
@@ -734,6 +856,102 @@ namespace Mieszkaniec.Migrations
                             Id = 12,
                             NazwaSystemowa = "Uprawnienia.Nadawanie",
                             Opis = "Nadawanie ról i uprawnień"
+                        },
+                        new
+                        {
+                            Id = 17,
+                            NazwaSystemowa = "Dashboard.Odczyt",
+                            Opis = "Podgląd pulpitu zarządczego"
+                        },
+                        new
+                        {
+                            Id = 18,
+                            NazwaSystemowa = "HistoriaUsterek.Odczyt",
+                            Opis = "Podgląd historii usterek"
+                        },
+                        new
+                        {
+                            Id = 19,
+                            NazwaSystemowa = "Przeglady.Odczyt",
+                            Opis = "Podgląd przeglądów technicznych"
+                        },
+                        new
+                        {
+                            Id = 20,
+                            NazwaSystemowa = "Przeglady.Edycja",
+                            Opis = "Zarządzanie przeglądami technicznymi"
+                        },
+                        new
+                        {
+                            Id = 21,
+                            NazwaSystemowa = "Remonty.Odczyt",
+                            Opis = "Podgląd prac remontowych"
+                        },
+                        new
+                        {
+                            Id = 22,
+                            NazwaSystemowa = "Remonty.Edycja",
+                            Opis = "Zarządzanie pracami remontowymi"
+                        },
+                        new
+                        {
+                            Id = 23,
+                            NazwaSystemowa = "Lokale.Odczyt",
+                            Opis = "Podgląd lokali i pomieszczeń"
+                        },
+                        new
+                        {
+                            Id = 24,
+                            NazwaSystemowa = "Lokale.Edycja",
+                            Opis = "Zarządzanie lokalami i rzutami"
+                        },
+                        new
+                        {
+                            Id = 25,
+                            NazwaSystemowa = "Najemcy.Odczyt",
+                            Opis = "Podgląd bazy najemców"
+                        },
+                        new
+                        {
+                            Id = 26,
+                            NazwaSystemowa = "Najemcy.Edycja",
+                            Opis = "Zarządzanie bazą najemców"
+                        },
+                        new
+                        {
+                            Id = 27,
+                            NazwaSystemowa = "Uzytkownicy.Odczyt",
+                            Opis = "Podgląd kont użytkowników"
+                        },
+                        new
+                        {
+                            Id = 28,
+                            NazwaSystemowa = "Uzytkownicy.Edycja",
+                            Opis = "Zarządzanie kontami użytkowników"
+                        },
+                        new
+                        {
+                            Id = 29,
+                            NazwaSystemowa = "Uprawnienia.Odczyt",
+                            Opis = "Podgląd ról i uprawnień"
+                        },
+                        new
+                        {
+                            Id = 30,
+                            NazwaSystemowa = "Uprawnienia.Edycja",
+                            Opis = "Nadawanie ról i uprawnień"
+                        },
+                        new
+                        {
+                            Id = 31,
+                            NazwaSystemowa = "Konfiguracja.Odczyt",
+                            Opis = "Podgląd konfiguracji systemu"
+                        },
+                        new
+                        {
+                            Id = 32,
+                            NazwaSystemowa = "Konfiguracja.Edycja",
+                            Opis = "Zarządzanie konfiguracją systemu"
                         });
                 });
 
@@ -997,6 +1215,15 @@ namespace Mieszkaniec.Migrations
                     b.Navigation("PraceRemontowe");
                 });
 
+            modelBuilder.Entity("Mieszkaniec.Model.Entities.Licznik", b =>
+                {
+                    b.HasOne("Mieszkaniec.Model.Entities.Obiekt", "Obiekt")
+                        .WithMany()
+                        .HasForeignKey("ObiektId");
+
+                    b.Navigation("Obiekt");
+                });
+
             modelBuilder.Entity("Mieszkaniec.Model.Entities.LokalWynajem", b =>
                 {
                     b.HasOne("Mieszkaniec.Model.Entities.Najemca", "Najemca")
@@ -1012,6 +1239,17 @@ namespace Mieszkaniec.Migrations
                     b.Navigation("Najemca");
 
                     b.Navigation("Obiekt");
+                });
+
+            modelBuilder.Entity("Mieszkaniec.Model.Entities.OdczytWody", b =>
+                {
+                    b.HasOne("Mieszkaniec.Model.Entities.Licznik", "Licznik")
+                        .WithMany("OdczytyWody")
+                        .HasForeignKey("LicznikId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Licznik");
                 });
 
             modelBuilder.Entity("Mieszkaniec.Model.Entities.PraceRemontowe", b =>
@@ -1172,6 +1410,11 @@ namespace Mieszkaniec.Migrations
                         .IsRequired();
 
                     b.Navigation("UmowaNajmu");
+                });
+
+            modelBuilder.Entity("Mieszkaniec.Model.Entities.Licznik", b =>
+                {
+                    b.Navigation("OdczytyWody");
                 });
 
             modelBuilder.Entity("Mieszkaniec.Model.Entities.LokalWynajem", b =>

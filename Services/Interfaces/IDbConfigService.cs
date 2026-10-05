@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using MySqlConnector;
 
 namespace Mieszkaniec.Services.Interfaces
 {
@@ -12,7 +13,14 @@ namespace Mieszkaniec.Services.Interfaces
 
         public string BuildConnectionString()
         {
-            return $"Server={Server};Port={Port};Database={Database};User={User};Password={Password};";
+            return new MySqlConnectionStringBuilder
+            {
+                Server = Server,
+                Port = Port,
+                Database = Database,
+                UserID = User,
+                Password = Password
+            }.ConnectionString;
         }
     }
 
@@ -25,4 +33,3 @@ namespace Mieszkaniec.Services.Interfaces
         Task<bool> ZapiszUstawieniaBackupuAsync(BackupSettings settings);
     }
 }
-

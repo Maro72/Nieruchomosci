@@ -3,8 +3,51 @@
 @using MudBlazor
 @attribute [Authorize]
 
-<PageTitle>Zarządzanie nieruchomościami - Mieszkaniec</PageTitle>
+<PageTitle>Boryszew Nieruchomości</PageTitle>
 
-<div class="home-page">
-    <MudText Typo="Typo.h3" Class="home-page__title">Zarządzanie nieruchomościami</MudText>
+<div class="welcome-page">
+    <!-- Dekoracyjne tło -->
+    <div class="welcome-bg" aria-hidden="true">
+        <div class="bg-orb bg-orb--1"></div>
+        <div class="bg-orb bg-orb--2"></div>
+        <div class="bg-orb bg-orb--3"></div>
+        <div class="bg-grid"></div>
+    </div>
+
+    <!-- Treść powitalna -->
+    <main class="welcome-hero">
+
+        <!-- Logo / ikona -->
+        <div class="welcome-logo">
+            <div class="welcome-logo__ring welcome-logo__ring--outer"></div>
+            <div class="welcome-logo__ring welcome-logo__ring--inner"></div>
+            <div class="welcome-logo__icon">
+                <MudIcon Icon="@Icons.Material.Filled.Domain" />
+            </div>
+        </div>
+
+        <!-- Firma -->
+        <p class="welcome-brand">BORYSZEW NIERUCHOMOŚCI</p>
+
+        <!-- Nagłówek -->
+        <h1 class="welcome-title">
+            Witaj w systemie<br />
+            <span class="welcome-title__accent">zarządzania</span>
+        </h1>
+
+        <!-- Opis -->
+        <p class="welcome-subtitle">
+            Kompleksowa platforma do obsługi budynków, lokali,<br class="welcome-subtitle__br" />
+            przeglądów technicznych i umów najmu.
+        </p>
+
+        <!-- Separator -->
+        <div class="welcome-divider">
+            <span class="welcome-divider__line"></span>
+            <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowLeft" Class="welcome-divider__icon" />
+            <span class="welcome-divider__text">Wybierz moduł z menu po lewej stronie</span>
+            <span class="welcome-divider__line"></span>
+        </div>
+
+    </main>
 </div>

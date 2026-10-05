@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using Mieszkaniec.Model.Entities;
@@ -68,15 +68,72 @@ namespace Mieszkaniec.Components.Pages.Umowy
             // Pobieranie lokali z serwisu
             var lokaleZBazy = await LokalWynajemService.PobierzWszystkieAsync();
             ListaDostepnychLokali = lokaleZBazy ?? new List<LokalWynajem>();
+
+            // Automatyczne podpięcie lokali przypisanych do tego najemcy w zakładce "Lokale i pomieszczenia"
+            if (Model != null && Model.NajemcaId > 0)
+            {
+                SynchronizujLokaleNajemcy(Model.NajemcaId);
+            }
         }
 
         // -------------------------------------------------------------
         // LOGIKA: PRZYPISYWANIE LOKALI DO UMOWY
         // -------------------------------------------------------------
 
-        protected void OnLokalChanged(ChangeEventArgs e)
+        protected IEnumerable<LokalWynajem> DostepneLokaleDoWyboru => ListaDostepnychLokali
+            .Where(lok => (Model.WynajmowaneLokale == null || !Model.WynajmowaneLokale.Any(rl => rl.LokalWynajemId == lok.Id))
+                          && (lok.Status == "Wolny" || lok.Status == "Zarezerwowany" || (Model.NajemcaId > 0 && lok.NajemcaId == Model.NajemcaId)));
+
+        protected void OnNajemcaChanged(ChangeEventArgs e)
         {
             if (int.TryParse(e.Value?.ToString(), out int id))
+            {
+                Model.NajemcaId = id;
+                SynchronizujLokaleNajemcy(id);
+            }
+            else
+            {
+                Model.NajemcaId = 0;
+            }
+        }
+
+        protected void SynchronizujLokaleNajemcy(int najemcaId)
+        {
+            if (najemcaId <= 0 || ListaDostepnychLokali == null || Model == null) return;
+
+            if (Model.WynajmowaneLokale == null)
+            {
+                Model.WynajmowaneLokale = new List<UmowaLokal>();
+            }
+
+            var lokaleNajemcy = ListaDostepnychLokali.Where(l => l.NajemcaId == najemcaId).ToList();
+            bool dodano = false;
+
+            foreach (var lokal in lokaleNajemcy)
+            {
+                if (!Model.WynajmowaneLokale.Any(wl => wl.LokalWynajemId == lokal.Id))
+                {
+                    Model.WynajmowaneLokale.Add(new UmowaLokal
+                    {
+                        UmowaNajmuId = Model.Id,
+                        LokalWynajemId = lokal.Id,
+                        LokalWynajem = lokal,
+                        WynegocjowanaCenaZaM2 = lokal.CenaZaM2,
+                        CzyRyczalt = false
+                    });
+                    dodano = true;
+                }
+            }
+
+            if (dodano)
+            {
+                StateHasChanged();
+            }
+        }
+
+        protected void OnLokalChanged(ChangeEventArgs e)
+        {
+            if (int.TryParse(e.Value?.ToString(), out int id) && id > 0)
             {
                 WybranyLokalId = id;
                 var lokal = ListaDostepnychLokali.FirstOrDefault(l => l.Id == id);
@@ -84,7 +141,17 @@ namespace Mieszkaniec.Components.Pages.Umowy
                 {
                     WybranaCena = lokal.CenaZaM2; // Podpowiedź domyślnej ceny katalogowej
                 }
+                else
+                {
+                    WybranaCena = 0;
+                }
             }
+            else
+            {
+                WybranyLokalId = 0;
+                WybranaCena = 0;
+            }
+            StateHasChanged();
         }
 
         protected async Task DodajLokalDoUmowy()

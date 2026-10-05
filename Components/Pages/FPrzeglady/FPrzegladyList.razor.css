@@ -1,0 +1,83 @@
+body:has(.mud-theme-dark) .review-schedule,
+body.mud-theme-dark .review-schedule {
+    color: var(--mud-palette-text-primary);
+}
+
+body:has(.mud-theme-dark) .review-schedule .bg-white,
+body.mud-theme-dark .review-schedule .bg-white,
+body:has(.mud-theme-dark) .review-schedule .table-responsive,
+body.mud-theme-dark .review-schedule .table-responsive {
+    background-color: var(--mud-palette-surface) !important;
+    color: var(--mud-palette-text-primary) !important;
+}
+
+body:has(.mud-theme-dark) .review-schedule .text-dark,
+body.mud-theme-dark .review-schedule .text-dark,
+body:has(.mud-theme-dark) .review-schedule .text-secondary,
+body.mud-theme-dark .review-schedule .text-secondary,
+body:has(.mud-theme-dark) .review-schedule .text-muted,
+body.mud-theme-dark .review-schedule .text-muted {
+    color: var(--mud-palette-text-secondary) !important;
+}
+
+body:has(.mud-theme-dark) .review-schedule .text-dark.fw-bold,
+body.mud-theme-dark .review-schedule .text-dark.fw-bold,
+body:has(.mud-theme-dark) .review-schedule .text-dark.fw-medium,
+body.mud-theme-dark .review-schedule .text-dark.fw-medium {
+    color: var(--mud-palette-text-primary) !important;
+}
+
+body:has(.mud-theme-dark) .review-schedule .bg-light,
+body.mud-theme-dark .review-schedule .bg-light,
+body:has(.mud-theme-dark) .review-schedule .table-light,
+body.mud-theme-dark .review-schedule .table-light {
+    background-color: var(--mud-palette-background-grey) !important;
+    color: var(--mud-palette-text-secondary) !important;
+}
+
+body:has(.mud-theme-dark) .review-schedule .table,
+body.mud-theme-dark .review-schedule .table {
+    --bs-table-color: var(--mud-palette-text-primary);
+    --bs-table-bg: var(--mud-palette-surface);
+    --bs-table-hover-color: var(--mud-palette-text-primary);
+    --bs-table-hover-bg: var(--mud-palette-background-grey);
+    --bs-table-border-color: var(--mud-palette-divider);
+}
+
+body:has(.mud-theme-dark) .review-schedule .border,
+body.mud-theme-dark .review-schedule .border {
+    border-color: var(--mud-palette-divider) !important;
+}
+
+body:has(.mud-theme-dark) .review-schedule .btn-light,
+body.mud-theme-dark .review-schedule .btn-light {
+    background-color: var(--mud-palette-surface) !important;
+    color: var(--mud-palette-text-primary) !important;
+}
+
+body:has(.mud-theme-dark) .review-schedule .hover-bg-light:hover,
+body.mud-theme-dark .review-schedule .hover-bg-light:hover {
+    background-color: var(--mud-palette-background-grey) !important;
+}
+
+body:has(.mud-theme-dark) .review-schedule .mud-expansion-panel,
+body.mud-theme-dark .review-schedule .mud-expansion-panel {
+    background-color: var(--mud-palette-surface) !important;
+    border-color: var(--mud-palette-divider) !important;
+}
+
+body:has(.mud-theme-dark) .review-schedule .mud-expansion-panel-header,
+body.mud-theme-dark .review-schedule .mud-expansion-panel-header {
+    color: var(--mud-palette-text-primary);
+}
+
+body:has(.mud-theme-dark) .review-schedule .mud-paper,
+body.mud-theme-dark .review-schedule .mud-paper {
+    background-color: var(--mud-palette-surface);
+    color: var(--mud-palette-text-primary);
+}
+
+body:has(.mud-theme-dark) .review-schedule .status-icon-filter,
+body.mud-theme-dark .review-schedule .status-icon-filter {
+    background-color: var(--mud-palette-surface);
+}

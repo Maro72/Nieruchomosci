@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.JSInterop;
 using Mieszkaniec.Components.Pages.FBudynki;
 using Mieszkaniec.Model.Entities;
@@ -18,6 +19,7 @@ namespace Mieszkaniec.Components.Pages.Obiekty
         [Inject] protected IObiektService ObiektService { get; set; } = default!;
         [Inject] protected IDialogService DialogService { get; set; } = default!;
         [Inject] protected IJSRuntime JSRuntime { get; set; } = default!; // Wstrzyknięcie JS do pobierania Excela
+        [Inject] protected AuthenticationStateProvider AuthenticationStateProvider { get; set; } = default!;
 
         protected List<Obiekt> WszystkieObiekty { get; set; } = new();
         protected List<Obiekt> FiltrowanaListaObiektow { get; set; } = new();
@@ -37,9 +39,15 @@ namespace Mieszkaniec.Components.Pages.Obiekty
         protected int gridKey = 0;
 
         protected Obiekt? WybranyObiekt { get; set; }
+        protected bool CzyMozeEdytowac { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            CzyMozeEdytowac = authState.User.IsInRole("Administrator") ||
+                              authState.User.HasClaim("Permission", "Budynki.Edycja") ||
+                              authState.User.HasClaim("Permission", "ZarzadzanieBudynkami");
+
             await OdswiezDane();
         }
 

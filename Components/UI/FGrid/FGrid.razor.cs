@@ -3,6 +3,7 @@ using Microsoft.JSInterop;
 using MudBlazor;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Mieszkaniec.Components.UI
@@ -27,9 +28,11 @@ namespace Mieszkaniec.Components.UI
         [Parameter] public EventCallback OnAdd { get; set; }
         [Parameter] public EventCallback<TItem> OnEdit { get; set; }
         [Parameter] public EventCallback<TItem> OnDelete { get; set; }
+        [Parameter] public bool ShowCrudActions { get; set; } = true;
         [Parameter] public bool ShowToolbar { get; set; } = true;
         [Parameter] public bool ShowPrint { get; set; } = true;
         [Parameter] public bool ShowSearch { get; set; } = true;
+        [Parameter] public bool ShowPager { get; set; } = true;
         protected async Task HandleSearch(ChangeEventArgs e)
         {
             SearchText = e.Value?.ToString() ?? "";

@@ -1,0 +1,66 @@
+@using Mieszkaniec.Model.Entities
+@using Mieszkaniec.Services.Interfaces
+@using MudBlazor
+@inject IObiektService ObiektService
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="form">
+            <MudSelect T="Licznik" @bind-Value="WybranyLicznik" Label="Numer licznika" Required="true" ToStringFunc="@(licznik => licznik?.NumerLicznika ?? string.Empty)">
+            @foreach (var licznik in liczniki)
+            {
+                <MudSelectItem T="Licznik" Value="@licznik">@licznik.NumerLicznika</MudSelectItem>
+            }
+        </MudSelect>
+        <MudSelect T="int?" @bind-Value="ObiektId" Label="Budynek" Required="true">
+            @foreach (var obiekt in obiekty)
+            {
+                <MudSelectItem T="int?" Value="@obiekt.Id">@obiekt.Nazwa</MudSelectItem>
+            }
+        </MudSelect>
+        <MudTextField @bind-Value="Uwagi" Label="Uwagi" Placeholder="np. woda ppoż." Lines="3" />
+        @if (!liczniki.Any())
+        {
+            <MudText Color="Color.Warning" Class="mt-3">Brak liczników do przypisania.</MudText>
+        }
+    </MudForm>
+</DialogContent>
+<DialogActions>
+    <MudButton OnClick="Anuluj">Anuluj</MudButton>
+    <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="@(!liczniki.Any())" OnClick="Zapisz">Zapisz przypisanie</MudButton>
+</DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public List<Licznik> Liczniki { get; set; } = new();
+
+    private MudForm form = default!;
+    private List<Licznik> liczniki = new();
+    private List<Obiekt> obiekty = new();
+    private Licznik? WybranyLicznik;
+    private int? ObiektId;
+    private string? Uwagi;
+
+    protected override async Task OnInitializedAsync()
+    {
+        liczniki = Liczniki
+            .Where(x => x.CzyAktywny && !x.ObiektId.HasValue)
+            .OrderBy(x => x.NumerLicznika)
+            .ToList();
+        obiekty = await ObiektService.GetAllActiveAsync();
+    }
+
+    private async Task Zapisz()
+    {
+        await form.ValidateAsync();
+        if (form.IsValid && WybranyLicznik is not null && ObiektId.HasValue)
+        {
+            WybranyLicznik.ObiektId = ObiektId.Value;
+            WybranyLicznik.Uwagi = Uwagi?.Trim();
+            MudDialog.Close(DialogResult.Ok(WybranyLicznik));
+        }
+    }
+
+    private void Anuluj() => MudDialog.Cancel();
+}

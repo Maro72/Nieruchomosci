@@ -28,6 +28,11 @@ namespace Mieszkaniec.Model.Context
         public DbSet<Uzytkownik> Uzytkownicy { get; set; }
         public DbSet<Rola> Role { get; set; }
         public DbSet<Uprawnienie> Uprawnienia { get; set; }
+        
+        // --- LICZNIKI I ODCZYTY ---
+        public DbSet<Licznik> Liczniki { get; set; }
+        public DbSet<OdczytWody> OdczytyWody { get; set; }
+        public DbSet<FakturaWody> FakturyWody { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -149,7 +154,23 @@ namespace Mieszkaniec.Model.Context
                 new Uprawnienie { Id = 9, NazwaSystemowa = "Umowy.Odczyt", Opis = "Podgląd umów najmu" },
                 new Uprawnienie { Id = 10, NazwaSystemowa = "Umowy.Zarzadzanie", Opis = "Rejestracja i edycja umów oraz aneksów" },
                 new Uprawnienie { Id = 11, NazwaSystemowa = "Uzytkownicy.Zarzadzanie", Opis = "Zarządzanie kontami użytkowników" },
-                new Uprawnienie { Id = 12, NazwaSystemowa = "Uprawnienia.Nadawanie", Opis = "Nadawanie ról i uprawnień" }
+                new Uprawnienie { Id = 12, NazwaSystemowa = "Uprawnienia.Nadawanie", Opis = "Nadawanie ról i uprawnień" },
+                new Uprawnienie { Id = 17, NazwaSystemowa = "Dashboard.Odczyt", Opis = "Podgląd pulpitu zarządczego" },
+                new Uprawnienie { Id = 18, NazwaSystemowa = "HistoriaUsterek.Odczyt", Opis = "Podgląd historii usterek" },
+                new Uprawnienie { Id = 19, NazwaSystemowa = "Przeglady.Odczyt", Opis = "Podgląd przeglądów technicznych" },
+                new Uprawnienie { Id = 20, NazwaSystemowa = "Przeglady.Edycja", Opis = "Zarządzanie przeglądami technicznymi" },
+                new Uprawnienie { Id = 21, NazwaSystemowa = "Remonty.Odczyt", Opis = "Podgląd prac remontowych" },
+                new Uprawnienie { Id = 22, NazwaSystemowa = "Remonty.Edycja", Opis = "Zarządzanie pracami remontowymi" },
+                new Uprawnienie { Id = 23, NazwaSystemowa = "Lokale.Odczyt", Opis = "Podgląd lokali i pomieszczeń" },
+                new Uprawnienie { Id = 24, NazwaSystemowa = "Lokale.Edycja", Opis = "Zarządzanie lokalami i rzutami" },
+                new Uprawnienie { Id = 25, NazwaSystemowa = "Najemcy.Odczyt", Opis = "Podgląd bazy najemców" },
+                new Uprawnienie { Id = 26, NazwaSystemowa = "Najemcy.Edycja", Opis = "Zarządzanie bazą najemców" },
+                new Uprawnienie { Id = 27, NazwaSystemowa = "Uzytkownicy.Odczyt", Opis = "Podgląd kont użytkowników" },
+                new Uprawnienie { Id = 28, NazwaSystemowa = "Uzytkownicy.Edycja", Opis = "Zarządzanie kontami użytkowników" },
+                new Uprawnienie { Id = 29, NazwaSystemowa = "Uprawnienia.Odczyt", Opis = "Podgląd ról i uprawnień" },
+                new Uprawnienie { Id = 30, NazwaSystemowa = "Uprawnienia.Edycja", Opis = "Nadawanie ról i uprawnień" },
+                new Uprawnienie { Id = 31, NazwaSystemowa = "Konfiguracja.Odczyt", Opis = "Podgląd konfiguracji systemu" },
+                new Uprawnienie { Id = 32, NazwaSystemowa = "Konfiguracja.Edycja", Opis = "Zarządzanie konfiguracją systemu" }
             );
         }
     }

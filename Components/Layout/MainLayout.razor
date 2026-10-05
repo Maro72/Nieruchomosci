@@ -12,6 +12,7 @@
 @implements IDisposable
 
 @* Globalny provider MudBlazor steruje paletą, komponentami dialogów i snackbarami. *@
+<div class="@(_isDarkMode ? "app-theme-root app-dark-theme" : "app-theme-root")">
 <MudThemeProvider Theme="_theme" @bind-IsDarkMode="_isDarkMode" />
 <MudDialogProvider />
 <MudSnackbarProvider PositionClass="Defaults.Classes.Position.TopCenter" />
@@ -158,6 +159,7 @@
         </MudContainer>
     </MudMainContent>
 </MudLayout>
+</div>
 
 @code {
     private bool _drawerOpen = true;

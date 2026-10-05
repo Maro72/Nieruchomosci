@@ -1,0 +1,431 @@
+@page "/woda/zuzycia"
+@attribute [Authorize(Policy = "Techniczny.Odczyt")]
+@using Mieszkaniec.Model.Entities
+@using Mieszkaniec.Services.Interfaces
+@using MudBlazor
+@inject ILicznikService LicznikService
+
+<PageTitle>Zużycie wody według budynków</PageTitle>
+
+<div class="meter-usage-page">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <MudText Typo="Typo.h5" Class="fw-bold">Zużycie wody</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                Zużycie jest sumowane ze wszystkich liczników przypisanych do budynku.
+            </MudText>
+        </div>
+        @if (DostepneLata.Count > 0)
+        {
+            <MudSelect T="int" Value="RokWidoku" ValueChanged="ZmienRok"
+                       Label="Rok" Variant="Variant.Outlined" Margin="Margin.Dense"
+                       Class="year-select">
+                @foreach (var rok in DostepneLata)
+                {
+                    <MudSelectItem T="int" Value="@rok">@rok</MudSelectItem>
+                }
+            </MudSelect>
+        }
+    </div>
+
+    @if (_ladowanie)
+    {
+        <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+    }
+    else if (BudynkiZOdczytami.Count == 0)
+    {
+        <MudPaper Class="pa-6 text-center" Elevation="1">
+            <MudIcon Icon="@Icons.Material.Filled.WaterDrop" Color="Color.Info" Size="Size.Large" />
+            <MudText Typo="Typo.h6" Class="mt-2">Brak odczytów w wybranym roku</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                Po zapisaniu odczytów miesięcznych pojawią się tu wykresy dla budynków.
+            </MudText>
+        </MudPaper>
+    }
+    else
+    {
+        <MudPaper Elevation="1" Class="usage-chart-card">
+            <div class="usage-chart-heading">
+                <MudText Typo="Typo.h6">Zużycie miesięczne — @RokWidoku</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                    Miesięczne zużycie w m³ dla każdego budynku
+                </MudText>
+            </div>
+
+            <div class="usage-chart-scroll">
+                <div class="usage-chart">
+                    <div class="usage-chart-header">
+                        <div class="meter-label header-meter">Budynek</div>
+                        @foreach (var miesiac in Miesiace)
+                        {
+                            <div class="month-label">@NazwaMiesiaca(miesiac)</div>
+                        }
+                        <div class="month-label total-label">Razem</div>
+                    </div>
+
+                    @foreach (var budynek in BudynkiZOdczytami)
+                    {
+                        var suma = SumaRoczna(budynek);
+                        <div class="usage-chart-row" @key="budynek.Id">
+                            <div class="meter-label" title="@budynek.Nazwa">
+                                <strong>@budynek.Nazwa</strong>
+                                @if (budynek.Id is not null)
+                                {
+                                    <span>@budynek.Liczniki.Count liczników</span>
+                                }
+                            </div>
+                            @foreach (var miesiac in Miesiace)
+                            {
+                                var zuzycie = PobierzZuzycie(budynek, miesiac);
+                                <div class="@KlasaKomorkiZuzycia(budynek, miesiac)"
+                                     title="@OpisZuzycia(budynek, miesiac, zuzycie)">
+                                    @zuzycie.ToString("N0")
+                                </div>
+                            }
+                            <div class="usage-total">@suma.ToString("N0")</div>
+                        </div>
+                    }
+
+                    <div class="usage-chart-footer">
+                        <div class="meter-label"><strong>Razem w miesiącu</strong></div>
+                        @foreach (var miesiac in Miesiace)
+                        {
+                            <div class="month-total">@SumaMiesieczna(miesiac).ToString("N0")</div>
+                        }
+                        <div class="usage-total grand-total">@SumaRocznaWszystkich.ToString("N0")</div>
+                    </div>
+                </div>
+            </div>
+        </MudPaper>
+
+        <MudPaper Elevation="1" Class="usage-chart-card usage-line-card">
+            <div class="usage-chart-heading">
+                <MudText Typo="Typo.h6">Zużycie wybranego budynku — @RokWidoku</MudText>
+                <MudSelect T="int?" Value="_wybranyBudynekId" ValueChanged="ZmienBudynek"
+                           Label="Budynek" Variant="Variant.Outlined" Margin="Margin.Dense"
+                           Class="meter-select">
+                    @foreach (var budynek in BudynkiZOdczytami)
+                    {
+                        <MudSelectItem T="int?" Value="@((int?)(budynek.Id ?? -1))">
+                            @budynek.Nazwa
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+            </div>
+            @if (BudynekWybrany is not null)
+            {
+                <MudText Typo="Typo.body2" Class="mb-2">
+                    @($"{BudynekWybrany.Liczniki.Count} liczników")
+                </MudText>
+                <div class="usage-chart-scroll">
+                    <div class="selected-building-chart" role="img"
+                         aria-label="@($"Miesięczne zużycie wody w budynku {BudynekWybrany.Nazwa} w roku {RokWidoku}")">
+                        @foreach (var miesiac in Miesiace)
+                        {
+                            var zuzycie = PobierzZuzycie(BudynekWybrany, miesiac);
+                            var wysokoscSlupka = WysokoscSlupka(BudynekWybrany, miesiac);
+                            <div class="selected-building-column">
+                                <div class="selected-building-plot">
+                                    <span class="selected-building-value"
+                                          style="@($"bottom:calc({wysokoscSlupka}% + 3px)")">
+                                        @zuzycie.ToString("N0")
+                                    </span>
+                                    <div class="selected-building-bar @KlasaLiczbyZuzycia(BudynekWybrany, miesiac)"
+                                         style="@($"height:{wysokoscSlupka}%")"
+                                         title="@OpisZuzycia(BudynekWybrany, miesiac, zuzycie)">
+                                    </div>
+                                </div>
+                                <span class="selected-building-month">@NazwaMiesiaca(miesiac)</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                <MudText Typo="Typo.body2" Color="Color.Secondary">Wybierz budynek, aby zobaczyć jego zużycie.</MudText>
+            }
+        </MudPaper>
+
+        <MudPaper Elevation="1" Class="usage-chart-card usage-line-card">
+            <div class="usage-chart-heading">
+                <MudText Typo="Typo.h6">Porównanie zużycia wszystkich budynków — @RokWidoku</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                    Budynki na osi Y, miesiące na osi X, długość słupka oznacza zużycie w m³.
+                </MudText>
+            </div>
+            <div class="building-chart-scroll">
+                <div class="building-chart">
+                    @foreach (var budynek in BudynkiZOdczytami)
+                    {
+                        <div class="building-chart-row" @key="budynek.Id">
+                            <div class="building-chart-label" title="@budynek.Nazwa">@budynek.Nazwa</div>
+                            @foreach (var miesiac in Miesiace)
+                            {
+                                var zuzycie = PobierzZuzycie(budynek, miesiac);
+                                <div class="building-chart-cell" title="@($"{budynek.Nazwa} · {NazwaMiesiaca(miesiac)} · {zuzycie:N0} m³")">
+                                    @if (zuzycie > 0)
+                                    {
+                                        <div class="building-chart-track">
+                                            <div class="building-chart-bar" style="@($"width:{SzerokoscPaska(zuzycie)}%")"></div>
+                                        </div>
+                                        <span class="@KlasaLiczbyZuzycia(budynek, miesiac)"
+                                              title="@OpisZuzycia(budynek, miesiac, zuzycie)">
+                                            @zuzycie.ToString("N0")
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="building-chart-zero">—</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                    <div class="building-chart-axis">
+                        <div class="building-chart-label">Miesiąc</div>
+                        @foreach (var miesiac in Miesiace)
+                        {
+                            <div class="building-chart-month">@NazwaMiesiaca(miesiac)</div>
+                        }
+                    </div>
+                    <div class="building-chart-scale">
+                        <span>Zużycie:</span>
+                        <span>0</span>
+                        <div class="building-chart-track"><div class="building-chart-bar building-chart-max"></div></div>
+                        <span>@MaksymalneZuzycie.ToString("N0") m³</span>
+                    </div>
+                </div>
+            </div>
+        </MudPaper>
+    }
+</div>
+
+@code {
+    private static readonly int[] Miesiace = Enumerable.Range(1, 12).ToArray();
+    private static readonly string[] NazwyMiesiecy =
+    [
+        "Sty", "Lut", "Mar", "Kwi", "Maj", "Cze",
+        "Lip", "Sie", "Wrz", "Paź", "Lis", "Gru"
+    ];
+
+    private List<Licznik> _liczniki = [];
+    private bool _ladowanie = true;
+    private int RokWidoku = DateTime.Now.Year;
+    private int? _wybranyBudynekId;
+
+    private sealed record ZuzycieBudynku(int? Id, string Nazwa, List<Licznik> Liczniki);
+    private sealed record WzrostZuzycia(
+        ZuzycieBudynku Budynek,
+        int Miesiac,
+        int PoprzMiesiac,
+        int PoprzRok,
+        int PoprzZuzycie,
+        int BiezaceZuzycie,
+        double Procent);
+
+    private List<int> DostepneLata => _liczniki
+        .SelectMany(x => x.OdczytyWody)
+        .Select(x => x.Rok)
+        .Distinct()
+        .OrderByDescending(x => x)
+        .ToList();
+
+    private List<ZuzycieBudynku> BudynkiZOdczytami => _liczniki
+        .Where(x => x.OdczytyWody.Any(o => o.Rok == RokWidoku))
+        .GroupBy(x => x.ObiektId)
+        .Select(grupa => new ZuzycieBudynku(
+            grupa.Key,
+            grupa.First().Obiekt?.Nazwa ?? "Nieprzypisane liczniki",
+            grupa.OrderBy(x => x.NumerLicznika).ToList()))
+        .OrderBy(x => x.Id is null ? 1 : 0)
+        .ThenBy(x => x.Nazwa)
+        .ToList();
+
+    private int SumaRocznaWszystkich => BudynkiZOdczytami.Sum(SumaRoczna);
+
+    private ZuzycieBudynku? BudynekWybrany => BudynkiZOdczytami
+        .FirstOrDefault(x => (x.Id ?? -1) == _wybranyBudynekId);
+
+    private List<ChartSeries<double>> SerieWszystkichBudynkow => BudynkiZOdczytami
+        .Select(budynek => new ChartSeries<double>
+        {
+            Name = budynek.Nazwa,
+            Data = Miesiace.Select(miesiac => (double)PobierzZuzycie(budynek, miesiac)).ToArray()
+        })
+        .ToList();
+
+    private ChartOptions OpcjeWykresu { get; } = new()
+    {
+        ShowLegend = true,
+        ShowToolTips = true,
+        ChartPalette = ["#1976d2", "#2e7d32", "#ed6c02", "#9c27b0", "#00838f", "#c62828", "#5d4037", "#455a64"]
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        _liczniki = await LicznikService.PobierzWszystkieLicznikiWodyAsync();
+        if (DostepneLata.Count > 0 && !DostepneLata.Contains(RokWidoku))
+        {
+            RokWidoku = DostepneLata[0];
+        }
+
+        _wybranyBudynekId = BudynkiZOdczytami.FirstOrDefault() is { } budynek
+            ? budynek.Id ?? -1
+            : null;
+        _ladowanie = false;
+    }
+
+    private Task ZmienRok(int rok)
+    {
+        RokWidoku = rok;
+        if (!BudynkiZOdczytami.Any(x => (x.Id ?? -1) == _wybranyBudynekId))
+        {
+            _wybranyBudynekId = BudynkiZOdczytami.FirstOrDefault() is { } budynek
+                ? budynek.Id ?? -1
+                : null;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private Task ZmienBudynek(int? budynekId)
+    {
+        _wybranyBudynekId = budynekId;
+        return Task.CompletedTask;
+    }
+
+    private int PobierzZuzycie(ZuzycieBudynku budynek, int miesiac) => budynek.Liczniki
+        .SelectMany(x => x.OdczytyWody)
+        .Where(x => x.Rok == RokWidoku && x.Miesiac == miesiac)
+        .Sum(x => x.Zuzycie);
+
+    private int SumaRoczna(ZuzycieBudynku budynek) => budynek.Liczniki
+        .SelectMany(x => x.OdczytyWody)
+        .Where(x => x.Rok == RokWidoku)
+        .Sum(x => x.Zuzycie);
+
+    private int SumaMiesieczna(int miesiac) => BudynkiZOdczytami
+        .Sum(x => PobierzZuzycie(x, miesiac));
+
+    private List<WzrostZuzycia> WzrostyZuzycia => BudynkiZOdczytami
+        .SelectMany(budynek => Miesiace.Select(miesiac => PobierzWzrostZuzycia(budynek, miesiac)))
+        .Where(x => x is not null)
+        .Select(x => x!)
+        .ToList();
+
+    private WzrostZuzycia? PobierzWzrostZuzycia(ZuzycieBudynku budynek, int miesiac)
+    {
+        var poprzedniMiesiac = new DateTime(RokWidoku, miesiac, 1).AddMonths(-1);
+        var poprzednieZuzycie = budynek.Liczniki
+            .SelectMany(x => x.OdczytyWody)
+            .Where(x => x.Rok == poprzedniMiesiac.Year && x.Miesiac == poprzedniMiesiac.Month)
+            .Sum(x => x.Zuzycie);
+        if (poprzednieZuzycie <= 0)
+        {
+            return null;
+        }
+
+        var biezaceZuzycie = PobierzZuzycie(budynek, miesiac);
+        var procent = (biezaceZuzycie - poprzednieZuzycie) * 100d / poprzednieZuzycie;
+        return procent > 10
+            ? new WzrostZuzycia(
+                budynek,
+                miesiac,
+                poprzedniMiesiac.Month,
+                poprzedniMiesiac.Year,
+                poprzednieZuzycie,
+                biezaceZuzycie,
+                procent)
+            : null;
+    }
+
+    private string KlasaKomorkiZuzycia(ZuzycieBudynku budynek, int miesiac) =>
+        PobierzWzrostZuzycia(budynek, miesiac) is not null ? "usage-cell usage-increase" : "usage-cell";
+
+    private string KlasaLiczbyZuzycia(ZuzycieBudynku budynek, int miesiac) =>
+        PobierzWzrostZuzycia(budynek, miesiac) is not null ? "building-chart-increase" : string.Empty;
+
+    private string OpisZuzycia(ZuzycieBudynku budynek, int miesiac, int zuzycie)
+    {
+        var wzrost = PobierzWzrostZuzycia(budynek, miesiac);
+        return wzrost is null
+            ? $"{budynek.Nazwa} · {NazwaMiesiaca(miesiac)} · {zuzycie:N0} m³"
+            : $"{budynek.Nazwa} · {NazwaMiesiaca(miesiac)} · {zuzycie:N0} m³, wzrost o {wzrost.Procent:N0}% względem poprzedniego miesiąca";
+    }
+
+    private int MaksymalneZuzycie => BudynkiZOdczytami
+        .SelectMany(budynek => Miesiace.Select(miesiac => PobierzZuzycie(budynek, miesiac)))
+        .DefaultIfEmpty(0)
+        .Max();
+
+    private int SzerokoscPaska(int zuzycie) => MaksymalneZuzycie == 0
+        ? 0
+        : Math.Max(2, (int)Math.Round(zuzycie * 100d / MaksymalneZuzycie));
+
+    private int WysokoscSlupka(ZuzycieBudynku budynek, int miesiac)
+    {
+        var maksimum = Miesiace
+            .Select(x => PobierzZuzycie(budynek, x))
+            .DefaultIfEmpty(0)
+            .Max();
+        var zuzycie = PobierzZuzycie(budynek, miesiac);
+        return maksimum == 0 || zuzycie == 0 ? 0 : Math.Max(2, (int)Math.Round(zuzycie * 78d / maksimum));
+    }
+
+    private static string NazwaMiesiaca(int miesiac) => NazwyMiesiecy[miesiac - 1];
+}
+
+<style>
+    .meter-usage-page { padding: 1.25rem; }
+    .year-select { width: 140px; }
+    .usage-chart-card { padding: 1.25rem; border-radius: 12px; }
+    .usage-chart-heading { display: flex; flex-direction: column; gap: .25rem; margin-bottom: 1rem; }
+    .usage-chart-scroll { overflow-x: auto; }
+    .usage-chart { min-width: 1120px; }
+    .usage-chart-header, .usage-chart-row, .usage-chart-footer {
+        display: grid;
+        grid-template-columns: minmax(180px, 1.35fr) repeat(12, minmax(58px, 1fr)) minmax(86px, .8fr);
+        align-items: center;
+    }
+    .usage-chart-header { min-height: 42px; border-bottom: 1px solid var(--mud-palette-divider); }
+    .month-label { padding: .5rem .25rem; color: var(--mud-palette-text-secondary); font-size: .75rem; font-weight: 700; text-align: center; }
+    .meter-label { display: flex; min-width: 0; flex-direction: column; padding: .55rem .65rem .55rem .25rem; overflow: hidden; }
+    .meter-label strong { overflow: hidden; color: var(--mud-palette-text-primary); font-size: .82rem; text-overflow: ellipsis; white-space: nowrap; }
+    .meter-label span { overflow: hidden; color: var(--mud-palette-text-secondary); font-size: .7rem; text-overflow: ellipsis; white-space: nowrap; }
+    .header-meter { font-size: .78rem; font-weight: 700; }
+    .usage-chart-row { min-height: 48px; border-bottom: 1px solid var(--mud-palette-divider); }
+    .usage-cell { min-width: 0; padding: .45rem .2rem; color: var(--mud-palette-text-primary); font-size: .76rem; font-variant-numeric: tabular-nums; text-align: center; }
+    .usage-cell.usage-increase, .building-chart-increase { color: var(--mud-palette-error); font-weight: 800; }
+    .usage-total, .month-total { padding: .45rem .25rem; color: var(--mud-palette-text-primary); font-size: .76rem; font-weight: 700; font-variant-numeric: tabular-nums; text-align: center; white-space: nowrap; }
+    .usage-chart-footer { min-height: 46px; background: var(--mud-palette-background-grey); }
+    .month-total { font-size: .7rem; }
+    .grand-total { color: var(--mud-palette-primary); }
+    .usage-line-card { margin-top: 1rem; }
+    .selected-building-chart { display: grid; grid-template-columns: repeat(12, minmax(44px, 1fr)); gap: .5rem; min-width: 640px; height: 340px; padding: .5rem .25rem 0; }
+    .selected-building-column { display: grid; grid-template-rows: minmax(0, 1fr) 26px; min-width: 0; text-align: center; }
+    .selected-building-value { position: absolute; left: 50%; overflow: hidden; width: 100%; color: var(--mud-palette-text-primary); font-size: .72rem; font-variant-numeric: tabular-nums; text-overflow: ellipsis; transform: translateX(-50%); white-space: nowrap; }
+    .selected-building-plot { position: relative; display: flex; align-items: flex-end; justify-content: center; border-bottom: 1px solid var(--mud-palette-divider); background: linear-gradient(to top, var(--mud-palette-divider) 1px, transparent 1px) 0 0 / 100% 25%; }
+    .selected-building-bar { width: min(62%, 34px); min-height: 0; border-radius: 5px 5px 0 0; background: linear-gradient(180deg, #42a5f5, #1565c0); }
+    .selected-building-bar.building-chart-increase { background: var(--mud-palette-error); }
+    .selected-building-month { padding-top: .4rem; color: var(--mud-palette-text-secondary); font-size: .7rem; font-weight: 700; }
+    .building-chart-scroll { overflow-x: auto; }
+    .building-chart { min-width: 1120px; }
+    .building-chart-row, .building-chart-axis {
+        display: grid;
+        grid-template-columns: minmax(180px, 1.35fr) repeat(12, minmax(58px, 1fr));
+        align-items: center;
+    }
+    .building-chart-row { min-height: 48px; border-bottom: 1px solid var(--mud-palette-divider); }
+    .building-chart-label { min-width: 0; padding: .55rem .65rem .55rem .25rem; overflow: hidden; color: var(--mud-palette-text-primary); font-size: .78rem; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+    .building-chart-cell { display: flex; min-width: 0; align-items: center; gap: .25rem; padding: .4rem .2rem; color: var(--mud-palette-text-primary); font-size: .66rem; font-variant-numeric: tabular-nums; }
+    .building-chart-track { flex: 1; min-width: 10px; height: 12px; overflow: hidden; border-radius: 8px; background: var(--mud-palette-background-grey); }
+    .building-chart-bar { height: 100%; min-width: 2px; border-radius: inherit; background: linear-gradient(90deg, #42a5f5, #1565c0); }
+    .building-chart-zero { width: 100%; color: var(--mud-palette-text-disabled); text-align: center; }
+    .building-chart-axis { min-height: 42px; border-top: 1px solid var(--mud-palette-divider); background: var(--mud-palette-background-grey); }
+    .building-chart-month { padding: .45rem .2rem; color: var(--mud-palette-text-secondary); font-size: .7rem; font-weight: 700; text-align: center; }
+    .building-chart-scale { display: flex; align-items: center; justify-content: flex-end; gap: .5rem; padding-top: .75rem; color: var(--mud-palette-text-secondary); font-size: .7rem; }
+    .building-chart-scale .building-chart-track { flex: 0 0 100px; }
+    .building-chart-max { width: 100%; }
+    @@media (max-width: 600px) { .meter-usage-page { padding: .5rem; } .usage-chart-card { padding: .75rem; } }
+</style>

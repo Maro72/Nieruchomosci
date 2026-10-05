@@ -21,10 +21,10 @@
         {
             <EditForm Model="@Model" OnValidSubmit="Save">
                 <DataAnnotationsValidator />
-                
+
                 @* Usunięto max-height, zmieniono gapy na g-2, żeby wszystko było bardziej zwarte *@
                 <div class="row g-2 px-3 pb-2">
-                    
+
                     @* --- ROW 1 --- *@
                     <div class="col-md-6">
                         <label class="form-label small fw-bold text-secondary mb-1">Nieruchomość / Budynek</label>
@@ -36,7 +36,7 @@
                             </select>
                         </div>
                     </div>
-                    
+
                     <div class="col-md-6">
                         <label class="form-label small fw-bold text-secondary mb-1">Kategoria usterki</label>
                         <div class="input-group input-group-sm shadow-sm">
@@ -59,7 +59,7 @@
                             </select>
                         </div>
                     </div>
-                    
+
                     <div class="col-md-4">
                         <label class="form-label small fw-bold text-secondary mb-1">Priorytet (SLA)</label>
                         <div class="input-group input-group-sm shadow-sm">
@@ -121,72 +121,72 @@
                     @* --- ROW 6 (PLIKI) --- *@
                     <div class="col-12 mt-3">
                         <label class="form-label small fw-bold text-secondary mb-1">Dołącz Protokół / Skan (PDF, JPG)</label>
-                        
+
                         @* Czysty HTML/CSS do ułożenia MudFileUpload *@
                         <div class="input-group input-group-sm shadow-sm">
                             <MudFileUpload T="IReadOnlyList<IBrowserFile>" FilesChanged="OnUploadFiles" Accept=".pdf" Disabled="Model.CzyArchiwum" Class="m-0 p-0 w-100" Style="display:block;">
-                                <ActivatorContent>
-                                    <div class="d-flex w-100">
-                                        <button type="button" class="btn btn-sm btn-outline-success border-end-0 rounded-start" disabled="@Model.CzyArchiwum" style="z-index: 1;">
-                                            <i class="bi bi-upload me-1"></i> Wybierz plik
-                                        </button>
-                                        <input type="text" class="form-control form-control-sm bg-white" readonly value="@(Model.Zalaczniki?.Any() == true ? $"{Model.Zalaczniki.Count} plik(ów)" : "Nie wybrano pliku")" style="cursor: default;" />
-                                    </div>
-                                </ActivatorContent>
-                            </MudFileUpload>
-                        </div>
-                        
-                        @if(Model.Zalaczniki != null && Model.Zalaczniki.Any())
-                        {
-                            <div class="d-flex flex-wrap gap-1 mt-2">
-                                @foreach(var z in Model.Zalaczniki)
-                                {
-                                    <span class="badge bg-white border text-dark p-1 d-inline-flex align-items-center shadow-sm" style="font-weight: 500;">
-                                        <i class="bi bi-file-earmark-pdf-fill text-danger me-1"></i>
-                                        @z.NazwaPliku
-                                        @if (!Model.CzyArchiwum)
-                                        {
-                                            <i class="bi bi-x text-muted ms-2 fs-6" style="cursor: pointer;" @onclick="() => UsunZalacznik(z)"></i>
-                                        }
-                                    </span>
-                                }
-                            </div>
-                        }
+                            <ActivatorContent>
+                                <div class="d-flex w-100">
+                                    <button type="button" class="btn btn-sm btn-outline-success border-end-0 rounded-start" disabled="@Model.CzyArchiwum" style="z-index: 1;">
+                                        <i class="bi bi-upload me-1"></i> Wybierz plik
+                                    </button>
+                                    <input type="text" class="form-control form-control-sm bg-white" readonly value="@(Model.Zalaczniki?.Any() == true ? $"{Model.Zalaczniki.Count} plik(ów)" : "Nie wybrano pliku")" style="cursor: default;" />
+                                </div>
+                            </ActivatorContent>
+                        </MudFileUpload>
                     </div>
 
+                    @if (Model.Zalaczniki != null && Model.Zalaczniki.Any())
+                    {
+                        <div class="d-flex flex-wrap gap-1 mt-2">
+                            @foreach (var z in Model.Zalaczniki)
+                            {
+                                <span class="badge bg-white border text-dark p-1 d-inline-flex align-items-center shadow-sm" style="font-weight: 500;">
+                                    <i class="bi bi-file-earmark-pdf-fill text-danger me-1"></i>
+                                    @z.NazwaPliku
+                                    @if (!Model.CzyArchiwum)
+                                    {
+                                        <i class="bi bi-x text-muted ms-2 fs-6" style="cursor: pointer;" @onclick="() => UsunZalacznik(z)"></i>
+                                    }
+                                </span>
+                            }
+                        </div>
+                    }
                 </div>
-            </EditForm>
-        }
-    </DialogContent>
-    <DialogActions>
-        <div class="w-100 px-3 pb-2 d-flex justify-content-end gap-2 mt-1">
-            <button type="button" class="btn btn-sm btn-light fw-bold px-3 shadow-sm border" @onclick="Cancel">
-                <i class="bi bi-x me-1"></i> Anuluj
+
+            </div>
+        </EditForm>
+    }
+</DialogContent>
+<DialogActions>
+    <div class="w-100 px-3 pb-2 d-flex justify-content-end gap-2 mt-1">
+        <button type="button" class="btn btn-sm btn-light fw-bold px-3 shadow-sm border" @onclick="Cancel">
+            <i class="bi bi-x me-1"></i> Anuluj
+        </button>
+        @if (Model != null && !Model.CzyArchiwum)
+        {
+            <button type="button" class="btn btn-sm fw-bold px-4 shadow-sm" style="background-color: #5a4bda; color: white;" @onclick="Save">
+                <i class="bi bi-save me-1"></i> Zapisz
             </button>
-            @if (Model != null && !Model.CzyArchiwum)
-            {
-                <button type="button" class="btn btn-sm fw-bold px-4 shadow-sm" style="background-color: #5a4bda; color: white;" @onclick="Save">
-                    <i class="bi bi-save me-1"></i> Zapisz
-                </button>
-            }
-        </div>
-    </DialogActions>
+        }
+    </div>
+</DialogActions>
 </MudDialog>
 
 <style>
     .modern-dialog-window .mud-dialog {
-        border-radius: 12px !important;
-    }
-    
-    .form-select, .form-control {
-        border-color: #cbd5e1;
-        font-size: 0.9rem;
-    }
-    .input-group-text {
-        border-color: #cbd5e1;
-    }
-    
-    textarea.form-control {
-        min-height: 50px;
-    }
+    border-radius: 12px !important;
+}
+
+.form-select, .form-control {
+border-color: #cbd5e1;
+font-size: 0.9rem;
+}
+.input-group-text {
+border-color: #cbd5e1;
+}
+
+textarea.form-control {
+min-height: 50px;
+}
 </style>

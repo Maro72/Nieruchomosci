@@ -26,7 +26,7 @@
                  Bordered="true"
                  Dense="true"
                  Breakpoint="Breakpoint.None"
-                 RowsPerPage="10"
+                 RowsPerPage="@(ShowPager ? 10 : Math.Max(1, Items.Count()))"
                  RowClick="@HandleRowClick"
                  RowClassFunc="@OnRowClassFunc"
                  Class="mud-elevation-1 rounded-lg bg-white overflow-hidden"
@@ -37,19 +37,19 @@
             {
                 <div class="custom-toolbar-buttons d-flex align-items-center gap-1 py-1" style="z-index: 10;">
                     @* Akcja jest renderowana tylko wtedy, gdy strona ją podłączyła. *@
-                    @if (OnAdd.HasDelegate)
+                    @if (ShowCrudActions && OnAdd.HasDelegate)
                     {
                         <button type="button" class="btn btn-sm btn-link text-secondary fw-medium px-2 py-1.5 d-flex align-items-center gap-1 text-decoration-none small-font" @onclick="OnAdd">
                             <i class="bi bi-plus-lg"></i> Dodaj
                         </button>
                     }
-                    @if (OnEdit.HasDelegate)
+                    @if (ShowCrudActions && OnEdit.HasDelegate)
                     {
                         <button type="button" class="btn btn-sm btn-link text-secondary fw-medium px-2 py-1.5 d-flex align-items-center gap-1 text-decoration-none small-font" disabled="@(SelectedItem == null)" @onclick="() => OnEdit.InvokeAsync(SelectedItem)">
                             <i class="bi bi-pencil-square"></i> Edytuj
                         </button>
                     }
-                    @if (OnDelete.HasDelegate)
+                    @if (ShowCrudActions && OnDelete.HasDelegate)
                     {
                         <button type="button" class="btn btn-sm btn-link text-danger fw-medium px-2 py-1.5 d-flex align-items-center gap-1 text-decoration-none small-font" disabled="@(SelectedItem == null)" @onclick="() => OnDelete.InvokeAsync(SelectedItem)">
                             <i class="bi bi-trash"></i> Usuń
@@ -92,7 +92,10 @@
         </Columns>
 
         <PagerContent>
-            <MudDataGridPager T="TItem" RowsPerPageString="Rekordów na stronę:" InfoFormat="{first_item}-{last_item} z {all_items}" />
+            @if (ShowPager)
+            {
+                <MudDataGridPager T="TItem" RowsPerPageString="Rekordów na stronę:" InfoFormat="{first_item}-{last_item} z {all_items}" />
+            }
         </PagerContent>
     </MudDataGrid>
 </div>

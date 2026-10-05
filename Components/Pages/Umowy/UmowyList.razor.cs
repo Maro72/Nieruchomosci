@@ -146,6 +146,7 @@ namespace Mieszkaniec.Components.Pages.Umowy
                 DataPlanowanegoZakonczenia = umowa.DataPlanowanegoZakonczenia,
                 DataFaktycznegoZakonczenia = umowa.DataFaktycznegoZakonczenia,
                 PowodWypowiedzenia = umowa.PowodWypowiedzenia,
+                WynajmowaneLokale = umowa.WynajmowaneLokale?.ToList() ?? new(),
                 Zalaczniki = umowa.Zalaczniki ?? new(),
                 Aneksy = umowa.Aneksy ?? new()
             };

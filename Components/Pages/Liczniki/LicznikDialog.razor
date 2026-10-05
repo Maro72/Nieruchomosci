@@ -1,0 +1,51 @@
+@using Mieszkaniec.Model.Entities
+@using Mieszkaniec.Services.Interfaces
+@using MudBlazor
+@inject IObiektService ObiektService
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="form">
+            <MudTextField @bind-Value="Licznik.NumerLicznika" Label="Numer licznika" Required="true" />
+            <MudTextField @bind-Value="Licznik.Typ" Label="Typ" Required="true" />
+            <MudSelect T="int?" @bind-Value="Licznik.ObiektId" Label="Budynek" Required="true">
+                @foreach (var obiekt in obiekty)
+                {
+                    <MudSelectItem T="int?" Value="@obiekt.Id">@obiekt.Nazwa</MudSelectItem>
+                }
+            </MudSelect>
+            <MudTextField @bind-Value="Licznik.Uwagi" Label="Uwagi" Placeholder="np. woda ppoż." Lines="3" />
+            <MudSwitch @bind-Value="Licznik.CzyAktywny" Color="Color.Success" Label="Licznik aktywny" />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Anuluj</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Zapisz</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public Licznik Licznik { get; set; } = new Licznik();
+
+    private List<Obiekt> obiekty = new();
+
+    MudForm form;
+
+    protected override async Task OnInitializedAsync()
+    {
+        obiekty = await ObiektService.GetAllActiveAsync();
+    }
+
+    private async Task Submit()
+    {
+        await form.Validate();
+        if (form.IsValid)
+        {
+            MudDialog.Close(DialogResult.Ok(Licznik));
+        }
+    }
+
+    void Cancel() => MudDialog.Cancel();
+}

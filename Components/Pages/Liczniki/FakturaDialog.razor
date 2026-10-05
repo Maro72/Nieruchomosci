@@ -1,0 +1,268 @@
+@using Mieszkaniec.Model.Entities
+@using MudBlazor
+
+<MudDialog Options="DialogOptions" Style="max-height: 70vh; overflow-y: auto; width: min(100vw - 12px, 1180px); min-width: min(100vw - 12px, 1180px); max-width: calc(100vw - 12px);">
+    <DialogContent>
+        <style>
+            .compact-form .mud-input-outlined {
+                border: none !important;
+                border-bottom: 1px solid rgba(0,0,0,0.18) !important;
+                border-radius: 0 !important;
+                background: transparent !important;
+                box-shadow: none !important;
+            }
+            .compact-form .mud-input-control {
+                margin-top: 0 !important;
+                margin-bottom: 0 !important;
+            }
+            .compact-form .mud-input-root,
+            .compact-form .mud-input-slot,
+            .compact-form .mud-input {
+                min-height: 28px !important;
+                height: 28px !important;
+                background: transparent !important;
+            }
+            .compact-form .mud-input-slot {
+                padding-top: 2px !important;
+                padding-bottom: 2px !important;
+            }
+            .compact-form .mud-input-slot input,
+            .compact-form .mud-input-slot textarea {
+                font-size: 0.8rem !important;
+                padding-top: 0 !important;
+                padding-bottom: 0 !important;
+            }
+            .compact-form .mud-input-label {
+                font-size: 0.74rem !important;
+                line-height: 1.2 !important;
+            }
+            .compact-form .mud-grid-item {
+                padding-top: 4px !important;
+                padding-bottom: 4px !important;
+            }
+            .compact-form .mud-table-root {
+                border: none !important;
+                box-shadow: none !important;
+                margin-top: 0 !important;
+            }
+            .compact-form .mud-input-root {
+                background: transparent !important;
+            }
+            .compact-form .mud-table-cell {
+                border-bottom: 1px solid rgba(0,0,0,0.1) !important;
+                padding-top: 2px !important;
+                padding-bottom: 2px !important;
+                vertical-align: middle !important;
+            }
+            .compact-form .mud-table-head .mud-table-cell {
+                border-bottom: 1px solid rgba(0,0,0,0.15) !important;
+                font-weight: 600;
+                padding-top: 6px !important;
+                padding-bottom: 6px !important;
+            }
+            .compact-form .first-column {
+                min-width: 170px !important;
+                padding-left: 4px !important;
+                padding-right: 4px !important;
+                font-size: 0.68rem !important;
+                line-height: 1.1 !important;
+            }
+            .compact-form .first-column .fixed-value {
+                font-size: 0.68rem !important;
+                line-height: 1.1 !important;
+            }
+            .compact-form .jm-column,
+            .compact-form .jm-column .fixed-value {
+                width: 42px !important;
+                min-width: 42px !important;
+                padding-left: 2px !important;
+                padding-right: 2px !important;
+                font-size: 0.6rem !important;
+            }
+            .compact-form .quantity-column {
+                width: 64px !important;
+                min-width: 64px !important;
+            }
+            .compact-form .quantity-column .mud-input-control {
+                width: 58px !important;
+            }
+            .compact-form .vat-column {
+                width: 75px !important;
+                min-width: 75px !important;
+            }
+            .compact-form .vat-column .mud-input-control {
+                width: 75% !important;
+                min-width: 52px !important;
+            }
+            .compact-form .position-column .mud-input-root {
+                min-height: 25px !important;
+                height: 25px !important;
+            }
+        </style>
+        <MudForm @ref="form" Class="compact-form">
+            <MudGrid>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="Faktura.NumerFaktury" Label="Numer faktury" Required="true" />
+                </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudNumericField @bind-Value="Faktura.Rok" Label="Rok rozliczeniowy" Required="true" />
+                </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudNumericField @bind-Value="Faktura.Miesiac" Label="Miesiąc rozliczeniowy" Required="true" Min="1" Max="12" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudDatePicker @bind-Date="DataWystawieniaN" Label="Data wystawienia" Required="true" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudNumericField @bind-Value="Faktura.ZuzycieFakturowane_m3" Label="Zafakturowana objętość wody (m3)" Format="N2" Required="true" />
+                </MudItem>
+            </MudGrid>
+
+            <MudDivider Class="my-2" />
+
+            <MudText Typo="Typo.subtitle2" Class="mb-1">Wyszczególnienie</MudText>
+            <div style="overflow-x: auto; max-width: 100%;">
+                <MudTable Items="Faktura.Wyszczegolnienie" Dense="true" Hover="true" Outlined="false" Breakpoint="Breakpoint.None" Style="min-width: 980px; width: 100%; white-space: nowrap; font-size: 0.75rem; border-collapse: collapse;">
+                    <HeaderContent>
+                        <MudTh Class="first-column">Nazwa towaru / usługi</MudTh>
+                        <MudTh Class="jm-column">JM</MudTh>
+                        <MudTh Class="quantity-column">Ilość</MudTh>
+                        <MudTh>Cena netto</MudTh>
+                        <MudTh>Netto</MudTh>
+                        <MudTh Class="vat-column">VAT</MudTh>
+                        <MudTh>Brutto</MudTh>
+                        <MudTh Style="width: 48px;"></MudTh>
+                    </HeaderContent>
+                    <RowTemplate Context="pozycja">
+                        <MudTd DataLabel="Nazwa towaru / usługi" Class="first-column">
+                            <MudText Class="fixed-value">@pozycja.NazwaTowaruUsługi</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="JM" Class="jm-column">
+                            <MudText Class="fixed-value">@pozycja.Jm</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Ilość" Class="quantity-column position-column">
+                            <MudNumericField @bind-Value="pozycja.Ilosc" @bind-Value:after="AktualizujKwotyFaktury" HideSpinButtons="true" Format="N2" Variant="Variant.Text" Margin="Margin.Dense" Style="font-size: 0.72rem;" Class="compact-field" />
+                        </MudTd>
+                        <MudTd DataLabel="Cena netto">
+                            <MudNumericField @bind-Value="pozycja.CenaNetto" @bind-Value:after="AktualizujKwotyFaktury" HideSpinButtons="true" Format="N2" Variant="Variant.Text" Margin="Margin.Dense" Style="font-size: 0.72rem;" Class="compact-field" />
+                        </MudTd>
+                        <MudTd DataLabel="Netto" Style="font-size: 0.8rem;">@pozycja.WartoscNetto.ToString("N2")</MudTd>
+                        <MudTd DataLabel="VAT" Class="vat-column position-column">
+                            <MudNumericField @bind-Value="pozycja.StawkaVat" @bind-Value:after="AktualizujKwotyFaktury" HideSpinButtons="true" Format="N2" Variant="Variant.Text" Margin="Margin.Dense" Style="font-size: 0.72rem;" Class="compact-field" />
+                        </MudTd>
+                        <MudTd DataLabel="Brutto" Style="font-size: 0.8rem;">@pozycja.WartoscBrutto.ToString("N2")</MudTd>
+                        <MudTd DataLabel="Usuń">
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => UsunPozycje(pozycja))" />
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </div>
+
+            <MudButton Variant="Variant.Text" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Class="mt-1" OnClick="DodajPozycje">
+                Dodaj pozycję
+            </MudButton>
+
+            <MudDivider Class="my-1" />
+
+            <MudGrid>
+                <MudItem xs="12" md="6">
+                    <MudNumericField @bind-Value="Faktura.WartoscNetto" Label="Wartość netto (PLN)" Format="N2" Required="true" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudNumericField @bind-Value="Faktura.WartoscBrutto" Label="Wartość brutto (PLN)" Format="N2" Required="true" />
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Anuluj</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Zapisz</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public FakturaWody Faktura { get; set; } = new FakturaWody { Rok = DateTime.Now.Year, Miesiac = DateTime.Now.Month };
+
+    private readonly DialogOptions DialogOptions = new()
+    {
+        MaxWidth = MaxWidth.False,
+        FullWidth = true,
+        CloseButton = true
+    };
+
+    private DateTime? DataWystawieniaN
+    {
+        get => Faktura.DataWystawienia;
+        set { if (value.HasValue) Faktura.DataWystawienia = value.Value; }
+    }
+
+    MudForm form;
+
+    protected override void OnParametersSet()
+    {
+        if (Faktura.Wyszczegolnienie == null)
+        {
+            Faktura.Wyszczegolnienie = new List<PozycjaFakturyWody>();
+        }
+
+        if (!Faktura.Wyszczegolnienie.Any() &&
+            Faktura.WartoscNetto == 0m &&
+            Faktura.WartoscBrutto == 0m)
+        {
+            Faktura.Wyszczegolnienie.Add(new PozycjaFakturyWody
+            {
+                NazwaTowaruUsługi = "Woda",
+                Jm = "m3",
+                Ilosc = Faktura.ZuzycieFakturowane_m3,
+                CenaNetto = 0m,
+                StawkaVat = 23m
+            });
+        }
+    }
+
+    private void DodajPozycje()
+    {
+        Faktura.Wyszczegolnienie.Add(new PozycjaFakturyWody
+        {
+            NazwaTowaruUsługi = string.Empty,
+            Jm = "szt.",
+            Ilosc = 1m,
+            CenaNetto = 0m,
+            StawkaVat = 23m
+        });
+
+        AktualizujKwotyFaktury();
+    }
+
+    private void AktualizujKwotyFaktury()
+    {
+        if (Faktura.Wyszczegolnienie?.Any() == true)
+        {
+            Faktura.AktualizujKwotyZPozycji();
+        }
+    }
+
+    private void UsunPozycje(PozycjaFakturyWody pozycja)
+    {
+        Faktura.Wyszczegolnienie.Remove(pozycja);
+        AktualizujKwotyFaktury();
+    }
+
+    private async Task Submit()
+    {
+        if (Faktura.Wyszczegolnienie?.Any() == true)
+        {
+            AktualizujKwotyFaktury();
+        }
+        await form.Validate();
+        if (form.IsValid)
+        {
+            MudDialog.Close(DialogResult.Ok(Faktura));
+        }
+    }
+
+    void Cancel() => MudDialog.Cancel();
+}
+

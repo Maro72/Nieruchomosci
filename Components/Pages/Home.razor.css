@@ -1,12 +1,315 @@
-.home-page {
-    min-height: calc(100vh - 170px);
+/* =========================================================
+   Welcome Page – Boryszew Nieruchomości
+   ========================================================= */
+
+/* ---------- Layout ---------- */
+.welcome-page {
+    position: relative;
     display: grid;
     place-items: center;
-    padding: 2rem;
+    min-height: calc(100vh - 64px);
+    overflow: hidden;
+    isolation: isolate;
+    background: linear-gradient(160deg, #f0f7ff 0%, #e8f2fb 40%, #f5f9ff 100%);
 }
 
-.home-page__title {
-    color: #2f343b;
-    font-weight: 700;
+/* ---------- Decorative background ---------- */
+.welcome-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.bg-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(30, 111, 168, 0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(30, 111, 168, 0.045) 1px, transparent 1px);
+    background-size: 52px 52px;
+    mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 100%);
+}
+
+.bg-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.55;
+}
+
+.bg-orb--1 {
+    top: -10%;
+    right: 5%;
+    width: 480px;
+    height: 480px;
+    background: radial-gradient(circle, rgba(125, 211, 252, 0.4), transparent 70%);
+    animation: orb-float 12s ease-in-out infinite alternate;
+}
+
+.bg-orb--2 {
+    bottom: -8%;
+    left: -5%;
+    width: 420px;
+    height: 420px;
+    background: radial-gradient(circle, rgba(30, 111, 168, 0.18), transparent 70%);
+    animation: orb-float 16s ease-in-out infinite alternate-reverse;
+}
+
+.bg-orb--3 {
+    top: 40%;
+    left: 30%;
+    width: 280px;
+    height: 280px;
+    background: radial-gradient(circle, rgba(147, 197, 253, 0.2), transparent 70%);
+    animation: orb-float 20s ease-in-out infinite alternate;
+}
+
+@keyframes orb-float {
+    from { transform: translate(0, 0) scale(1); }
+    to   { transform: translate(30px, 20px) scale(1.08); }
+}
+
+/* ---------- Hero content ---------- */
+.welcome-hero {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     text-align: center;
+    padding: clamp(3rem, 8vw, 6rem) 2rem;
+    animation: hero-enter 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes hero-enter {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ---------- Logo ---------- */
+.welcome-logo {
+    position: relative;
+    width: 96px;
+    height: 96px;
+    display: grid;
+    place-items: center;
+    margin-bottom: 2rem;
+}
+
+.welcome-logo__ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    animation: ring-spin 18s linear infinite;
+}
+
+.welcome-logo__ring--outer {
+    border: 1.5px dashed rgba(30, 111, 168, 0.22);
+}
+
+.welcome-logo__ring--inner {
+    inset: 10px;
+    border: 1.5px solid rgba(30, 111, 168, 0.15);
+    animation-direction: reverse;
+    animation-duration: 12s;
+}
+
+@keyframes ring-spin {
+    to { transform: rotate(360deg); }
+}
+
+.welcome-logo__icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 20px;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(145deg, #1e6fa8 0%, #134f7a 100%);
+    box-shadow:
+        0 0 0 1px rgba(30, 111, 168, 0.18),
+        0 16px 40px rgba(30, 111, 168, 0.28),
+        0 4px 12px rgba(30, 111, 168, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    color: #ffffff;
+    position: relative;
+    z-index: 1;
+}
+
+.welcome-logo__icon .mud-icon-root {
+    font-size: 2.4rem;
+}
+
+/* ---------- Brand ---------- */
+.welcome-brand {
+    margin: 0 0 0.6rem;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.22em;
+    color: #1e6fa8;
+    text-transform: uppercase;
+}
+
+/* ---------- Title ---------- */
+.welcome-title {
+    margin: 0 0 1.1rem;
+    font-size: clamp(2.4rem, 5.5vw, 4rem);
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    color: #142f45;
+}
+
+.welcome-title__accent {
+    background: linear-gradient(135deg, #1e6fa8 0%, #38bdf8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ---------- Subtitle ---------- */
+.welcome-subtitle {
+    margin: 0 0 2.8rem;
+    max-width: 480px;
+    font-size: clamp(0.92rem, 1.8vw, 1.05rem);
+    line-height: 1.7;
+    color: #4e6e87;
+}
+
+.welcome-subtitle__br {
+    display: block;
+}
+
+/* ---------- Divider hint ---------- */
+.welcome-divider {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    color: #7a9ab2;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+}
+
+.welcome-divider__line {
+    display: block;
+    width: 3rem;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #b8cfe0);
+}
+
+.welcome-divider__line:last-child {
+    background: linear-gradient(90deg, #b8cfe0, transparent);
+}
+
+.welcome-divider__icon {
+    color: #1e6fa8 !important;
+    font-size: 1.1rem !important;
+    opacity: 0.7;
+}
+
+.welcome-divider__text {
+    white-space: nowrap;
+}
+
+/* =========================================================
+   Dark mode
+   ========================================================= */
+body:has(.mud-theme-dark) .welcome-page,
+.app-dark-content .welcome-page {
+    background: linear-gradient(160deg, #071520 0%, #0b1f30 40%, #071520 100%);
+}
+
+body:has(.mud-theme-dark) .bg-grid,
+.app-dark-content .bg-grid {
+    background-image:
+        linear-gradient(rgba(125, 211, 252, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(125, 211, 252, 0.04) 1px, transparent 1px);
+}
+
+body:has(.mud-theme-dark) .bg-orb--1,
+.app-dark-content .bg-orb--1 {
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.12), transparent 70%);
+}
+
+body:has(.mud-theme-dark) .bg-orb--2,
+.app-dark-content .bg-orb--2 {
+    background: radial-gradient(circle, rgba(30, 111, 168, 0.1), transparent 70%);
+}
+
+body:has(.mud-theme-dark) .bg-orb--3,
+.app-dark-content .bg-orb--3 {
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.07), transparent 70%);
+}
+
+body:has(.mud-theme-dark) .welcome-brand,
+.app-dark-content .welcome-brand {
+    color: #7dd3fc;
+}
+
+body:has(.mud-theme-dark) .welcome-title,
+.app-dark-content .welcome-title {
+    color: #e8f4fd;
+}
+
+body:has(.mud-theme-dark) .welcome-subtitle,
+.app-dark-content .welcome-subtitle {
+    color: #8aafca;
+}
+
+body:has(.mud-theme-dark) .welcome-logo__ring--outer,
+.app-dark-content .welcome-logo__ring--outer {
+    border-color: rgba(125, 211, 252, 0.18);
+}
+
+body:has(.mud-theme-dark) .welcome-logo__ring--inner,
+.app-dark-content .welcome-logo__ring--inner {
+    border-color: rgba(125, 211, 252, 0.1);
+}
+
+body:has(.mud-theme-dark) .welcome-divider,
+.app-dark-content .welcome-divider {
+    color: #4e6e87;
+}
+
+body:has(.mud-theme-dark) .welcome-divider__line,
+.app-dark-content .welcome-divider__line {
+    background: linear-gradient(90deg, transparent, #1e3a52);
+}
+
+body:has(.mud-theme-dark) .welcome-divider__line:last-child,
+.app-dark-content .welcome-divider__line:last-child {
+    background: linear-gradient(90deg, #1e3a52, transparent);
+}
+
+body:has(.mud-theme-dark) .welcome-divider__icon,
+.app-dark-content .welcome-divider__icon {
+    color: #7dd3fc !important;
+}
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+@media (max-width: 600px) {
+    .welcome-page {
+        min-height: calc(100vh - 56px);
+    }
+
+    .welcome-title {
+        font-size: clamp(2rem, 10vw, 2.8rem);
+    }
+
+    .welcome-subtitle__br {
+        display: none;
+    }
+
+    .welcome-divider__line {
+        width: 1.5rem;
+    }
 }

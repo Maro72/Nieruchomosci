@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components;
 using Mieszkaniec.Components.Pages.Wynajem.Najemcy;
 using Mieszkaniec.Model.Entities;
 using Mieszkaniec.Services.Implementations;
+using Mieszkaniec.Services;
 using MudBlazor;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -10,8 +11,15 @@ namespace Mieszkaniec.Components.Pages.Wynajem.Najemcy
 {
     public partial class NajemcyList : ComponentBase
     {
+
         private List<Najemca> FiltrowaniNajemcy = new();
         private string WybranyWidok { get; set; } = "Aktywni";
+
+        // --- Panel boczny ---
+        private bool CzyOtwartoPanel { get; set; } = false;
+        private Najemca? WybranyNajemca { get; set; }
+        private List<UmowaNajmu>? UmowyNajemcy { get; set; }
+        private bool LadowanieUmow { get; set; } = false;
 
         protected override async Task OnInitializedAsync()
         {
@@ -95,15 +103,20 @@ namespace Mieszkaniec.Components.Pages.Wynajem.Najemcy
                 await ZaladujDane();
             }
         }
-        private async Task OpenPodgladDialog(Najemca najemca)
-    {
-        if (najemca == null) return;
 
-        // Przekazujemy dodatkowy parametr: TylkoPodglad = true
-        var parameters = new DialogParameters { { "Model", najemca }, { "TylkoPodglad", true } };
-        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
-        
-        await DialogService.ShowAsync<NajemcaDialog>("Podgląd danych dzierżawcy", parameters, options);
-    }
+        private async Task OtworzPanelNajemcy(Najemca najemca)
+        {
+            if (najemca == null) return;
+
+            WybranyNajemca = najemca;
+            UmowyNajemcy = null;
+            LadowanieUmow = true;
+            CzyOtwartoPanel = true;
+            StateHasChanged();
+
+            UmowyNajemcy = await UmowaService.PobierzUmowyNajemcyAsync(najemca.Id);
+            LadowanieUmow = false;
+            StateHasChanged();
+        }
     }
 }

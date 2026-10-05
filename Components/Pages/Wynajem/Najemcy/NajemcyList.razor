@@ -1,36 +1,14 @@
-﻿@page "/dzierzawcy"
+@page "/dzierzawcy"
 @page "/najemcy"
-@attribute [Authorize(Policy = "ZarzadzanieUmowami")]
+@attribute [Authorize(Policy = "Najemcy.Odczyt")]
 @using MudBlazor
 @using Mieszkaniec.Model.Entities
 @using Mieszkaniec.Services.Interfaces
 @using Mieszkaniec.Components.UI
 @inject INajemcaService NajemcaService
+@inject Mieszkaniec.Services.IUmowaService UmowaService
 @inject IDialogService DialogService
 
-@* <MudPaper Class="mb-4" Elevation="0" Outlined="true">
-    <MudToolBar DisableGutters="false">
-        <MudText Typo="Typo.h5" Style="font-weight: 500;">Baza Dzierżawców i Najemców</MudText>
-
-        <MudSpacer />
-
-        <div class="d-flex align-center gap-3">
-            <MudSelect T="string" Label="Pokazuj firmy" Variant="Variant.Outlined" Margin="Margin.Dense"
-                       Value="@WybranyWidok" ValueChanged="OnWidokChanged"
-                       Style="width: 320px; background-color: white;">
-                <MudSelectItem Value="@("Aktywni")">Tylko aktywni</MudSelectItem>
-                <MudSelectItem Value="@("Archiwum")">Archiwum (byli dzierżawcy)</MudSelectItem>
-            </MudSelect>
-
-            <MudTooltip Text="Odśwież listę">
-                <MudIconButton Icon="@Icons.Material.Filled.Refresh"
-                               Color="Color.Default"
-                               OnClick="OdswiezListew" />
-            </MudTooltip>
-        </div>
-    </MudToolBar>
-</MudPaper>
- *@
 <div class="modern-grid-scroll">
     <FGrid TItem="Najemca"
            Items="@FiltrowaniNajemcy"
@@ -84,8 +62,8 @@
             <MudBlazor.TemplateColumn T="Najemca" Title="Akcje">
                 <CellTemplate Context="ctx">
                     <div class="d-flex gap-1">
-                        <MudTooltip Text="Dane najemcy">
-                        <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Info" OnClick="@(() => OpenPodgladDialog(ctx.Item))" />
+                        <MudTooltip Text="Lokale i umowy najemcy">
+                            <MudIconButton Icon="@Icons.Material.Filled.Apartment" Size="Size.Small" Color="Color.Info" OnClick="@(() => OtworzPanelNajemcy(ctx.Item))" />
                         </MudTooltip>
                         <MudTooltip Text="Umowy najemcy">
                             <MudIconButton Icon="@Icons.Material.Filled.Description" Size="Size.Small" Color="Color.Secondary" Href="@($"/umowy?najemcaId={ctx.Item.Id}")" />
@@ -108,6 +86,134 @@
         </GridColumns>
     </FGrid>
 </div>
+
+@* ============================================= *@
+@* PANEL BOCZNY — LOKALE I UMOWY NAJEMCY         *@
+@* ============================================= *@
+<MudDrawer @bind-Open="@CzyOtwartoPanel" Anchor="Anchor.Right" Elevation="3" Variant="@DrawerVariant.Temporary" Width="480px" Style="background-color: #ffffff;">
+    @if (WybranyNajemca != null)
+    {
+        @* Nagłówek *@
+        <div class="pa-4 d-flex align-items-center border-bottom bg-light">
+            <div class="bg-white shadow-sm rounded p-2 me-3 border d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                <i class="bi bi-person-vcard text-primary fs-5"></i>
+            </div>
+            <div class="flex-grow-1">
+                <MudText Typo="Typo.subtitle1" Class="fw-bold mb-0" Style="color: #2c3e50;">@WybranyNajemca.NazwaFirmyOsoby</MudText>
+                <small class="text-muted">Wynajmowane lokale i umowy</small>
+            </div>
+            <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Default" OnClick="@(() => CzyOtwartoPanel = false)" Size="Size.Small" />
+        </div>
+
+        @* Zawartość *@
+        <div class="pa-3 overflow-auto" style="height: calc(100vh - 75px); display: flex; flex-direction: column;">
+
+            @if (LadowanieUmow)
+            {
+                <div class="d-flex justify-content-center align-items-center py-4">
+                    <MudProgressCircular Color="Color.Primary" Size="Size.Small" Indeterminate="true" />
+                    <span class="ms-2 text-muted small">Wczytywanie...</span>
+                </div>
+            }
+            else
+            {
+                @* Lista umów z lokalami *@
+                <MudText Typo="Typo.caption" Class="fw-bold text-secondary text-uppercase mb-2 d-block" Style="letter-spacing: 0.5px;">
+                    Umowy i wynajmowane lokale (@(UmowyNajemcy?.Count ?? 0))
+                </MudText>
+
+                @if (UmowyNajemcy != null && UmowyNajemcy.Any())
+                {
+                    <div class="flex-grow-1 overflow-auto">
+                        @foreach (var umowa in UmowyNajemcy.OrderByDescending(u => u.CzyAktywna))
+                        {
+                            @* Nagłówek umowy *@
+                            <div class="mb-3 border rounded shadow-sm overflow-hidden">
+                                <div class="px-3 py-2 d-flex align-items-center justify-content-between"
+                                     style="background-color: @(umowa.CzyAktywna ? "#e8f5e9" : "#fafafa"); border-bottom: 1px solid #e0e0e0;">
+                                    <div>
+                                        <span class="fw-bold text-dark" style="font-size: 0.88rem;">
+                                            <i class="bi bi-file-earmark-text me-1 text-primary"></i>@umowa.NumerUmowy
+                                        </span>
+                                        <small class="text-muted ms-2">
+                                            @umowa.DataOd.ToString("yyyy-MM-dd") → @(umowa.DataDo.HasValue ? umowa.DataDo.Value.ToString("yyyy-MM-dd") : "∞")
+                                        </small>
+                                    </div>
+                                    <MudChip T="string" Color="@(umowa.CzyAktywna ? Color.Success : Color.Error)" Size="Size.Small" Class="ma-0">
+                                        @(umowa.CzyAktywna ? "Aktywna" : "Archiwalna")
+                                    </MudChip>
+                                </div>
+
+                                @* Lokale w tej umowie *@
+                                @if (umowa.WynajmowaneLokale != null && umowa.WynajmowaneLokale.Any())
+                                {
+                                    @foreach (var rl in umowa.WynajmowaneLokale)
+                                    {
+                                        <div class="px-3 py-2 bg-white d-flex justify-content-between align-items-center" style="font-size: 0.83rem; border-bottom: 1px solid #f0f0f0;">
+                                            <div>
+                                                @if (!string.IsNullOrWhiteSpace(rl.LokalWynajem?.Obiekt?.Nazwa))
+                                                {
+                                                    <span class="badge text-bg-secondary rounded-pill me-1" style="font-size: 0.68rem;">
+                                                        <i class="bi bi-building me-1"></i>@rl.LokalWynajem.Obiekt.Nazwa
+                                                    </span>
+                                                }
+                                                <span class="fw-bold text-primary">@(rl.LokalWynajem?.NumerLokalu ?? "-")</span>
+                                                <small class="text-muted ms-1">@(rl.LokalWynajem?.TypLokalu) • @($"{rl.LokalWynajem?.PowierzchniaM2:N2} m²")</small>
+                                            </div>
+                                            <div class="text-end">
+                                                <span class="fw-bold text-success" style="font-size: 0.85rem;">@($"{rl.WynegocjowanaCenaZaM2:N2} zł")</span>
+                                                <small class="text-muted d-block" style="font-size: 0.7rem;">@(rl.CzyRyczalt ? "ryczałt" : "za m²")</small>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <div class="px-3 py-2 text-muted small fst-italic bg-white">Brak lokali w tej umowie.</div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-muted small fst-italic py-3 text-center bg-light rounded">Brak umów dla tego najemcy.</div>
+                }
+
+                <div class="mt-auto pt-3">
+                    <MudText Typo="Typo.caption" Class="fw-bold text-secondary text-uppercase mb-2 d-block" Style="letter-spacing: 0.5px;">Podsumowanie (aktywne umowy)</MudText>
+                    <div class="rounded-3 p-3" style="background: linear-gradient(135deg, #1a237e 0%, #283593 100%); color: white;">
+                        <div class="row g-2 text-center">
+                            <div class="col-4">
+                                <div class="rounded-2 py-2 px-1" style="background: rgba(255,255,255,0.12);">
+                                    <div class="fw-bold" style="font-size: 1.1rem;">@(UmowyNajemcy?.Count(u => u.CzyAktywna) ?? 0)</div>
+                                    <div style="font-size: 0.68rem; opacity: 0.8;">umowy</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="rounded-2 py-2 px-1" style="background: rgba(255,255,255,0.12);">
+                                    <div class="fw-bold" style="font-size: 1.1rem;">
+                                        @($"{(UmowyNajemcy?.Where(u => u.CzyAktywna).SelectMany(u => u.WynajmowaneLokale ?? new()).Sum(l => l.LokalWynajem?.PowierzchniaM2 ?? 0) ?? 0):N0}")
+                                    </div>
+                                    <div style="font-size: 0.68rem; opacity: 0.8;">m² łącznie</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="rounded-2 py-2 px-1" style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);">
+                                    <div class="fw-bold" style="font-size: 1.0rem; color: #a5d6a7;">
+                                        @($"{(UmowyNajemcy?.Where(u => u.CzyAktywna).Sum(u => u.AktualnyCzynszMiesieczny) ?? 0):N2}")
+                                    </div>
+                                    <div style="font-size: 0.68rem; opacity: 0.8;">zł / msc</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</MudDrawer>
+
 <style>
     /* Ponieważ uwalniamy górną przestrzeń, możemy powiększyć wysokość samej tabeli */
     .modern-grid-scroll .mud-table-container {

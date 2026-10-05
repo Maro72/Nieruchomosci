@@ -1,5 +1,5 @@
 ﻿@page "/fbudynki"
-@attribute [Authorize(Policy = "ZarzadzanieBudynkami")]
+@attribute [Authorize(Policy = "Budynki.Odczyt")]
 @namespace Mieszkaniec.Components.Pages.Obiekty
 @using Mieszkaniec.Model.Entities
 @using Mieszkaniec.Components.UI
@@ -12,6 +12,7 @@
        @bind-SelectedItem="WybranyObiekt"
        SearchText="@TekstFiltru"
        SearchTextChanged="OnSearchInput"
+    ShowCrudActions="@CzyMozeEdytowac"
        OnAdd="OpenCreateDialog"
        OnEdit="OpenEditDialog"
        OnDelete="RequestDelete"

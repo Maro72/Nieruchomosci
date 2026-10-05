@@ -6,12 +6,16 @@
 @using Microsoft.JSInterop
 @using System.Data.Common
 @using Mieszkaniec.Model.Context
+@using Mieszkaniec.Services.Interfaces
+@using Mieszkaniec.Services
 @using Microsoft.AspNetCore.Components.Authorization
 
-@inject MieszkaniecDbContext DbContext
+@inject IDbContextFactory<MieszkaniecDbContext> DbContextFactory
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JS
 @inject AuthenticationStateProvider AuthStateProvider
+@inject IDbConfigService DbConfigService
+@inject IDbConnectionService DbConnectionService
 
 <div class="login-shell">
     <div class="login-stars" aria-hidden="true"></div>
@@ -41,12 +45,72 @@
         <MudPaper Class="login-card" Elevation="0">
             <div class="login-card-heading">
                 <div>
-                    <MudText Typo="Typo.h4">Zaloguj się</MudText>
-                    <MudText Typo="Typo.body2">Wprowadź dane, aby otworzyć panel administracyjny</MudText>
+                    <MudText Typo="Typo.h4">@(_databaseReady ? "Zaloguj się" : "Konfiguracja połączenia")</MudText>
+                    <MudText Typo="Typo.body2">
+                        @(_databaseReady
+                            ? "Wprowadź dane, aby otworzyć panel administracyjny"
+                            : "Nie można połączyć się z bazą. Wpisz aktualne hasło, aby przywrócić połączenie.")
+                    </MudText>
                 </div>
                 <MudIcon Icon="@Icons.Material.Filled.LockPerson" Class="login-card-icon" />
             </div>
 
+            @if (!_databaseReady)
+            {
+                <form class="login-form" autocomplete="off" @onsubmit="ZapiszKonfiguracjeBazy" @onsubmit:preventDefault="true">
+                    @if (!string.IsNullOrWhiteSpace(_databaseError))
+                    {
+                        <MudAlert Severity="Severity.Warning" Class="login-error" Elevation="0" Variant="Variant.Outlined">
+                            @_databaseError
+                        </MudAlert>
+                    }
+
+                    <label class="login-label" for="database-server">SERWER BAZY DANYCH</label>
+                    <MudTextField id="database-server" @bind-Value="_connectionModel.Server"
+                                  Variant="Variant.Outlined" Required="true"
+                                  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Dns"
+                                  Class="login-input" />
+
+                    <label class="login-label" for="database-port">PORT</label>
+                    <MudNumericField id="database-port" T="uint" @bind-Value="_connectionModel.Port"
+                                     Variant="Variant.Outlined" Required="true"
+                                     Class="login-input" />
+
+                    <label class="login-label" for="database-name">NAZWA BAZY DANYCH</label>
+                    <MudTextField id="database-name" @bind-Value="_connectionModel.Database"
+                                  Variant="Variant.Outlined" Required="true"
+                                  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Storage"
+                                  Class="login-input" />
+
+                    <label class="login-label" for="database-user">UŻYTKOWNIK BAZY</label>
+                    <MudTextField id="database-user" @bind-Value="_connectionModel.User"
+                                  Variant="Variant.Outlined" Required="true"
+                                  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Person"
+                                  Class="login-input" />
+
+                    <label class="login-label" for="database-password">HASŁO BAZY DANYCH</label>
+                    <MudTextField id="database-password" @bind-Value="_connectionModel.Password"
+                                  InputType="InputType.Password" Variant="Variant.Outlined"
+                                  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.VpnKey"
+                                  Class="login-input" />
+
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large"
+                               FullWidth="true" ButtonType="ButtonType.Submit" Disabled="CzyLaduje"
+                               Class="login-submit">
+                        @if (CzyLaduje)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                        }
+                        else
+                        {
+                            <span>Zapisz hasło i połącz</span>
+                            <MudIcon Icon="@Icons.Material.Filled.Storage" Size="Size.Small" />
+                        }
+                    </MudButton>
+                </form>
+            }
+            else
+            {
             @* Formularz nie korzysta z podpowiedzi przeglądarki ani zapisanych danych logowania. *@
             <form class="login-form" autocomplete="off" @onsubmit="ZalogujSie" @onsubmit:preventDefault="true">
                 <label class="login-label" for="login-user">LOGIN UŻYTKOWNIKA</label>
@@ -99,6 +163,7 @@
                     Anuluj
                 </MudButton>
             </form>
+            }
             <div class="login-legal">Wersja oprogramowania 2.0.0 &middot; Wszystkie prawa zastrzeżone</div>
         </MudPaper>
     </main>
@@ -111,6 +176,9 @@
     private string KomunikatBledu { get; set; } = string.Empty;
     private bool CzyLaduje { get; set; } = false;
     private bool _isLoginReady;
+    private bool _databaseReady;
+    private string _databaseError = string.Empty;
+    private DbConnectionModel _connectionModel = new();
 
     private async Task ZalogujSie()
     {
@@ -120,7 +188,8 @@
         try
         {
             // Pobieramy użytkownika po loginie, a hasło weryfikujemy względem przechowywanego hasha.
-            var uzytkownik = await DbContext.Uzytkownicy
+            await using var dbContext = await DbContextFactory.CreateDbContextAsync();
+            var uzytkownik = await dbContext.Uzytkownicy
                 .FirstOrDefaultAsync(u => u.Login == WpisanyLogin);
 
             bool isValid = false;
@@ -158,7 +227,8 @@
         }
         catch (Exception ex) when (ex is DbException || ex.InnerException is DbException)
         {
-            KomunikatBledu = "Nie można połączyć się z bazą danych. Sprawdź, czy serwer bazy danych jest uruchomiony.";
+            _databaseReady = false;
+            _databaseError = "Połączenie z bazą zostało przerwane. Sprawdź ustawienia i ponownie wpisz hasło.";
             Console.Error.WriteLine($"Błąd połączenia z bazą podczas logowania: {ex.Message}");
         }
         catch (Exception ex)
@@ -182,11 +252,81 @@
     {
         if (firstRender)
         {
+            _connectionModel = DbConfigService.PobierzAktualnaKonfiguracje();
+            var wynik = await DbConfigService.TestujPolaczenieAsync(_connectionModel);
+            _databaseReady = wynik.CzySukces;
+            _databaseError = wynik.CzySukces
+                ? string.Empty
+                : OpisBleduPolaczenia(wynik.Wiadomosc);
+            if (!wynik.CzySukces)
+            {
+                _connectionModel.Password = string.Empty;
+            }
+
             // MudTextField nie przekazuje tych atrybutów w tej wersji MudBlazor.
             _isLoginReady = true;
             StateHasChanged();
             await JS.InvokeVoidAsync("disableLoginAutocomplete");
         }
+    }
+
+    private async Task ZapiszKonfiguracjeBazy()
+    {
+        CzyLaduje = true;
+        _databaseError = string.Empty;
+
+        try
+        {
+            var wynik = await DbConfigService.TestujPolaczenieAsync(_connectionModel);
+            if (!wynik.CzySukces)
+            {
+                _databaseError = OpisBleduPolaczenia(wynik.Wiadomosc);
+                Console.Error.WriteLine($"Test połączenia z bazą nie powiódł się: {wynik.Wiadomosc}");
+                return;
+            }
+
+            if (!await DbConfigService.ZapiszKonfiguracjeAsync(_connectionModel))
+            {
+                _databaseError = "Połączenie działa, ale zapis konfiguracji na serwerze się nie powiódł.";
+                return;
+            }
+
+            if (!await DbConnectionService.CanConnectAsync())
+            {
+                _databaseError = "Hasło zapisano, ale aplikacja nadal nie może otworzyć połączenia z bazą. Sprawdź log serwera.";
+                return;
+            }
+
+            _databaseReady = true;
+            _databaseError = string.Empty;
+            KomunikatBledu = string.Empty;
+        }
+        finally
+        {
+            CzyLaduje = false;
+        }
+    }
+
+    private static string OpisBleduPolaczenia(string wiadomosc)
+    {
+        if (wiadomosc.Contains("Access denied", StringComparison.OrdinalIgnoreCase))
+        {
+            return "MySQL odrzucił logowanie. Sprawdź hasło oraz uprawnienia użytkownika dla tego serwera.";
+        }
+
+        if (wiadomosc.Contains("Unknown database", StringComparison.OrdinalIgnoreCase))
+        {
+            return "MySQL nie znalazł podanej bazy danych. Sprawdź jej nazwę.";
+        }
+
+        if (wiadomosc.Contains("Unable to connect", StringComparison.OrdinalIgnoreCase) ||
+            wiadomosc.Contains("Connection refused", StringComparison.OrdinalIgnoreCase) ||
+            wiadomosc.Contains("actively refused", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Nie można osiągnąć serwera MySQL pod podanym adresem i portem. Sprawdź, czy serwer działa i czy adres jest poprawny.";
+        }
+
+        return $"Test połączenia nie powiódł się: {wiadomosc}";
     }
 }
 

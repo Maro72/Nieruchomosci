@@ -1,5 +1,5 @@
 @page "/uprawnienia"
-@attribute [Authorize(Policy = "Uprawnienia.Nadawanie")]
+@attribute [Authorize(Policy = "Uprawnienia.Odczyt")]
 @using MudBlazor
 @using Mieszkaniec.Model.Entities
 @using Mieszkaniec.Services.Interfaces
@@ -18,6 +18,7 @@
             </div>
             <div>
                 <h5 class="fw-bold mb-0 text-dark">Zarządzanie Rolami i Dostępem</h5>
+
                 <small class="text-muted">Konfiguracja ról i szczegółowych uprawnień użytkowników systemu</small>
             </div>
         </div>
@@ -105,131 +106,45 @@
                             </div>
                         }
 
-                        <!-- 3. SEKCJE UPRAWNIEŃ -->
+                        <!-- 3. MACIERZ DOSTĘPU -->
                         <div class="col-12">
-                            <MudText Typo="Typo.subtitle2" Class="fw-bold text-secondary mb-3 text-uppercase" Style="letter-spacing: 0.5px;">Szczegółowe Uprawnienia Funkcjonalne</MudText>
+                            <MudText Typo="Typo.subtitle2" Class="fw-bold text-secondary mb-2 text-uppercase" Style="letter-spacing: 0.5px;">Dostęp do modułów</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                                Wybierz, czy użytkownik może tylko przeglądać dane, czy również je modyfikować.
+                            </MudText>
 
-                            <MudGrid>
-                                <!-- GRUPA 1: NIERUCHOMOŚCI I LOKALE -->
-                                <MudItem xs="12" md="6">
-                                    <MudPaper Outlined="true" Class="pa-4 border h-100" Style="border-radius: 8px; border-color: #e2e8f0; background-color: #f8fafc;">
-                                        <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
-                                            <MudText Typo="Typo.subtitle2" Class="fw-bold text-primary d-flex align-center">
-                                                <MudIcon Icon="@Icons.Material.Filled.Apartment" Class="me-2" Size="Size.Small" />
-                                                NIERUCHOMOŚCI I LOKALE
-                                            </MudText>
-                                            <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" OnClick='() => PrzelaczSekcje("Budynki")' Disabled="CzyJestAdminem()">
-                                                Zaznacz sekcję
-                                            </MudButton>
+                            <MudTable Items="@ModulyDostepu" Hover="true" Dense="true" Bordered="true" Striped="true" Elevation="0" Class="border rounded">
+                                <HeaderContent>
+                                    <MudTh>Moduł</MudTh>
+                                    <MudTh>Opis</MudTh>
+                                    <MudTh Style="width: 190px;">Poziom dostępu</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Moduł">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <MudIcon Icon="@context.Ikon" Color="Color.Primary" Size="Size.Small" />
+                                            <MudText Typo="Typo.body2" Class="fw-bold">@context.Nazwa</MudText>
                                         </div>
-                                        <div class="d-flex flex-column gap-1">
-                                            @foreach (var upr in PobierzUprawnieniaZSekcji("Budynki", "Lokale"))
+                                    </MudTd>
+                                    <MudTd DataLabel="Opis">
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary">@context.Opis</MudText>
+                                        @if (!context.MaPoziomOdczytu)
+                                        {
+                                            <MudText Typo="Typo.caption" Color="Color.Warning">Ten starszy moduł obsługuje tylko pełne uprawnienie.</MudText>
+                                        }
+                                    </MudTd>
+                                    <MudTd DataLabel="Poziom dostępu">
+                                        <MudSelect T="string" Value="@PobierzPoziomDostepu(context)" ValueChanged="@(poziom => UstawPoziomDostepu(context, poziom))" Dense="true" Variant="Variant.Outlined" Disabled="CzyJestAdminem()">
+                                            <MudSelectItem Value="@PoziomBrak">Brak dostępu</MudSelectItem>
+                                            @if (context.MaPoziomOdczytu)
                                             {
-                                                var u = upr;
-                                                <MudCheckBox T="bool"
-                                                             Value="@(WybraneUprawnienia.Any(x => x.Id == u.Id))"
-                                                             ValueChanged="@(val => OnUprawnienieCheckboxChanged(u, val))"
-                                                             Color="Color.Primary"
-                                                             Disabled="CzyJestAdminem()"
-                                                             Class="my-0">
-                                                    <span class="small fw-medium text-dark">@u.Opis</span>
-                                                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block">@u.NazwaSystemowa</MudText>
-                                                </MudCheckBox>
+                                                <MudSelectItem Value="@PoziomOdczyt">Odczyt</MudSelectItem>
                                             }
-                                        </div>
-                                    </MudPaper>
-                                </MudItem>
-
-                                <!-- GRUPA 2: OBSŁUGA TECHNICZNA -->
-                                <MudItem xs="12" md="6">
-                                    <MudPaper Outlined="true" Class="pa-4 border h-100" Style="border-radius: 8px; border-color: #e2e8f0; background-color: #f8fafc;">
-                                        <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
-                                            <MudText Typo="Typo.subtitle2" Class="fw-bold text-warning d-flex align-center">
-                                                <MudIcon Icon="@Icons.Material.Filled.Build" Class="me-2" Size="Size.Small" />
-                                                OBSŁUGA TECHNICZNA I AWARIE
-                                            </MudText>
-                                            <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" OnClick='() => PrzelaczSekcje("Awarie", "Przeglady", "Remonty")' Disabled="CzyJestAdminem()">
-                                                Zaznacz sekcję
-                                            </MudButton>
-                                        </div>
-                                        <div class="d-flex flex-column gap-1">
-                                            @foreach (var upr in PobierzUprawnieniaZSekcji("Awarie", "Przeglady", "Remonty"))
-                                            {
-                                                var u = upr;
-                                                <MudCheckBox T="bool"
-                                                             Value="@(WybraneUprawnienia.Any(x => x.Id == u.Id))"
-                                                             ValueChanged="@(val => OnUprawnienieCheckboxChanged(u, val))"
-                                                             Color="Color.Warning"
-                                                             Disabled="CzyJestAdminem()"
-                                                             Class="my-0">
-                                                    <span class="small fw-medium text-dark">@u.Opis</span>
-                                                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block">@u.NazwaSystemowa</MudText>
-                                                </MudCheckBox>
-                                            }
-                                        </div>
-                                    </MudPaper>
-                                </MudItem>
-
-                                <!-- GRUPA 3: NAJEM I UMOWY -->
-                                <MudItem xs="12" md="6">
-                                    <MudPaper Outlined="true" Class="pa-4 border h-100" Style="border-radius: 8px; border-color: #e2e8f0; background-color: #f8fafc;">
-                                        <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
-                                            <MudText Typo="Typo.subtitle2" Class="fw-bold text-success d-flex align-center">
-                                                <MudIcon Icon="@Icons.Material.Filled.Description" Class="me-2" Size="Size.Small" />
-                                                NAJEM I UMOWY
-                                            </MudText>
-                                            <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" OnClick='() => PrzelaczSekcje("Najemcy", "Umowy")' Disabled="CzyJestAdminem()">
-                                                Zaznacz sekcję
-                                            </MudButton>
-                                        </div>
-                                        <div class="d-flex flex-column gap-1">
-                                            @foreach (var upr in PobierzUprawnieniaZSekcji("Najemcy", "Umowy"))
-                                            {
-                                                var u = upr;
-                                                <MudCheckBox T="bool"
-                                                             Value="@(WybraneUprawnienia.Any(x => x.Id == u.Id))"
-                                                             ValueChanged="@(val => OnUprawnienieCheckboxChanged(u, val))"
-                                                             Color="Color.Success"
-                                                             Disabled="CzyJestAdminem()"
-                                                             Class="my-0">
-                                                    <span class="small fw-medium text-dark">@u.Opis</span>
-                                                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block">@u.NazwaSystemowa</MudText>
-                                                </MudCheckBox>
-                                            }
-                                        </div>
-                                    </MudPaper>
-                                </MudItem>
-
-                                <!-- GRUPA 4: ADMINISTRACJA -->
-                                <MudItem xs="12" md="6">
-                                    <MudPaper Outlined="true" Class="pa-4 border h-100" Style="border-radius: 8px; border-color: #e2e8f0; background-color: #f8fafc;">
-                                        <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
-                                            <MudText Typo="Typo.subtitle2" Class="fw-bold text-danger d-flex align-center">
-                                                <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Class="me-2" Size="Size.Small" />
-                                                ADMINISTRACJA SYSTEMU
-                                            </MudText>
-                                            <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" OnClick='() => PrzelaczSekcje("Uzytkownicy", "Uprawnienia")' Disabled="CzyJestAdminem()">
-                                                Zaznacz sekcję
-                                            </MudButton>
-                                        </div>
-                                        <div class="d-flex flex-column gap-1">
-                                            @foreach (var upr in PobierzUprawnieniaZSekcji("Uzytkownicy", "Uprawnienia"))
-                                            {
-                                                var u = upr;
-                                                <MudCheckBox T="bool"
-                                                             Value="@(WybraneUprawnienia.Any(x => x.Id == u.Id))"
-                                                             ValueChanged="@(val => OnUprawnienieCheckboxChanged(u, val))"
-                                                             Color="Color.Error"
-                                                             Disabled="CzyJestAdminem()"
-                                                             Class="my-0">
-                                                    <span class="small fw-medium text-dark">@u.Opis</span>
-                                                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block">@u.NazwaSystemowa</MudText>
-                                                </MudCheckBox>
-                                            }
-                                        </div>
-                                    </MudPaper>
-                                </MudItem>
-                            </MudGrid>
+                                            <MudSelectItem Value="@PoziomEdycja">Pełna edycja</MudSelectItem>
+                                        </MudSelect>
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
                         </div>
 
                         <!-- PRZYCISK ZAPISU -->
@@ -255,6 +170,26 @@
 
     private IReadOnlyCollection<Rola> WybraneRole { get; set; } = new HashSet<Rola>();
     private IReadOnlyCollection<Uprawnienie> WybraneUprawnienia { get; set; } = new HashSet<Uprawnienie>();
+
+    private const string PoziomBrak = "brak";
+    private const string PoziomOdczyt = "odczyt";
+    private const string PoziomEdycja = "edycja";
+
+    private IReadOnlyList<ModulDostepu> ModulyDostepu { get; } = new List<ModulDostepu>
+    {
+        new("Budynki i obiekty", "Podgląd oraz ewidencja nieruchomości", "Budynki.Odczyt", "Budynki.Edycja", Icons.Material.Filled.Apartment),
+        new("Dashboard", "Pulpit zbiorczy systemu", "Dashboard.Odczyt", null, Icons.Material.Filled.Dashboard),
+        new("Awarie i usterki", "Zgłoszenia i obsługa usterek", "Awarie.Odczyt", "Awarie.Obsluga", Icons.Material.Filled.WarningAmber),
+        new("Historia usterek", "Historia eksploatacji obiektów", "HistoriaUsterek.Odczyt", null, Icons.Material.Filled.ManageHistory),
+        new("Przeglądy", "Harmonogramy i kontrole techniczne", "Przeglady.Odczyt", "Przeglady.Edycja", Icons.Material.Filled.EventNote),
+        new("Remonty", "Planowanie i obsługa prac remontowych", "Remonty.Odczyt", "Remonty.Edycja", Icons.Material.Filled.Handyman),
+        new("Lokale", "Lokale i pomieszczenia", "Lokale.Odczyt", "Lokale.Edycja", Icons.Material.Filled.MeetingRoom),
+        new("Najemcy", "Baza najemców", "Najemcy.Odczyt", "Najemcy.Edycja", Icons.Material.Filled.People),
+        new("Umowy", "Umowy najmu i aneksy", "Umowy.Odczyt", "Umowy.Zarzadzanie", Icons.Material.Filled.Description),
+        new("Użytkownicy", "Konta użytkowników", "Uzytkownicy.Odczyt", "Uzytkownicy.Edycja", Icons.Material.Filled.People),
+        new("Uprawnienia", "Nadawanie ról i dostępów", "Uprawnienia.Odczyt", "Uprawnienia.Edycja", Icons.Material.Filled.VerifiedUser),
+        new("Konfiguracja", "Baza danych, pliki i ustawienia", "Konfiguracja.Odczyt", "Konfiguracja.Edycja", Icons.Material.Filled.Settings)
+    };
 
     protected override async Task OnInitializedAsync()
     {
@@ -302,6 +237,55 @@
             tempUprawnienia.RemoveAll(u => u.Id == upr.Id);
         }
         WybraneUprawnienia = tempUprawnienia.ToHashSet();
+    }
+
+    private string PobierzPoziomDostepu(ModulDostepu modul)
+    {
+        if (CzyMaUprawnienie(modul.UprawnienieEdycja))
+        {
+            return PoziomEdycja;
+        }
+
+        if (CzyMaUprawnienie(modul.UprawnienieOdczyt))
+        {
+            return PoziomOdczyt;
+        }
+
+        return PoziomBrak;
+    }
+
+    private void UstawPoziomDostepu(ModulDostepu modul, string? poziom)
+    {
+        if (CzyJestAdminem())
+        {
+            return;
+        }
+
+        var noweUprawnienia = WybraneUprawnienia
+            .Where(uprawnienie => uprawnienie.NazwaSystemowa != modul.UprawnienieOdczyt &&
+                                  uprawnienie.NazwaSystemowa != modul.UprawnienieEdycja)
+            .ToList();
+
+        var nazwaUprawnienia = poziom switch
+        {
+            PoziomEdycja => modul.UprawnienieEdycja,
+            PoziomOdczyt => modul.UprawnienieOdczyt,
+            _ => null
+        };
+
+        var uprawnienie = WszystkieUprawnienia.FirstOrDefault(item => item.NazwaSystemowa == nazwaUprawnienia);
+        if (uprawnienie != null)
+        {
+            noweUprawnienia.Add(uprawnienie);
+        }
+
+        WybraneUprawnienia = noweUprawnienia.ToHashSet();
+    }
+
+    private bool CzyMaUprawnienie(string? nazwaSystemowa)
+    {
+        return !string.IsNullOrEmpty(nazwaSystemowa) &&
+               WybraneUprawnienia.Any(uprawnienie => uprawnienie.NazwaSystemowa == nazwaSystemowa);
     }
 
     private bool CzyJestAdminem()
@@ -415,5 +399,15 @@
         WszyscyUzytkownicy = await UzytkownikService.PobierzUzytkownikowAsync();
 
         Snackbar.Add($"Pomyślnie zaktualizowano role i uprawnienia dla: {WybranyUzytkownik.Login}", Severity.Success);
+    }
+
+    private sealed record ModulDostepu(
+        string Nazwa,
+        string Opis,
+        string? UprawnienieOdczyt,
+        string? UprawnienieEdycja,
+        string Ikon)
+    {
+        public bool MaPoziomOdczytu => !string.IsNullOrEmpty(UprawnienieOdczyt);
     }
 }

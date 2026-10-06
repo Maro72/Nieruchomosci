@@ -9,7 +9,7 @@ namespace Mieszkaniec.Services
         /// <summary>
         /// Pobiera listę prac remontowych na podstawie filtrów.
         /// </summary>
-        Task<List<PraceRemontowe>> GetPraceAsync(int? obiektId = null, int? rodzajId = null, int? priorytetId = null, string? status = null);
+        Task<List<PraceRemontowe>> GetPraceAsync(int? obiektId = null, int? rodzajId = null, int? priorytetId = null, string? status = null, bool czyArchiwum = false);
 
         /// <summary>
         /// Pobiera jedną pracę remontową na podstawie ID.
@@ -20,6 +20,12 @@ namespace Mieszkaniec.Services
         /// Zapisuje nową lub aktualizuje istniejącą pracę remontową.
         /// </summary>
         Task<bool> SaveAsync(PraceRemontowe model);
+
+        Task<bool> AktualizujStatusAsync(int id, string status);
+
+        Task<bool> ZakonczRemontAsync(int id, DateTime dataZakonczenia, decimal kosztFaktyczny);
+
+        Task<bool> PrzywrocRemontAsync(int id, string status);
 
         /// <summary>
         /// Usuwa zlecenie prac z systemu.

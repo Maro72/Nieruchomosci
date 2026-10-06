@@ -6,14 +6,15 @@
 @using Mieszkaniec.Components.UI
 @using MudBlazor
 
-@if (!CzyWidokKanban)
+@if (!CzyWidokKanban || CzyArchiwum)
 {
     @* --- WIDOK 1: KLASYCZNA TABELA (FGRID) --- *@
     <FGrid TItem="PraceRemontowe"
-           Title="Prace Remontowe"
+           Title="@(CzyArchiwum ? "Archiwum zakończonych i anulowanych remontów" : "Prace Remontowe")"
            Items="@ListaPrac"
            GridKey="@gridKey"
            @bind-SelectedItem="WybranyRemont"
+           ShowCrudActions="@(!CzyArchiwum)"
            OnAdd="OpenCreateDialog"
            OnEdit="OpenEditDialog"
            OnDelete="RequestDelete">
@@ -37,13 +38,16 @@
                     }
                 </MudSelect>
 
-                <MudSelect T="string" Label="Status" Value="@FiltreStatus" ValueChanged="OnStatusFilterChanged" Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined" Class="filter-item" Clearable="true">
-                    <MudSelectItem T="string" Value="@null">Wszystkie </MudSelectItem>
-                    @foreach (var st in OpcjeStatusow)
-                    {
-                        <MudSelectItem T="string" Value="@st">@st</MudSelectItem>
-                    }
-                </MudSelect>
+                @if (!CzyArchiwum)
+                {
+                    <MudSelect T="string" Label="Status" Value="@FiltreStatus" ValueChanged="OnStatusFilterChanged" Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined" Class="filter-item" Clearable="true">
+                        <MudSelectItem T="string" Value="@null">Wszystkie </MudSelectItem>
+                        @foreach (var st in StatusyKanban)
+                        {
+                            <MudSelectItem T="string" Value="@st">@st</MudSelectItem>
+                        }
+                    </MudSelect>
+                }
 
                 @if (FiltreObiektId.HasValue || FiltreRodzajId.HasValue || !string.IsNullOrEmpty(FiltreStatus))
                 {
@@ -56,10 +60,27 @@
 
         @* --- PRZYCISKI AKCJI / PRZEŁĄCZNIK WIDOKU --- *@
         <ExtraActions>
-            <MudToggleGroup T="bool" Value="CzyWidokKanban" ValueChanged="OnWidokChanged" Color="Color.Default" Size="Size.Small" Dense="true" Class="me-2">
-                <MudToggleItem Value="false"><MudIcon Icon="@Icons.Material.Filled.List" Size="Size.Small" /> Lista</MudToggleItem>
-                <MudToggleItem Value="true"><MudIcon Icon="@Icons.Material.Filled.Abc" Size="Size.Small" /> Kanban</MudToggleItem>
+            <MudToggleGroup T="bool" Value="CzyArchiwum" ValueChanged="OnWidokArchiwumChanged" Color="Color.Default" Size="Size.Small" Dense="true" Class="me-2">
+                <MudToggleItem Value="false"><MudIcon Icon="@Icons.Material.Filled.Work" Size="Size.Small" /> Aktywne</MudToggleItem>
+                <MudToggleItem Value="true"><MudIcon Icon="@Icons.Material.Filled.Archive" Size="Size.Small" /> Archiwum</MudToggleItem>
             </MudToggleGroup>
+
+            @if (CzyArchiwum)
+            {
+                <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Unarchive" Color="Color.Primary"
+                           Size="Size.Small" Disabled="@(WybranyRemont is null)"
+                           OnClick="OtworzDialogPrzywrocenia" Class="me-2">
+                    Przywróć
+                </MudButton>
+            }
+            else
+            {
+                <MudToggleGroup T="bool" Value="CzyWidokKanban" ValueChanged="OnWidokChanged" Color="Color.Default" Size="Size.Small" Dense="true" Class="me-2">
+                    <MudToggleItem Value="false"><MudIcon Icon="@Icons.Material.Filled.List" Size="Size.Small" /> Lista</MudToggleItem>
+                    <MudToggleItem Value="true"><MudIcon Icon="@Icons.Material.Filled.Dashboard" Size="Size.Small" /> Kanban</MudToggleItem>
+                </MudToggleGroup>
+
+            }
 
             <button type="button" class="btn btn-sm btn-link text-secondary p-1 border-0 d-flex align-items-center justify-content-center rounded-circle me-2" @onclick="RefreshGridAsync" title="Odśwież listę">
                 <i class="bi bi-arrow-clockwise fs-5"></i>
@@ -68,9 +89,11 @@
 
         @* --- KOLUMNY GRIDA --- *@
         <GridColumns>
-            <PropertyColumn T="PraceRemontowe" TProperty="string" Property="x => x.Status" Title="Status" Width="140px" CellClass="justify-center text-center">
+            <PropertyColumn T="PraceRemontowe" TProperty="string" Property="x => x.Status" Title="Status" Width="190px" CellClass="justify-center text-center">
                 <CellTemplate Context="wiersz">
-                    <span class="custom-badge @WyznaczKlasuStatusu(wiersz.Item.Status)" @onclick="@(() => WybierzWiersz(wiersz.Item))" style="cursor:pointer;">
+                    <span class="remont-status-badge @WyznaczKlasuStatusu(wiersz.Item.Status)"
+                          style="@($"{StylStatusu(wiersz.Item.Status)}; cursor:pointer;")"
+                          @onclick="@(() => WybierzWiersz(wiersz.Item))">
                         <i class="bi bi-circle-fill me-1" style="font-size: 0.4rem;"></i>
                         @wiersz.Item.Status
                     </span>
@@ -146,6 +169,16 @@
                     </span>
                 </CellTemplate>
             </PropertyColumn>
+            <PropertyColumn T="PraceRemontowe" TProperty="DateTime?" Property="x => x.DataZakonczeniaFaktyczna" Title="Faktyczny koniec" Width="130px" HeaderClass="justify-center" CellClass="justify-center text-center">
+                <CellTemplate Context="wiersz">
+                    @(wiersz.Item.DataZakonczeniaFaktyczna?.ToString("yyyy-MM-dd") ?? "—")
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn T="PraceRemontowe" TProperty="decimal" Property="x => x.KosztFaktyczny" Title="Koszt faktyczny" Width="130px" HeaderClass="justify-end" CellClass="text-end fw-bold text-success">
+                <CellTemplate Context="wiersz">
+                    @wiersz.Item.KosztFaktyczny.ToString("N2") zł
+                </CellTemplate>
+            </PropertyColumn>
         </GridColumns>
     </FGrid>
 }
@@ -178,6 +211,11 @@ else
             </MudStack>
 
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                <MudToggleGroup T="bool" Value="CzyArchiwum" ValueChanged="OnWidokArchiwumChanged" Color="Color.Default" Size="Size.Small" Dense="true">
+                    <MudToggleItem Value="false"><MudIcon Icon="@Icons.Material.Filled.Work" Size="Size.Small" /> Aktywne</MudToggleItem>
+                    <MudToggleItem Value="true"><MudIcon Icon="@Icons.Material.Filled.Archive" Size="Size.Small" /> Archiwum</MudToggleItem>
+                </MudToggleGroup>
+
                 <MudToggleGroup T="bool" Value="CzyWidokKanban" ValueChanged="OnWidokChanged" Color="Color.Default" Size="Size.Small" Dense="true">
                     <MudToggleItem Value="false"><MudIcon Icon="@Icons.Material.Filled.List" Size="Size.Small" /> Lista</MudToggleItem>
                     <MudToggleItem Value="true"><MudIcon Icon="@Icons.Material.Filled.Dashboard" Size="Size.Small" /> Kanban</MudToggleItem>
@@ -200,7 +238,7 @@ else
                           Style="min-height: 65vh; align-items: stretch;">
 
             <ChildContent>
-                @foreach (var status in OpcjeStatusow)
+                @foreach (var status in StatusyKanban)
                 {
                     <MudPaper Elevation="0" Width="280px" Class="pa-3 d-flex flex-column rounded-lg" Style="background-color: #f4f5f7; flex-shrink: 0; border: 1px solid #e1e4e8;">
 
@@ -262,6 +300,14 @@ else
                                 @lacznyKoszt.ToString("N0") zł
                             </MudText>
                         </MudStack>
+                        @if (context.Status == "Odbiór techniczny")
+                        {
+                            <div @onclick:stopPropagation="true" class="mt-2 d-flex align-items-center">
+                                <MudSwitch T="bool" Value="false"
+                                           ValueChanged="@((bool value) => OnFinishToggleChanged(value, context))"
+                                           Color="Color.Success" Label="Zakończ remont" Dense="true" />
+                            </div>
+                        }
                     </MudStack>
                 </MudPaper>
             </ItemRenderer>
@@ -277,7 +323,9 @@ else
                  ListaRodzajow="ListaRodzajow"
                  ListaPriorytetow="ListaPriorytetow"
                  OpcjeStatusow="OpcjeStatusow"
+                 IsFinishing="IsFinishing"
                  OnSave="ZazadajPotwierdzeniaZapisu"
+                 OnFinish="ZakonczRemontZDialogu"
                  OnCancel="CloseDialog" />
 
 <PotwierdzenieDialog IsVisible="IsConfirmVisible"
@@ -286,3 +334,61 @@ else
                      ThemeClass="@ConfirmTheme"
                      IconClass="@ConfirmIcon"
                      OnAnswer="HandleConfirmationAnswer" />
+
+<MudDialog @bind-Visible="IsRestoreDialogVisible" Options="new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true, BackdropClick = false }">
+    <TitleContent>
+        <MudText Typo="Typo.h6" Class="fw-bold">Przywróć remont z archiwum</MudText>
+    </TitleContent>
+    <DialogContent>
+        @if (WybranyRemont is not null)
+        {
+            <MudText Typo="Typo.body2" Class="mb-3">@WybranyRemont.Nazwa</MudText>
+            <MudSelect T="string" @bind-Value="StatusPrzywrocenia" Label="Status po przywróceniu"
+                       Variant="Variant.Outlined" Margin="Margin.Dense">
+                @foreach (var status in StatusyKanban)
+                {
+                    <MudSelectItem T="string" Value="@status">@status</MudSelectItem>
+                }
+            </MudSelect>
+            <MudAlert Severity="Severity.Info" Dense="true" Class="mt-3">
+                Remont wróci do listy aktywnych. Data i koszt zakończenia zostaną wyczyszczone.
+            </MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" Disabled="@IsRestoring" OnClick="@(() => IsRestoreDialogVisible = false)">Anuluj</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Unarchive"
+                   Disabled="@IsRestoring" OnClick="PrzywrocRemont">
+            @(IsRestoring ? "Przywracanie..." : "Przywróć do aktywnych")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+<MudDialog @bind-Visible="IsFinishDialogVisible" Options="new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true, BackdropClick = false }">
+    <TitleContent>
+        <MudText Typo="Typo.h6" Class="fw-bold">Zakończenie remontu</MudText>
+    </TitleContent>
+    <DialogContent>
+        @if (WybranyRemont is not null)
+        {
+            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-4">
+                Po potwierdzeniu praca otrzyma status „Zakończony” i będzie widoczna w archiwum.
+            </MudAlert>
+            <MudText Typo="Typo.subtitle2" Class="mb-3">@WybranyRemont.Nazwa</MudText>
+            <MudDatePicker @bind-Date="DataZakonczeniaRzeczywista" Label="Faktyczna data zakończenia"
+                           Variant="Variant.Outlined" Margin="Margin.Dense" Required="true" />
+            <MudNumericField T="decimal" @bind-Value="KosztFaktyczny" Label="Koszt faktyczny (zł)"
+                             Variant="Variant.Outlined" Margin="Margin.Dense" Min="0" Required="true" Class="mt-3" />
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">
+                Kosztorys: @WybranyRemont.KosztSzacowany.ToString("N2") zł
+            </MudText>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" Disabled="@IsFinishing" OnClick="@(() => IsFinishDialogVisible = false)">Anuluj</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.TaskAlt"
+                   Disabled="@IsFinishing" OnClick="ZakonczRemont">
+            @(IsFinishing ? "Zapisywanie..." : "Potwierdź zakończenie")
+        </MudButton>
+    </DialogActions>
+</MudDialog>

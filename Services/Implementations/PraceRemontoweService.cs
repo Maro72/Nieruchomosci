@@ -20,7 +20,7 @@ namespace Mieszkaniec.Services
             _context = context;
         }
 
-        public async Task<List<PraceRemontowe>> GetPraceAsync(int? obiektId = null, int? rodzajId = null, int? priorytetId = null, string? status = null)
+        public async Task<List<PraceRemontowe>> GetPraceAsync(int? obiektId = null, int? rodzajId = null, int? priorytetId = null, string? status = null, bool czyArchiwum = false)
         {
             var query = _context.PraceRemontowe
                 .AsNoTracking()
@@ -28,7 +28,9 @@ namespace Mieszkaniec.Services
                 .Include(p => p.RodzajUsterki)
                 .Include(p => p.PriorytetUsterki)
                 .Include(p => p.Materialy)
-                .AsQueryable();
+                .Where(p => czyArchiwum
+                    ? p.Status == "Zakończony" || p.Status == "Anulowany"
+                    : p.Status != "Zakończony" && p.Status != "Anulowany");
 
             if (obiektId.HasValue)
                 query = query.Where(p => p.ObiektId == obiektId.Value);
@@ -117,6 +119,60 @@ namespace Mieszkaniec.Services
         
         }
 
+        public async Task<bool> ZakonczRemontAsync(int id, DateTime dataZakonczenia, decimal kosztFaktyczny)
+        {
+            var remont = await _context.PraceRemontowe.FirstOrDefaultAsync(p => p.Id == id);
+            if (remont == null || remont.Status != "Odbiór techniczny" || kosztFaktyczny < 0)
+                return false;
+
+            if (remont.DataRozpoczeciaFaktyczna.HasValue &&
+                dataZakonczenia.Date < remont.DataRozpoczeciaFaktyczna.Value.Date)
+                return false;
+
+            remont.Status = "Zakończony";
+            remont.DataZakonczeniaFaktyczna = dataZakonczenia.Date;
+            remont.KosztFaktyczny = kosztFaktyczny;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> AktualizujStatusAsync(int id, string status)
+        {
+            if (status is not ("Planowany" or "W realizacji" or "Odbiór techniczny"))
+                return false;
+
+            var remont = await _context.PraceRemontowe.FirstOrDefaultAsync(p => p.Id == id);
+            if (remont == null || remont.Status is "Zakończony" or "Anulowany")
+                return false;
+
+            remont.Status = status;
+            if (status == "W realizacji" && !remont.DataRozpoczeciaFaktyczna.HasValue)
+                remont.DataRozpoczeciaFaktyczna = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> PrzywrocRemontAsync(int id, string status)
+        {
+            if (status is not ("Planowany" or "W realizacji" or "Odbiór techniczny"))
+                return false;
+
+            var remont = await _context.PraceRemontowe.FirstOrDefaultAsync(p => p.Id == id);
+            if (remont == null || remont.Status is not ("Zakończony" or "Anulowany"))
+                return false;
+
+            remont.Status = status;
+            remont.DataZakonczeniaFaktyczna = null;
+            remont.KosztFaktyczny = 0;
+            if (status == "W realizacji" && !remont.DataRozpoczeciaFaktyczna.HasValue)
+                remont.DataRozpoczeciaFaktyczna = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
         public async Task<bool> DeleteAsync(int id)
         {
             var model = await _context.PraceRemontowe.FindAsync(id);
@@ -156,7 +212,7 @@ namespace Mieszkaniec.Services
 
         private void LogikaStatusowIDat(PraceRemontowe model)
         {
-            if (model.DataZakonczeniaFaktyczna.HasValue && model.Status != "Zakończony")
+            if (model.DataZakonczeniaFaktyczna.HasValue && model.Status is not ("Zakończony" or "Anulowany"))
             {
                 model.Status = "Zakończony";
             }

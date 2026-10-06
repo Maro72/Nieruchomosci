@@ -7,6 +7,7 @@
 @inject IBackupService BackupService
 @inject IWebHostEnvironment Env
 @inject ISnackbar Snackbar
+@inject IJSRuntime JS
 
 <PageTitle>Konfiguracja Bazy i Plików - Mieszkaniec</PageTitle>
 
@@ -192,18 +193,26 @@
                                 </MudSelect>
                             </MudItem>
                             <MudItem xs="12" sm="5">
-                                <MudTextField @bind-Value="_backupSettings.BackupPath" Label="Katalog kopii" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                <MudTextField @bind-Value="_backupSettings.BackupPath" Label="Katalog kopii" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                              HelperText="Przykład: C:\\Backup\\Mieszkaniec albo Backup. Na serwerze najlepiej podać pełną ścieżkę absolutną." />
                             </MudItem>
                             <MudItem xs="12" sm="3">
                                 <MudNumericField @bind-Value="_backupSettings.MaxCopies" Label="Maks. kopii" Min="1" Max="7" Variant="Variant.Outlined" Margin="Margin.Dense" />
                             </MudItem>
                         </MudGrid>
-                        <div class="d-flex justify-content-end mt-3">
-                            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Save" OnClick="ZapiszUstawieniaBackupu">
-                                Zapisz ustawienia kopii
+
+                        <div class="d-flex flex-wrap justify-content-end align-items-center gap-2 mt-3">
+                            <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.FolderOpen"
+                                       Size="Size.Small" OnClick="WybierzKatalogKopii">
+                                Wybierz folder
                             </MudButton>
-                            <MudButton Variant="Variant.Outlined" Color="Color.Success" StartIcon="@Icons.Material.Filled.Backup" Disabled="@_isBackupRunning" OnClick="UtworzKopieTeraz" Class="ms-2">
-                                @(_isBackupRunning ? "Tworzenie kopii..." : "Utwórz kopię teraz")
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Save"
+                                       Size="Size.Small" OnClick="ZapiszUstawieniaBackupu">
+                                Zapisz
+                            </MudButton>
+                            <MudButton Variant="Variant.Outlined" Color="Color.Success" StartIcon="@Icons.Material.Filled.Backup"
+                                       Size="Size.Small" Disabled="@_isBackupRunning" OnClick="UtworzKopieTeraz">
+                                @(_isBackupRunning ? "Tworzenie..." : "Utwórz kopię")
                             </MudButton>
                         </div>
 
@@ -339,6 +348,14 @@
     private BackupSettings _backupSettings = new();
     private bool _isBackupRunning;
     private List<BackupFileInfo> _backupFiles = new();
+    private readonly string[] _backupFolderSuggestions =
+    {
+        "C:\\Backup\\Mieszkaniec",
+        "D:\\Backup\\Mieszkaniec",
+        "E:\\Backup\\Mieszkaniec",
+        "C:\\ProgramData\\Mieszkaniec\\Backup",
+        "Backup"
+    };
     private double _wolneMiejsceGb;
     private DateTime _ostatniaDiagnostyka = DateTime.MinValue;
 
@@ -450,6 +467,29 @@
         }
     }
 
+    private async Task WybierzKatalogKopii()
+    {
+        var selected = await JS.InvokeAsync<string?>("selectFolderPath");
+        if (string.IsNullOrWhiteSpace(selected))
+        {
+            Snackbar.Add("Nie wybrano folderu. Możesz wpisać pełną ścieżkę ręcznie lub wybrać katalog, jeśli przeglądarka to obsługuje.", Severity.Info);
+            return;
+        }
+
+        _backupSettings.BackupPath = selected.Trim();
+        await ZapiszUstawieniaBackupu();
+        OdswiezListeBackupow();
+    }
+
+    private void UstawKatalogKopii(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            return;
+
+        _backupSettings.BackupPath = path.Trim();
+        OdswiezListeBackupow();
+    }
+
     private void OdswiezListeBackupow()
     {
         try
@@ -458,19 +498,41 @@
                 ? _backupSettings.BackupPath
                 : Path.Combine(Env.ContentRootPath, _backupSettings.BackupPath);
 
-            _backupFiles = Directory.Exists(backupPath)
-                ? Directory.GetFiles(backupPath, "mieszkaniec_*.zip")
-                    .Select(path => new FileInfo(path))
-                    .OrderByDescending(file => file.CreationTime)
-                    .Select(file => new BackupFileInfo(file.Name, file.CreationTime, file.Length / (1024d * 1024d)))
-                    .ToList()
-                : new List<BackupFileInfo>();
+            if (!Directory.Exists(backupPath))
+            {
+                _backupFiles = new List<BackupFileInfo>();
+                return;
+            }
+
+            _backupFiles = Directory.GetFiles(backupPath, "mieszkaniec_*.zip")
+                .Select(path => new FileInfo(path))
+                .OrderByDescending(file => GetCreatedAtFromArchiveName(file.FullName))
+                .Select(file => new BackupFileInfo(file.Name, GetCreatedAtFromArchiveName(file.FullName), file.Length / (1024d * 1024d)))
+                .ToList();
         }
         catch (Exception ex)
         {
             _backupFiles = new List<BackupFileInfo>();
             Snackbar.Add($"Nie można odczytać listy kopii: {ex.Message}", Severity.Error);
         }
+    }
+
+    private static DateTime GetCreatedAtFromArchiveName(string filePath)
+    {
+        var fileName = Path.GetFileName(filePath);
+        var match = System.Text.RegularExpressions.Regex.Match(fileName,
+            @"mieszkaniec_(?<stamp>\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})\.zip$",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+        if (!match.Success)
+            return File.GetLastWriteTimeUtc(filePath);
+
+        return DateTime.TryParseExact(match.Groups["stamp"].Value, "yyyy-MM-dd_HH-mm-ss",
+            System.Globalization.CultureInfo.InvariantCulture,
+            System.Globalization.DateTimeStyles.AssumeLocal,
+            out var createdAt)
+            ? createdAt
+            : File.GetLastWriteTimeUtc(filePath);
     }
 
     private void OdswiezDiagnostyke()
@@ -541,4 +603,3 @@
         }
     }
 }
-

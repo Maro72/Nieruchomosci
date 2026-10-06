@@ -74,6 +74,7 @@
 .welcome-hero {
     position: relative;
     z-index: 1;
+    container-type: inline-size;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -159,10 +160,12 @@
 /* ---------- Title ---------- */
 .welcome-title {
     margin: 0 0 1.1rem;
-    font-size: clamp(2.4rem, 5.5vw, 4rem);
+    width: 100%;
+    white-space: nowrap;
+    font-size: clamp(1.05rem, 5.3cqw, 4rem);
     font-weight: 800;
-    line-height: 1.08;
-    letter-spacing: -0.03em;
+    line-height: 1.2;
+    letter-spacing: -0.045em;
     color: #142f45;
 }
 
@@ -299,10 +302,6 @@ body:has(.mud-theme-dark) .welcome-divider__icon,
 @media (max-width: 600px) {
     .welcome-page {
         min-height: calc(100vh - 56px);
-    }
-
-    .welcome-title {
-        font-size: clamp(2rem, 10vw, 2.8rem);
     }
 
     .welcome-subtitle__br {

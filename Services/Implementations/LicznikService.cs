@@ -6,7 +6,11 @@ using Mieszkaniec.Model.Context;
 using Mieszkaniec.Model.Dto;
 using Mieszkaniec.Model.Entities;
 using Mieszkaniec.Services.Interfaces;
+using Docnet.Core;
+using Docnet.Core.Models;
+using Tesseract;
 using UglyToad.PdfPig;
+using UglyToad.PdfPig.DocumentLayoutAnalysis.TextExtractor;
 
 namespace Mieszkaniec.Services.Implementations;
 
@@ -17,8 +21,11 @@ public sealed class LicznikService : ILicznikService
         @"^\s*\d+\s+(?<nazwa>.+?)\s+(?<cena>-?[\d. ]+,\d{2,6})\s+(?<ilosc>-?[\d. ]+,\d{2,6})\s+(?<jm>\S+)\s+(?<vat>\d+(?:[,.]\d+)?|zw\.?|np)\s*%?\s+(?<netto>-?[\d. ]+,\d{2})\s*$",
         RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
     private static readonly Regex OdczytRegex = new(
-        @"^\s*(?<numer>[A-Za-z0-9/-]{3,})\s+(?<poczatek>\d+)\s+(?<koniec>\d+)(?:\s+(?<zuzycie>\d+))?\s*$",
+        @"^\s*(?<numer>(?=[A-Za-z0-9/-]*\d)[A-Za-z0-9/-]{3,})\s+(?<liczby>-?\d+(?:\s+-?\d+){2,4})\s*$",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex DataKoncowaRegex = new(
+        @"Data\s+ko[nń]cowa\s*:?\s*(?<dzien>\d{1,2})[./-](?<miesiac>\d{1,2})[./-](?<rok>\d{4})",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
     private readonly IDbContextFactory<MieszkaniecDbContext> _dbContextFactory;
 
@@ -119,32 +126,13 @@ public sealed class LicznikService : ILicznikService
     public async Task<List<OdczytZPdfDto>> PrzetworzSkanAsync(IBrowserFile file)
     {
         ArgumentNullException.ThrowIfNull(file);
-        var tekst = await OdczytajTekstPdfAsync(file);
-        var odczyty = new List<OdczytZPdfDto>();
-        var miesiac = DateTime.Now.AddMonths(-1);
+        var dane = await OdczytajBajtyAsync(file);
+        var odczyty = ParsujOdczytyZTekstu(OdczytajTekstPdf(dane));
 
-        foreach (var linia in tekst.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        // Skan jest obrazem, więc bez warstwy tekstowej trzeba użyć OCR.
+        if (odczyty.Count == 0)
         {
-            var match = OdczytRegex.Match(linia);
-            if (!match.Success ||
-                !int.TryParse(match.Groups["poczatek"].Value, out var poczatek) ||
-                !int.TryParse(match.Groups["koniec"].Value, out var koniec))
-            {
-                continue;
-            }
-
-            var licznikNumer = match.Groups["numer"].Value;
-            odczyty.Add(new OdczytZPdfDto
-            {
-                NumerLicznika = licznikNumer,
-                StanPoczatkowy = poczatek,
-                StanKoncowy = koniec,
-                Zuzycie = match.Groups["zuzycie"].Success && int.TryParse(match.Groups["zuzycie"].Value, out var zuzycie)
-                    ? zuzycie
-                    : Math.Max(0, koniec - poczatek),
-                Rok = miesiac.Year,
-                Miesiac = miesiac.Month
-            });
+            odczyty = ParsujOdczytyZTekstu(await Task.Run(() => RozpoznajTekstOcr(dane)));
         }
 
         if (odczyty.Count == 0)
@@ -301,10 +289,135 @@ public sealed class LicznikService : ILicznikService
         return decimal.TryParse(normalized, NumberStyles.Number | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out wynik);
     }
 
+    public static List<OdczytZPdfDto> ParsujOdczytyZTekstu(string tekst)
+    {
+        var odczyty = new List<OdczytZPdfDto>();
+        var okres = DateTime.Now.AddMonths(-1);
+        var dataMatch = DataKoncowaRegex.Match(tekst);
+        if (dataMatch.Success &&
+            int.TryParse(dataMatch.Groups["miesiac"].Value, out var m) && m is >= 1 and <= 12 &&
+            int.TryParse(dataMatch.Groups["rok"].Value, out var r))
+        {
+            okres = new DateTime(r, m, 1);
+        }
+
+        foreach (var linia in tekst.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            var match = OdczytRegex.Match(linia);
+            if (!match.Success)
+            {
+                continue;
+            }
+
+            var liczby = match.Groups["liczby"].Value
+                .Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => int.TryParse(x, out var v) ? (int?)v : null)
+                .ToList();
+            if (liczby.Any(x => x is null))
+            {
+                continue;
+            }
+
+            var n = liczby.Select(x => x!.Value).ToList();
+            var dto = new OdczytZPdfDto
+            {
+                NumerLicznika = match.Groups["numer"].Value,
+                StanPoczatkowy = n[0],
+                StanKoncowy = n[1],
+                Zuzycie = n[2],
+                Rok = okres.Year,
+                Miesiac = okres.Month
+            };
+            if (n.Count == 5)
+            {
+                dto.Korekta = n[3];
+                dto.IloscDoZafakturowania = n[4];
+            }
+            else if (n.Count == 4)
+            {
+                dto.IloscDoZafakturowania = n[3];
+            }
+            else
+            {
+                dto.IloscDoZafakturowania = dto.Zuzycie;
+            }
+
+            odczyty.Add(dto);
+        }
+
+        return odczyty;
+    }
+
+    private static async Task<byte[]> OdczytajBajtyAsync(IBrowserFile file)
+    {
+        // Strumień Blazora nie obsługuje odczytu synchronicznego, więc kopiujemy go do pamięci.
+        await using var stream = file.OpenReadStream(MaksymalnyRozmiarPdf);
+        using var bufor = new MemoryStream();
+        await stream.CopyToAsync(bufor);
+        return bufor.ToArray();
+    }
+
+    private static string OdczytajTekstPdf(byte[] dane)
+    {
+        using var dokument = PdfDocument.Open(dane);
+        return string.Join(Environment.NewLine, dokument.GetPages().Select(x => ContentOrderTextExtractor.GetText(x, true)));
+    }
+
     private static async Task<string> OdczytajTekstPdfAsync(IBrowserFile file)
     {
-        await using var stream = file.OpenReadStream(MaksymalnyRozmiarPdf);
-        using var dokument = PdfDocument.Open(stream);
+        var dane = await OdczytajBajtyAsync(file);
+        using var dokument = PdfDocument.Open(dane);
         return string.Join(Environment.NewLine, dokument.GetPages().Select(x => x.Text));
+    }
+
+    private static string RozpoznajTekstOcr(byte[] dane)
+    {
+        var katalogDanych = Path.Combine(AppContext.BaseDirectory, "tessdata");
+        using var silnik = new TesseractEngine(katalogDanych, "pol", EngineMode.Default);
+        var wynik = new System.Text.StringBuilder();
+
+        using var czytnik = DocLib.Instance.GetDocReader(dane, new PageDimensions(2.5));
+        for (var i = 0; i < czytnik.GetPageCount(); i++)
+        {
+            using var strona = czytnik.GetPageReader(i);
+            var bmp = ZbudujBmp(strona.GetImage(), strona.GetPageWidth(), strona.GetPageHeight());
+            using var obraz = Pix.LoadFromMemory(bmp);
+            using var rozpoznana = silnik.Process(obraz, PageSegMode.Auto);
+            wynik.AppendLine(rozpoznana.GetText());
+        }
+
+        return wynik.ToString();
+    }
+
+    // Docnet zwraca piksele BGRA z przezroczystym tłem; składamy je na białym tle jako 24-bitowy BMP.
+    private static byte[] ZbudujBmp(byte[] bgra, int szerokosc, int wysokosc)
+    {
+        var wiersz = (szerokosc * 3 + 3) & ~3;
+        var rozmiar = 54 + wiersz * wysokosc;
+        var bmp = new byte[rozmiar];
+        BitConverter.GetBytes((short)0x4D42).CopyTo(bmp, 0);
+        BitConverter.GetBytes(rozmiar).CopyTo(bmp, 2);
+        BitConverter.GetBytes(54).CopyTo(bmp, 10);
+        BitConverter.GetBytes(40).CopyTo(bmp, 14);
+        BitConverter.GetBytes(szerokosc).CopyTo(bmp, 18);
+        BitConverter.GetBytes(-wysokosc).CopyTo(bmp, 22);
+        BitConverter.GetBytes((short)1).CopyTo(bmp, 26);
+        BitConverter.GetBytes((short)24).CopyTo(bmp, 28);
+
+        for (var y = 0; y < wysokosc; y++)
+        {
+            for (var x = 0; x < szerokosc; x++)
+            {
+                var src = (y * szerokosc + x) * 4;
+                var dst = 54 + y * wiersz + x * 3;
+                var alfa = bgra[src + 3];
+                for (var k = 0; k < 3; k++)
+                {
+                    bmp[dst + k] = (byte)((bgra[src + k] * alfa + 255 * (255 - alfa)) / 255);
+                }
+            }
+        }
+
+        return bmp;
     }
 }

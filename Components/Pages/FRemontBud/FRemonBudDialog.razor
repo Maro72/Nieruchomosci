@@ -88,6 +88,10 @@
                                             }
                                         </select>
                                     </div>
+                                    @if (Model.Status == "Anulowany")
+                                    {
+                                        <small class="text-danger">Po zapisaniu remont zostanie automatycznie przeniesiony do archiwum.</small>
+                                    }
                                 </div>
 
                                 <div class="col-md-4">
@@ -105,6 +109,29 @@
                                         <input type="date" class="form-control" @bind="Model.DataZakonczeniaPlanowana" @bind:format="yyyy-MM-dd" />
                                     </div>
                                 </div>
+
+                                @if (Model.Id != 0 && Model.Status == "Odbiór techniczny")
+                                {
+                                    <div class="col-12 d-flex justify-content-start">
+                                        <MudPaper Outlined="true" Class="pa-2 border-success"
+                                                  Style="width: fit-content; max-width: 100%;">
+                                            <MudSwitch T="bool" @bind-Value="CzyZakonczRemont"
+                                                       Color="Color.Success" Dense="true"
+                                                       Label="Zakończ remont i przenieś do archiwum" />
+                                            @if (CzyZakonczRemont)
+                                            {
+                                                <MudAlert Severity="Severity.Info" Dense="true" Class="mt-2 mb-2"
+                                                          Style="max-width: 340px;">
+                                                    Po potwierdzeniu remont zostanie oznaczony jako zakończony i przeniesiony do archiwum.
+                                                </MudAlert>
+                                                <MudDatePicker @bind-Date="DataZakonczeniaRemontu"
+                                                               Label="Faktyczna data zakończenia"
+                                                               Variant="Variant.Outlined" Margin="Margin.Dense"
+                                                               Required="true" Style="max-width: 340px;" />
+                                            }
+                                        </MudPaper>
+                                    </div>
+                                }
 
                                 <div class="col-12 mt-3 border-top pt-3">
                                     <div class="row g-3">
@@ -288,7 +315,18 @@
 
             @* --- PRZYCISKI AKCJI --- *@
             <MudButton Variant="Variant.Filled" Color="Color.Default" StartIcon="@Icons.Material.Filled.Close" Size="Size.Small" Class="border text-dark px-4 py-2" OnClick="Anuluj">Anuluj</MudButton>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Save" Size="Size.Small" Class="px-5 py-2 shadow-sm" Style="background-color: #5a4bda;" OnClick="ZapiszFormularz">Zapisz Zmiany</MudButton>
+            @if (CzyZakonczRemont)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.TaskAlt"
+                           Size="Size.Small" Class="px-4 py-2 shadow-sm"
+                           Disabled="@IsFinishing" OnClick="ZakonczRemontZDialogu">
+                    @(IsFinishing ? "Kończenie..." : "Zakończ i przenieś do archiwum")
+                </MudButton>
+            }
+            else
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Save" Size="Size.Small" Class="px-5 py-2 shadow-sm" Style="background-color: #5a4bda;" OnClick="ZapiszFormularz">Zapisz Zmiany</MudButton>
+            }
         </div>
     </DialogActions>
 </MudDialog>

@@ -44,7 +44,7 @@ public sealed class BackupService : IBackupService
             var archivePath = Path.Combine(backupDirectory, $"mieszkaniec_{stamp}.zip");
 
             // mysqldump tworzy spójny eksport bazy, który następnie trafia do archiwum ZIP.
-            var dumpPath = FindMySqlDump();
+            var dumpPath = FindMySqlDump(settings.MysqldumpPath);
             var process = new Process
             {
                 StartInfo = new ProcessStartInfo
@@ -92,16 +92,45 @@ public sealed class BackupService : IBackupService
         }
     }
 
-    private static string FindMySqlDump()
+    private static string FindMySqlDump(string? configuredPath)
     {
-        var candidates = new[]
-        {
-            @"C:\Program Files\MySQL\MySQL Server 9.7\bin\mysqldump.exe",
-            @"C:\Program Files\MySQL\MySQL Server 8.0\bin\mysqldump.exe",
-            "mysqldump.exe"
-        };
+        var executableNames = OperatingSystem.IsWindows()
+            ? new[] { "mysqldump.exe", "mysqldump", "mariadb-dump.exe", "mariadb-dump" }
+            : new[] { "mysqldump", "mariadb-dump" };
+        var candidates = new List<string>();
 
-        return candidates.FirstOrDefault(File.Exists) ?? "mysqldump.exe";
+        if (!string.IsNullOrWhiteSpace(configuredPath))
+            candidates.Add(configuredPath.Trim());
+
+        if (OperatingSystem.IsWindows())
+        {
+            foreach (var programFiles in new[] { Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86) })
+            {
+                var mysqlDirectory = Path.Combine(programFiles, "MySQL");
+                if (Directory.Exists(mysqlDirectory))
+                {
+                    candidates.AddRange(Directory.GetDirectories(mysqlDirectory, "MySQL Server *", SearchOption.TopDirectoryOnly)
+                        .Select(directory => Path.Combine(directory, "bin", "mysqldump.exe")));
+                }
+            }
+        }
+        else if (OperatingSystem.IsMacOS())
+        {
+            candidates.Add("/opt/homebrew/opt/mysql-client/bin/mysqldump");
+            candidates.Add("/usr/local/opt/mysql-client/bin/mysqldump");
+        }
+
+        var pathDirectories = (Environment.GetEnvironmentVariable("PATH") ?? string.Empty)
+            .Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        candidates.AddRange(pathDirectories.SelectMany(directory => executableNames.Select(name => Path.Combine(directory, name))));
+
+        var resolvedPath = candidates.FirstOrDefault(File.Exists);
+        if (resolvedPath is not null)
+            return resolvedPath;
+
+        throw new FileNotFoundException(
+            "Nie znaleziono programu mysqldump/mariadb-dump. Zainstaluj klienta MySQL i dodaj go do PATH albo ustaw BackupSettings:MysqldumpPath w appsettings.json. Na macOS można użyć `brew install mysql-client`.");
     }
 
     private static void RotateArchives(string directory, int maxCopies)

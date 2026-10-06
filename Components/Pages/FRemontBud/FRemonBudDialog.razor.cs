@@ -21,10 +21,15 @@ namespace Mieszkaniec.Components.Pages.FRemonBud
 
         [Parameter] public EventCallback OnSave { get; set; }
         [Parameter] public EventCallback OnCancel { get; set; }
+        [Parameter] public EventCallback<DateTime> OnFinish { get; set; }
+        [Parameter] public bool IsFinishing { get; set; }
 
         protected DialogOptions DialogOptions = new() { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true, BackdropClick = false };
 
         protected string KomunikatBledu { get; set; } = "";
+        protected bool CzyZakonczRemont { get; set; }
+        protected DateTime? DataZakonczeniaRemontu { get; set; }
+        private PraceRemontowe? _modelFormularza;
 
         // --- ZMIENNE KOSZTORYSU ---
         // Pusty obiekt, który służy jako "formularz" do dodawania nowego wiersza materiału
@@ -32,6 +37,13 @@ namespace Mieszkaniec.Components.Pages.FRemonBud
 
         protected override void OnParametersSet()
         {
+            if (!ReferenceEquals(_modelFormularza, Model))
+            {
+                _modelFormularza = Model;
+                CzyZakonczRemont = false;
+                DataZakonczeniaRemontu = DateTime.Today;
+            }
+
             // Gdy otwieramy formularz edycji, wymuszamy jednorazowe przeliczenie kosztów
             if (Model != null)
             {
@@ -121,6 +133,30 @@ namespace Mieszkaniec.Components.Pages.FRemonBud
             PrzeliczKoszty();
             await OnSave.InvokeAsync();
             
+        }
+
+        protected async Task ZakonczRemontZDialogu()
+        {
+            KomunikatBledu = "";
+            if (Model.Id == 0 || Model.Status != "Odbiór techniczny")
+            {
+                KomunikatBledu = "Zakończyć można tylko zapisany remont po odbiorze technicznym.";
+                return;
+            }
+
+            if (!DataZakonczeniaRemontu.HasValue)
+            {
+                KomunikatBledu = "Podaj faktyczną datę zakończenia remontu.";
+                return;
+            }
+
+            if (Model.KosztFaktyczny < 0)
+            {
+                KomunikatBledu = "Koszt faktyczny nie może być ujemny.";
+                return;
+            }
+
+            await OnFinish.InvokeAsync(DataZakonczeniaRemontu.Value);
         }
 
         protected async Task Anuluj()

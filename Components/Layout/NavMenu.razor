@@ -69,11 +69,14 @@
             </Authorized>
         </AuthorizeView>
 
-        <AuthorizeView Policy="Budynki.Edycja">
+        <AuthorizeView Policy="Techniczny.Odczyt">
             <Authorized>
-                <MudNavGroup Title="Konfiguracja" @bind-Expanded="_konfiguracjaExpanded" Icon="@Icons.Material.Filled.Settings">
-                    <MudNavLink Href="fterminy/terminy" Icon="@Icons.Material.Filled.MoreTime" Ripple="false">Definicje terminów</MudNavLink>
-                    <MudNavLink Href="konfiguracja" Icon="@Icons.Material.Filled.Storage" Ripple="false">Baza danych i pliki</MudNavLink>
+                <MudNavGroup Title="Liczniki" @bind-Expanded="_licznikiExpanded" Icon="@Icons.Material.Filled.ReceiptLong">
+                    <MudNavGroup Title="Woda" @bind-Expanded="_wodaExpanded" Icon="@Icons.Material.Filled.WaterDrop">
+                        <MudNavLink Href="woda" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.WaterDrop" Ripple="false" Class="water-reading-nav-link">Odczyty i faktury</MudNavLink>
+                        <MudNavLink Href="woda/zuzycia" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.BarChart" Ripple="false">Zużycia</MudNavLink>
+                    </MudNavGroup>
+                    @*<MudNavLink Href="cieplo" Icon="@Icons.Material.Filled.LocalFireDepartment" Ripple="false">Ciepło</MudNavLink>*@
                 </MudNavGroup>
             </Authorized>
         </AuthorizeView>
@@ -96,14 +99,11 @@
             </Authorized>
         </AuthorizeView>
 
-        <AuthorizeView Policy="Techniczny.Odczyt">
+        <AuthorizeView Policy="Budynki.Edycja">
             <Authorized>
-                <MudNavGroup Title="Liczniki" @bind-Expanded="_licznikiExpanded" Icon="@Icons.Material.Filled.ReceiptLong">
-                    <MudNavGroup Title="Woda" Icon="@Icons.Material.Filled.WaterDrop">
-                        <MudNavLink Href="woda" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.WaterDrop" Ripple="false">Odczyty i faktury</MudNavLink>
-                        <MudNavLink Href="woda/zuzycia" Icon="@Icons.Material.Filled.BarChart" Ripple="false">Zużycia</MudNavLink>
-                    </MudNavGroup>
-                    @*<MudNavLink Href="cieplo" Icon="@Icons.Material.Filled.LocalFireDepartment" Ripple="false">Ciepło</MudNavLink>*@
+                <MudNavGroup Title="Konfiguracja" @bind-Expanded="_konfiguracjaExpanded" Icon="@Icons.Material.Filled.Settings">
+                    <MudNavLink Href="fterminy/terminy" Icon="@Icons.Material.Filled.MoreTime" Ripple="false">Definicje terminów</MudNavLink>
+                    <MudNavLink Href="konfiguracja" Icon="@Icons.Material.Filled.Storage" Ripple="false">Baza danych i pliki</MudNavLink>
                 </MudNavGroup>
             </Authorized>
         </AuthorizeView>
@@ -122,6 +122,7 @@
     private bool _nieruchomosciExpanded;
     private bool _obslugaExpanded;
     private bool _licznikiExpanded;
+    private bool _wodaExpanded;
     private bool _umowyExpanded;
     private bool _konfiguracjaExpanded;
     private bool _administracjaExpanded;
@@ -137,6 +138,7 @@
         _nieruchomosciExpanded = false;
         _obslugaExpanded = false;
         _licznikiExpanded = false;
+        _wodaExpanded = false;
         _umowyExpanded = false;
         _konfiguracjaExpanded = false;
         _administracjaExpanded = false;

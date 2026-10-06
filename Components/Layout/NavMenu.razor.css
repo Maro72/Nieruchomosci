@@ -94,15 +94,15 @@
 .navigation-tree ::deep a.mud-nav-link.active,
 .navigation-tree ::deep a.mud-nav-link.active:focus,
 .navigation-tree ::deep a.mud-nav-link.active:hover {
-	background-color: #d1d5db !important;
-	color: #111827 !important;
-	font-weight: 700 !important;
-	border-left: 3px solid #4b5563 !important;
+	background-color: transparent !important;
+	color: #1e6fa8 !important;
+	font-weight: 600 !important;
+	border-left: none !important;
 }
 
 .navigation-tree ::deep a.mud-nav-link.active .mud-icon-root,
 .navigation-tree ::deep a.mud-nav-link.active .mud-nav-link-text {
-	color: #374151 !important;
+	color: #1e6fa8 !important;
 }
 
 .navigation-tree ::deep .mud-nav-group > .mud-nav-link,
@@ -148,6 +148,81 @@
 
 .navigation-tree ::deep .mud-ripple {
 	background-color: rgba(107, 114, 128, 0.2) !important;
+}
+
+.navigation-tree ::deep a.water-reading-nav-link,
+.navigation-tree ::deep a.water-reading-nav-link:focus,
+.navigation-tree ::deep a.water-reading-nav-link:active {
+	min-height: 36px;
+	margin: 2px 0;
+	border: 0 !important;
+	border-radius: 6px !important;
+	background-color: transparent !important;
+	color: #475569 !important;
+	box-shadow: none !important;
+}
+
+.navigation-tree ::deep a.water-reading-nav-link .mud-nav-link-text,
+.navigation-tree ::deep a.water-reading-nav-link .mud-icon-root {
+	color: inherit !important;
+}
+
+.navigation-tree ::deep a.water-reading-nav-link:not(.active):hover {
+	background-color: #e5e7eb !important;
+	color: #1e6fa8 !important;
+}
+
+.navigation-tree ::deep a.water-reading-nav-link.active,
+.navigation-tree ::deep a.water-reading-nav-link.active:focus,
+.navigation-tree ::deep a.water-reading-nav-link.active:hover {
+	background-color: transparent !important;
+	color: #1e6fa8 !important;
+	font-weight: 600 !important;
+	border: 0 !important;
+	box-shadow: none !important;
+}
+
+.navigation-tree.dark-mode ::deep a.water-reading-nav-link,
+.navigation-tree.dark-mode ::deep a.water-reading-nav-link:focus,
+.navigation-tree.dark-mode ::deep a.water-reading-nav-link:active,
+body:has(.mud-theme-dark) .navigation-tree ::deep a.water-reading-nav-link,
+body:has(.mud-theme-dark) .navigation-tree ::deep a.water-reading-nav-link:focus,
+body:has(.mud-theme-dark) .navigation-tree ::deep a.water-reading-nav-link:active {
+	background-color: transparent !important;
+	color: #d6e6f2 !important;
+}
+
+.navigation-tree.dark-mode ::deep a.water-reading-nav-link .mud-nav-link-text,
+.navigation-tree.dark-mode ::deep a.water-reading-nav-link .mud-icon-root,
+body:has(.mud-theme-dark) .navigation-tree ::deep a.water-reading-nav-link .mud-nav-link-text,
+body:has(.mud-theme-dark) .navigation-tree ::deep a.water-reading-nav-link .mud-icon-root {
+	color: inherit !important;
+}
+
+.navigation-tree.dark-mode ::deep a.water-reading-nav-link:not(.active):hover,
+body:has(.mud-theme-dark) .navigation-tree ::deep a.water-reading-nav-link:not(.active):hover {
+	background-color: rgba(90, 169, 230, 0.18) !important;
+	color: #ffffff !important;
+}
+
+.navigation-tree.dark-mode ::deep a.water-reading-nav-link.active,
+.navigation-tree.dark-mode ::deep a.water-reading-nav-link.active:focus,
+.navigation-tree.dark-mode ::deep a.water-reading-nav-link.active:hover,
+body:has(.mud-theme-dark) .navigation-tree ::deep a.water-reading-nav-link.active,
+body:has(.mud-theme-dark) .navigation-tree ::deep a.water-reading-nav-link.active:focus,
+body:has(.mud-theme-dark) .navigation-tree ::deep a.water-reading-nav-link.active:hover {
+	background-color: transparent !important;
+	color: #7dd3fc !important;
+	font-weight: 600 !important;
+	border: 0 !important;
+	box-shadow: none !important;
+}
+
+.navigation-tree.dark-mode ::deep a.water-reading-nav-link.active .mud-nav-link-text,
+.navigation-tree.dark-mode ::deep a.water-reading-nav-link.active .mud-icon-root,
+body:has(.mud-theme-dark) .navigation-tree ::deep a.water-reading-nav-link.active .mud-nav-link-text,
+body:has(.mud-theme-dark) .navigation-tree ::deep a.water-reading-nav-link.active .mud-icon-root {
+	color: #7dd3fc !important;
 }
 
 .navigation-tree.dark-mode ::deep .mud-nav-link {
@@ -224,9 +299,9 @@ body:has(.mud-theme-dark) .navigation-tree ::deep a.mud-nav-link[href]:not(.acti
 body:has(.mud-theme-dark) .navigation-tree ::deep a.mud-nav-link.active,
 body:has(.mud-theme-dark) .navigation-tree ::deep a.mud-nav-link.active:focus,
 body:has(.mud-theme-dark) .navigation-tree ::deep a.mud-nav-link.active:hover {
-	background-color: #1d4c70 !important;
-	color: #ffffff !important;
-	border-left-color: #7dd3fc !important;
+	background-color: transparent !important;
+	color: #7dd3fc !important;
+	border-left: none !important;
 }
 
 body:has(.mud-theme-dark) .navigation-tree ::deep a.mud-nav-link.active .mud-icon-root,

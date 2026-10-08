@@ -16,35 +16,44 @@
     <MudTabPanel Text="Odczyty Liczników">
         <div class="water-readings">
             <MudGrid Spacing="3">
-                <MudItem xs="12" md="8">
-                    <div class="action-strip action-panel">
+                <MudItem xs="12" md="6">
+                    <MudPaper Outlined="true" Class="pa-4 d-flex flex-column gap-3" Style="height:100%;">
                         <div>
                             <MudText Class="action-label">Import danych</MudText>
                             <MudText Typo="Typo.h6" Class="section-heading">Wczytaj odczyty z PDF</MudText>
                             <MudText Class="reading-muted">Automatycznie rozpoznaj stany liczników i przygotuj je do zapisu.</MudText>
                         </div>
-                        <MudFileUpload T="IBrowserFile" FilesChanged="PrzetworzPlik" Accept=".pdf">
-                            <CustomContent>
-                                <MudButton OnClick="@context.OpenFilePickerAsync" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.AutoAwesome" Title="Import odczytów z analizą AI">Wybierz plik PDF</MudButton>
-                            </CustomContent>
-                        </MudFileUpload>
-                        @if (trwaPrzetwarzanie) { <MudProgressLinear Color="Color.Primary" Indeterminate="true" /> }
-                    </div>
+                        <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+                            <MudFileUpload T="IBrowserFile" FilesChanged="PrzetworzPlik" Accept=".pdf" Style="width:auto; flex:0 0 auto;">
+                                <CustomContent>
+                                    <MudButton OnClick="@context.OpenFilePickerAsync" Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.AutoAwesome" Title="Import odczytów z analizą AI" Style="width:auto;">
+                                        Wybierz plik PDF
+                                    </MudButton>
+                                </CustomContent>
+                            </MudFileUpload>
+                        </div>
+                        @if (trwaPrzetwarzanie)
+                        {
+                            <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+                        }
+                    </MudPaper>
                 </MudItem>
-                <MudItem xs="12" md="4">
-                    <div class="action-strip action-panel">
+                <MudItem xs="12" md="6">
+                    <MudPaper Outlined="true" Class="pa-4 d-flex flex-column gap-3" Style="height:100%;">
                         <div>
                             <MudText Class="action-label">Konfiguracja</MudText>
                             <MudText Typo="Typo.h6" Class="section-heading">Nowy licznik</MudText>
                             <MudText Class="reading-muted">Dodaj urządzenie, którego nie ma jeszcze na liście.</MudText>
                         </div>
-                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="OtworzDialogDodajLicznik">
+                        <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                            <MudButton Variant="Variant.Outlined" Size="Size.Small" Style="width:auto;" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="OtworzDialogDodajLicznik">
                             Dodaj licznik
                         </MudButton>
-                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Link" OnClick="OtworzDialogPrzypiszLicznik">
+                        <MudButton Variant="Variant.Outlined" Size="Size.Small" Style="width:auto;" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Link" OnClick="OtworzDialogPrzypiszLicznik">
                             Przypisz licznik
                         </MudButton>
-                    </div>
+                        </div>
+                    </MudPaper>
                 </MudItem>
 
                 @if (false && odczytyZPdf != null && odczytyZPdf.Any())
@@ -224,25 +233,44 @@
     </MudTabPanel>
 
     <MudTabPanel Text="Faktury i Podsumowanie">
-        <MudGrid>
-            <MudItem xs="12" sm="6">
-                <MudCard>
-                    <MudCardContent>
-                        <MudText Typo="Typo.h6">Wgraj fakturę z KSeF (PDF)</MudText>
-                        <MudFileUpload T="IBrowserFile" FilesChanged="PrzetworzFakturePdf" Accept=".pdf">
+        <div class="water-readings">
+        <MudGrid Class="invoice-upload-grid">
+            <MudItem xs="12" md="6">
+                <MudPaper Outlined="true" Class="pa-4 d-flex flex-column gap-3" Style="height:100%;">
+                    <div>
+                        <MudText Class="action-label">Import danych</MudText>
+                        <MudText Typo="Typo.h6" Class="section-heading">Wgraj fakturę z KSeF (PDF)</MudText>
+                        <MudText Class="reading-muted">Wczytaj fakturę i przypisz ją do okresu rozliczeniowego.</MudText>
+                    </div>
+                    <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+                        <MudFileUpload T="IBrowserFile" FilesChanged="PrzetworzFakturePdf" Accept=".pdf" Style="width:auto; flex:0 0 auto;">
                             <CustomContent>
-                                <MudButton OnClick="@context.OpenFilePickerAsync" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CloudUpload">Wybierz plik faktury</MudButton>
+                                <MudButton OnClick="@context.OpenFilePickerAsync" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.CloudUpload" Style="width:auto;">
+                                    Wybierz plik faktury
+                                </MudButton>
                             </CustomContent>
                         </MudFileUpload>
-                        @if (trwaPrzetwarzanieFaktury) { <MudProgressCircular Color="Color.Primary" Indeterminate="true" Class="mt-3"/> }
-                    </MudCardContent>
-                </MudCard>
+                        @if (trwaPrzetwarzanieFaktury)
+                        {
+                            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Small" />
+                        }
+                    </div>
+                </MudPaper>
             </MudItem>
-            <MudItem xs="12" sm="6" Class="d-flex align-center">
-                <MudButton Variant="Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => OtworzDialogFaktura(null))">
-                Dodaj fakturę ręcznie
-            </MudButton>
-        </MudItem>
+            <MudItem xs="12" md="6">
+                <MudPaper Outlined="true" Class="pa-4 d-flex flex-column gap-3" Style="height:100%;">
+                    <div>
+                        <MudText Class="action-label">Konfiguracja</MudText>
+                        <MudText Typo="Typo.h6" Class="section-heading">Nowa faktura</MudText>
+                        <MudText Class="reading-muted">Dodaj fakturę, której nie ma w systemie.</MudText>
+                    </div>
+                    <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" Style="width:auto;" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => OtworzDialogFaktura(null))">
+                            Dodaj fakturę ręcznie
+                        </MudButton>
+                    </div>
+                </MudPaper>
+            </MudItem>
 
         <MudItem xs="12">
             <MudCard>
@@ -366,6 +394,7 @@
             </div>
         </MudItem>
     </MudGrid>
+    </div>
 </MudTabPanel>
 </MudTabs>
 

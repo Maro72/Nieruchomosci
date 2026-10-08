@@ -23,6 +23,85 @@
     justify-content: space-between;
     gap: 12px;
 }
+.water-readings .pdf-import-card {
+    width: 100%;
+    max-width: 720px;
+    height: auto;
+    align-self: flex-start;
+    border: 1px solid var(--water-line);
+    border-left: 4px solid var(--mud-palette-primary);
+    border-radius: 10px;
+    background: var(--mud-palette-surface);
+    box-shadow: 0 2px 8px rgba(25, 50, 75, .08);
+}
+.water-readings .pdf-import-content {
+    display: flex;
+    min-height: 0;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 16px !important;
+}
+.water-readings .pdf-import-copy {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.water-readings ::deep .pdf-import-progress {
+    flex: 0 0 100%;
+    width: 100%;
+}
+.water-readings ::deep .pdf-upload-control {
+    width: auto;
+    max-width: 100%;
+    flex: 0 0 auto;
+}
+.water-readings ::deep .pdf-upload-wrap {
+    display: inline-flex;
+    width: max-content;
+    max-width: 100%;
+}
+.water-readings ::deep .pdf-upload-button {
+    display: inline-flex;
+    width: auto;
+    min-width: 0;
+    padding-inline: 16px;
+}
+.water-readings .invoice-upload-item {
+    align-self: flex-start;
+}
+.water-readings ::deep .invoice-upload-grid {
+    align-items: flex-start;
+}
+.water-readings .invoice-upload-card {
+    width: 100%;
+    height: auto;
+    max-width: 560px;
+    min-height: 0;
+    border: 1px solid var(--water-line);
+    border-radius: 10px;
+    background: var(--mud-palette-surface);
+}
+.water-readings .invoice-upload-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px !important;
+}
+.water-readings ::deep .invoice-upload-control {
+    width: auto;
+    max-width: 100%;
+    flex: 0 0 auto;
+}
+.water-readings ::deep .invoice-upload-button-wrap {
+    display: inline-flex;
+    width: max-content;
+    max-width: 100%;
+}
 .water-readings .action-label {
     color: var(--water-muted);
     font-size: 0.78rem;
@@ -145,6 +224,15 @@
 
 /* Zmieniono @@media na @media */
 @media (max-width: 700px) {
+    .water-readings .pdf-import-card {
+        max-width: 100%;
+    }
+    .water-readings .pdf-import-content {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+        padding: 12px !important;
+    }
     .water-readings .reading-summary {
         grid-template-columns: 1fr;
     }

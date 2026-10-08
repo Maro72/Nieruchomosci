@@ -28,6 +28,7 @@ namespace Mieszkaniec.Model.Context
         public DbSet<Uzytkownik> Uzytkownicy { get; set; }
         public DbSet<Rola> Role { get; set; }
         public DbSet<Uprawnienie> Uprawnienia { get; set; }
+        public DbSet<HistoriaLogowania> HistoriaLogowan { get; set; }
         
         // --- LICZNIKI I ODCZYTY ---
         public DbSet<Licznik> Liczniki { get; set; }

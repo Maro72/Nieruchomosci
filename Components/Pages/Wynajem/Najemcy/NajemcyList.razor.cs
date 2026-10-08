@@ -11,6 +11,7 @@ namespace Mieszkaniec.Components.Pages.Wynajem.Najemcy
 {
     public partial class NajemcyList : ComponentBase
     {
+        [Inject] private ISnackbar Snackbar { get; set; } = default!;
 
         private List<Najemca> FiltrowaniNajemcy = new();
         private string WybranyWidok { get; set; } = "Aktywni";
@@ -83,10 +84,50 @@ namespace Mieszkaniec.Components.Pages.Wynajem.Najemcy
 
         private async Task ZarchiwizujNajemce(Najemca najemca)
         {
-            if (najemca == null) return;
+            if (najemca == null)
+            {
+                return;
+            }
 
-            // Wywołanie metody soft-delete z serwisu
+            var parametry = new DialogParameters
+            {
+                [nameof(NajemcaArchiwumDialog.NazwaNajemcy)] = najemca.NazwaFirmyOsoby
+            };
+            var opcje = new DialogOptions
+            {
+                CloseOnEscapeKey = true,
+                CloseButton = true,
+                MaxWidth = MaxWidth.Small,
+                FullWidth = true
+            };
+            var dialog = await DialogService.ShowAsync<NajemcaArchiwumDialog>(
+                "Przenieść najemcę do archiwum?",
+                parametry,
+                opcje);
+            var wynik = await dialog.Result;
+
+            if (wynik.Canceled || wynik.Data is not true)
+            {
+                return;
+            }
+
             var sukces = await NajemcaService.PrzeniesDoArchiwumAsync(najemca.Id);
+            Snackbar.Add(
+                sukces
+                    ? $"Najemca „{najemca.NazwaFirmyOsoby}” został przeniesiony do archiwum."
+                    : "Nie udało się przenieść najemcy do archiwum.",
+                sukces ? Severity.Success : Severity.Error,
+                options =>
+                {
+                    options.Icon = sukces
+                        ? Icons.Material.Filled.Archive
+                        : Icons.Material.Filled.ErrorOutline;
+                    options.IconColor = sukces ? Color.Success : Color.Error;
+                    options.ShowCloseIcon = true;
+                    options.VisibleStateDuration = 6000;
+                    options.SnackbarVariant = Variant.Outlined;
+                });
+
             if (sukces)
             {
                 await ZaladujDane();
@@ -95,9 +136,18 @@ namespace Mieszkaniec.Components.Pages.Wynajem.Najemcy
 
         private async Task PrzywrocNajemce(Najemca najemca)
         {
-            if (najemca == null) return;
+            if (najemca == null)
+            {
+                return;
+            }
 
             var sukces = await NajemcaService.PrzywrocZArchiwumAsync(najemca.Id);
+            Snackbar.Add(
+                sukces
+                    ? $"Najemca „{najemca.NazwaFirmyOsoby}” został przywrócony z archiwum."
+                    : "Nie udało się przywrócić najemcy z archiwum.",
+                sukces ? Severity.Success : Severity.Error);
+
             if (sukces)
             {
                 await ZaladujDane();

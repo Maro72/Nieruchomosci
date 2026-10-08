@@ -14,7 +14,7 @@
            Items="@FiltrowaniNajemcy"
            Title="Wykaz Najemców"
            ShowToolbar="true"
-           ShowSearch="false"
+           ShowSearch="true"
            OnEdit="OpenEdytujDialog"
            OnAdd="OpenDodajDialog">
         <ToolbarLeftContent>
@@ -71,13 +71,19 @@
                         @if (!ctx.Item.CzyArchiwalny)
                         {
                             <MudTooltip Text="Przenieś do archiwum">
-                                <MudIconButton Icon="@Icons.Material.Filled.Archive" Size="Size.Small" Color="Color.Warning" OnClick="@(() => ZarchiwizujNajemce(ctx.Item))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Archive"
+                                               Size="Size.Small"
+                                               Color="Color.Warning"
+                                               OnClick="@(() => ZarchiwizujNajemce(ctx.Item))" />
                             </MudTooltip>
                         }
                         else
                         {
                             <MudTooltip Text="Przywróć z archiwum">
-                                <MudIconButton Icon="@Icons.Material.Filled.Unarchive" Size="Size.Small" Color="Color.Success" OnClick="@(() => PrzywrocNajemce(ctx.Item))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Unarchive"
+                                               Size="Size.Small"
+                                               Color="Color.Success"
+                                               OnClick="@(() => PrzywrocNajemce(ctx.Item))" />
                             </MudTooltip>
                         }
                     </div>

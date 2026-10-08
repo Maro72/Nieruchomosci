@@ -43,43 +43,37 @@
 	opacity: 0 !important;
 }
 
-.navigation-tree ::deep .mud-nav-group .mud-collapse {
+.navigation-tree ::deep .nav-guide-branch {
 	position: relative;
 	margin: 0.2rem 0 0.4rem 1.2rem;
+	padding-left: 0.85rem;
+	border-left: 2px solid #64748b;
 }
 
-.navigation-tree ::deep .mud-nav-group .mud-collapse::before {
-	position: absolute;
-	top: 0;
-	bottom: 0.8rem;
-	left: 0;
-	width: 1px;
-	background: #cbd5e1;
-	content: "";
-}
-
-.navigation-tree ::deep .mud-nav-group .mud-collapse .mud-nav-link {
+.navigation-tree ::deep .nav-guide-branch .mud-nav-link {
 	position: relative;
 	min-height: 36px;
-	padding-left: 1.5rem !important;
+	padding-left: 1rem !important;
 	font-size: 0.83rem !important;
 }
 
 /* Pozycje rozwijanego podmenu są treścią, a nie nagłówkami grup, dlatego nie są pogrubione. */
-.navigation-tree ::deep .mud-nav-group .mud-collapse .mud-nav-link,
-.navigation-tree ::deep .mud-nav-group .mud-collapse .mud-nav-link .mud-nav-link-text {
+.navigation-tree ::deep .nav-guide-branch .mud-nav-link,
+.navigation-tree ::deep .nav-guide-branch .mud-nav-link .mud-nav-link-text {
 	font-weight: 400 !important;
 }
 
-.navigation-tree ::deep .mud-nav-group .mud-collapse .mud-nav-link::after {
+.navigation-tree ::deep .nav-guide-branch .mud-nav-link::after {
 	position: absolute;
 	top: 50%;
-	left: 0;
+	left: -0.85rem;
 	display: block !important;
 	width: 0.75rem;
-	height: 1px;
-	background: #cbd5e1;
+	height: 0;
+	border-top: 2px solid #64748b;
+	background: none !important;
 	content: "" !important;
+	pointer-events: none;
 }
 
 .navigation-tree ::deep a.mud-nav-link[href]:not(.active):hover {
@@ -266,10 +260,10 @@ body:has(.mud-theme-dark) .navigation-tree ::deep a.water-reading-nav-link.activ
 }
 
 /* Aktywna pozycja podmenu także zachowuje normalną grubość tekstu. */
-.navigation-tree ::deep .mud-nav-group .mud-collapse .mud-nav-link.active,
-.navigation-tree ::deep .mud-nav-group .mud-collapse .mud-nav-link.active .mud-nav-link-text,
-.navigation-tree.dark-mode ::deep .mud-nav-group .mud-collapse .mud-nav-link.active,
-.navigation-tree.dark-mode ::deep .mud-nav-group .mud-collapse .mud-nav-link.active .mud-nav-link-text {
+.navigation-tree ::deep .nav-guide-branch .mud-nav-link.active,
+.navigation-tree ::deep .nav-guide-branch .mud-nav-link.active .mud-nav-link-text,
+.navigation-tree.dark-mode ::deep .nav-guide-branch .mud-nav-link.active,
+.navigation-tree.dark-mode ::deep .nav-guide-branch .mud-nav-link.active .mud-nav-link-text {
 	font-weight: 400 !important;
 }
 
@@ -332,7 +326,204 @@ body:has(.mud-theme-dark) .navigation-tree ::deep .mud-nav-group > .mud-nav-link
 	border-left-color: #7dd3fc !important;
 }
 
-body:has(.mud-theme-dark) .navigation-tree ::deep .mud-nav-group .mud-collapse::before,
-body:has(.mud-theme-dark) .navigation-tree ::deep .mud-nav-group .mud-collapse .mud-nav-link::after {
-	background-color: #2f5c78 !important;
+body:has(.mud-theme-dark) .navigation-tree ::deep .nav-guide-branch {
+	border-left-color: #5b839d !important;
+}
+
+body:has(.mud-theme-dark) .navigation-tree ::deep .nav-guide-branch .mud-nav-link::after {
+	border-top-color: #5b839d !important;
+}
+
+/* Widok drzewa nawigacji zamiast kafelkowych nagłówków grup. */
+.navigation-tree ::deep .mud-nav-group > .mud-nav-link,
+.navigation-tree ::deep .mud-nav-group > .mud-nav-link.mud-expanded,
+.navigation-tree ::deep .mud-nav-group.mud-nav-group-expanded > .mud-nav-link,
+.navigation-tree ::deep .mud-nav-group > .mud-nav-link:hover {
+	display: flex !important;
+	min-height: 38px !important;
+	margin: 2px 0 !important;
+	padding: 6px 8px !important;
+	border: 0 !important;
+	border-radius: 4px !important;
+	border-left: 0 !important;
+	background: transparent !important;
+	box-shadow: none !important;
+	color: #475569 !important;
+	font-size: 0.9rem !important;
+	font-weight: 500 !important;
+	letter-spacing: normal !important;
+	text-transform: none !important;
+}
+
+.navigation-tree ::deep .mud-nav-group > .mud-nav-link .mud-nav-link-expand-icon {
+	order: -1;
+	width: 20px;
+	margin: 0 4px 0 0 !important;
+	color: #64748b !important;
+}
+
+.navigation-tree ::deep .mud-nav-group > .mud-nav-link .mud-nav-link-icon {
+	order: 0;
+	width: 24px;
+	margin: 0 8px 0 0 !important;
+	color: #475569 !important;
+}
+
+.navigation-tree ::deep .mud-nav-group > .mud-nav-link .mud-nav-link-text {
+	order: 1;
+	color: inherit !important;
+	font-weight: inherit !important;
+}
+
+.navigation-tree ::deep .mud-nav-group > .mud-nav-link:hover {
+	background-color: #e5e7eb !important;
+	color: #1f2937 !important;
+}
+
+.navigation-tree ::deep .mud-nav-group > .mud-nav-link.mud-expanded,
+.navigation-tree ::deep .mud-nav-group.mud-nav-group-expanded > .mud-nav-link {
+	background-color: #eef2f6 !important;
+	color: #1f2937 !important;
+}
+
+.navigation-tree ::deep .nav-guide-branch {
+	margin: 0.1rem 0 0.35rem 1.15rem;
+	padding-left: 0.75rem;
+	border-left: 1px solid #cbd5e1;
+}
+
+.navigation-tree ::deep .nav-guide-branch .mud-nav-link {
+	min-height: 36px;
+	margin: 1px 0;
+	padding: 6px 8px !important;
+	border-radius: 4px !important;
+}
+
+.navigation-tree ::deep .nav-guide-branch .mud-nav-link::after {
+	left: -0.76rem;
+	width: 0.75rem;
+	border-top: 1px solid #cbd5e1;
+}
+
+body:has(.mud-theme-dark) .navigation-tree ::deep .mud-nav-group > .mud-nav-link,
+body:has(.mud-theme-dark) .navigation-tree ::deep .mud-nav-group > .mud-nav-link.mud-expanded,
+body:has(.mud-theme-dark) .navigation-tree ::deep .mud-nav-group.mud-nav-group-expanded > .mud-nav-link,
+body:has(.mud-theme-dark) .navigation-tree ::deep .mud-nav-group > .mud-nav-link:hover {
+	background: transparent !important;
+	border: 0 !important;
+	border-left: 0 !important;
+	box-shadow: none !important;
+	color: #d6e6f2 !important;
+}
+
+body:has(.mud-theme-dark) .navigation-tree ::deep .mud-nav-group > .mud-nav-link:hover {
+	background-color: rgba(90, 169, 230, 0.18) !important;
+	color: #ffffff !important;
+}
+
+body:has(.mud-theme-dark) .navigation-tree ::deep .mud-nav-group > .mud-nav-link.mud-expanded,
+body:has(.mud-theme-dark) .navigation-tree ::deep .mud-nav-group.mud-nav-group-expanded > .mud-nav-link {
+	background-color: rgba(90, 169, 230, 0.1) !important;
+}
+
+body:has(.mud-theme-dark) .navigation-tree ::deep .mud-nav-group > .mud-nav-link .mud-nav-link-icon,
+body:has(.mud-theme-dark) .navigation-tree ::deep .mud-nav-group > .mud-nav-link .mud-nav-link-expand-icon {
+	color: #bfe4ff !important;
+}
+
+body:has(.mud-theme-dark) .navigation-tree ::deep .nav-guide-branch {
+	border-left-color: #47657b !important;
+}
+
+body:has(.mud-theme-dark) .navigation-tree ::deep .nav-guide-branch .mud-nav-link::after {
+	border-top-color: #47657b !important;
+}
+
+.navigation-tree.dark-mode ::deep .mud-nav-link,
+.navigation-tree.dark-mode ::deep .mud-nav-link:hover,
+.navigation-tree.dark-mode ::deep .mud-nav-link:focus,
+.navigation-tree.dark-mode ::deep .mud-nav-link:active,
+.navigation-tree.dark-mode ::deep .mud-nav-link .mud-nav-link-text {
+	background-color: transparent !important;
+	color: #d6e6f2 !important;
+}
+
+.navigation-tree.dark-mode ::deep .mud-nav-link .mud-icon-root,
+.navigation-tree.dark-mode ::deep .mud-nav-link .mud-nav-link-expand-icon {
+	color: #54d9ff !important;
+}
+
+.navigation-tree.dark-mode ::deep a.mud-nav-link[href]:not(.active):hover,
+.navigation-tree.dark-mode ::deep .mud-nav-group > .mud-nav-link:hover {
+	background-color: rgba(90, 169, 230, 0.14) !important;
+	color: #ffffff !important;
+}
+
+.navigation-tree.dark-mode ::deep a.mud-nav-link[href]:not(.active):hover .mud-icon-root,
+.navigation-tree.dark-mode ::deep a.mud-nav-link[href]:not(.active):hover .mud-nav-link-text,
+.navigation-tree.dark-mode ::deep .mud-nav-group > .mud-nav-link:hover .mud-icon-root,
+.navigation-tree.dark-mode ::deep .mud-nav-group > .mud-nav-link:hover .mud-nav-link-text {
+	color: #ffffff !important;
+}
+
+.navigation-tree.dark-mode ::deep a.mud-nav-link.active,
+.navigation-tree.dark-mode ::deep a.mud-nav-link.active:focus,
+.navigation-tree.dark-mode ::deep a.mud-nav-link.active:hover,
+.navigation-tree.dark-mode ::deep a.mud-nav-link.active .mud-nav-link-text,
+.navigation-tree.dark-mode ::deep a.mud-nav-link.active .mud-icon-root {
+	background-color: transparent !important;
+	color: #40dfff !important;
+}
+
+.navigation-tree.dark-mode ::deep .mud-navmenu > .mud-nav-link,
+.navigation-tree.dark-mode ::deep .mud-nav-group > .mud-nav-link,
+.navigation-tree.dark-mode ::deep .mud-nav-group > .mud-nav-link.mud-expanded,
+.navigation-tree.dark-mode ::deep .mud-nav-group.mud-nav-group-expanded > .mud-nav-link {
+	border: 0 !important;
+	border-left: 0 !important;
+	border-radius: 4px !important;
+	background: transparent !important;
+	box-shadow: none !important;
+	color: #d6e6f2 !important;
+}
+
+.navigation-tree.dark-mode ::deep .mud-nav-group > .mud-nav-link.mud-expanded,
+.navigation-tree.dark-mode ::deep .mud-nav-group.mud-nav-group-expanded > .mud-nav-link {
+	background-color: rgba(90, 169, 230, 0.08) !important;
+	color: #eaf6ff !important;
+}
+
+.navigation-tree.dark-mode ::deep .mud-nav-group > .mud-nav-link .mud-nav-link-icon,
+.navigation-tree.dark-mode ::deep .mud-nav-group > .mud-nav-link .mud-nav-link-expand-icon {
+	color: #54d9ff !important;
+}
+
+.navigation-tree.dark-mode ::deep .nav-guide-branch {
+	border-left-color: rgba(84, 217, 255, 0.32) !important;
+}
+
+.navigation-tree.dark-mode ::deep .nav-guide-branch .mud-nav-link::after {
+	border-top-color: rgba(84, 217, 255, 0.32) !important;
+}
+
+.navigation-tree.dark-mode {
+	background:
+		radial-gradient(circle at 12% 8%, rgba(35, 74, 181, 0.2), transparent 32%),
+		linear-gradient(160deg, #030817 0%, #09172e 56%, #0a2035 100%);
+}
+
+.navigation-tree.dark-mode ::deep .mud-nav-group > .mud-nav-link.mud-expanded,
+.navigation-tree.dark-mode ::deep .mud-nav-group.mud-nav-group-expanded > .mud-nav-link {
+	background-color: rgba(54, 191, 241, 0.1) !important;
+}
+
+.navigation-tree.dark-mode ::deep a.mud-nav-link[href]:not(.active):hover,
+.navigation-tree.dark-mode ::deep .mud-nav-group > .mud-nav-link:hover {
+	background-color: rgba(54, 191, 241, 0.14) !important;
+}
+
+.navigation-tree.dark-mode ::deep a.mud-nav-link.active,
+.navigation-tree.dark-mode ::deep a.mud-nav-link.active .mud-icon-root,
+.navigation-tree.dark-mode ::deep a.mud-nav-link.active .mud-nav-link-text {
+	text-shadow: 0 0 12px rgba(54, 191, 241, 0.22);
 }

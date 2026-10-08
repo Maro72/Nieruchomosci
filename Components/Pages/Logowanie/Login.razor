@@ -209,9 +209,23 @@
             {
                 if (uzytkownik.CzyAktywny)
                 {
-                    // Provider zapisuje sesję użytkownika i odświeża stan autoryzacji aplikacji.
+                    // Login remains available if the history-table migration has not been applied yet.
                     var authProvider = (Mieszkaniec.Services.MieszkaniecAuthStateProvider)AuthStateProvider;
                     await authProvider.ZalogujUzytkownika(uzytkownik.Login);
+
+                    try
+                    {
+                        dbContext.HistoriaLogowan.Add(new Mieszkaniec.Model.Entities.HistoriaLogowania
+                        {
+                            Uzytkownik = uzytkownik.Login,
+                            DataLogowania = DateTime.Now
+                        });
+                        await dbContext.SaveChangesAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Nie udało się zapisać historii logowania dla użytkownika '{uzytkownik.Login}': {ex.Message}");
+                    }
 
                     NavigationManager.NavigateTo("/");
                 }

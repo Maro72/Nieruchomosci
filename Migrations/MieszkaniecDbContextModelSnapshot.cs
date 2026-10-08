@@ -100,6 +100,27 @@ namespace Mieszkaniec.Migrations
                     b.ToTable("faktury_wody");
                 });
 
+            modelBuilder.Entity("Mieszkaniec.Model.Entities.HistoriaLogowania", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("DataLogowania")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("Uzytkownik")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("HistoriaLogowan");
+                });
+
             modelBuilder.Entity("Mieszkaniec.Model.Entities.KosztorysMaterial", b =>
                 {
                     b.Property<int>("Id")

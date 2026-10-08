@@ -160,7 +160,8 @@
                                                 </div>
                                                 <div class="d-flex align-items-center gap-2">
                                                     <span class="badge bg-light text-secondary border px-2 py-1.5 rounded-pill">@odczytyMiesiaca.Count odczytów</span>
-                                                    <span class="badge bg-primary text-white px-2 py-1.5 rounded-pill">@odczytyMiesiaca.Sum(x => x.Odczyt.IloscDoZafakturowania) m³</span>
+                                                    <span class="badge bg-primary text-white px-2 py-1.5 rounded-pill">Zużycie: @odczytyMiesiaca.Sum(x => x.Odczyt.Zuzycie).ToString("N0") m³</span>
+                                                    <span class="badge bg-light text-secondary border px-2 py-1.5 rounded-pill">Do faktury: @odczytyMiesiaca.Sum(x => x.Odczyt.IloscDoZafakturowania).ToString("N0") m³</span>
                                                 </div>
                                             </div>
                                         </TitleContent>

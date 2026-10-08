@@ -169,6 +169,11 @@
     color: #142f45;
 }
 
+.welcome-title:focus,
+.welcome-title:focus-visible {
+    outline: none;
+}
+
 .welcome-title__accent {
     background: linear-gradient(135deg, #1e6fa8 0%, #38bdf8 100%);
     -webkit-background-clip: text;

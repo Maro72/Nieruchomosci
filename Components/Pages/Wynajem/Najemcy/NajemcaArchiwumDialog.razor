@@ -1,0 +1,89 @@
+@using MudBlazor
+
+<MudDialog Class="tenant-archive-dialog">
+    <TitleContent>
+        <div class="d-flex align-items-center gap-3">
+            <div class="archive-dialog-icon">
+                <MudIcon Icon="@Icons.Material.Filled.Archive" Size="Size.Large" />
+            </div>
+            <div>
+                <MudText Typo="Typo.h6" Class="fw-bold mb-1">Przenieść najemcę do archiwum?</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">Potwierdź zmianę statusu najemcy</MudText>
+            </div>
+        </div>
+    </TitleContent>
+
+    <DialogContent>
+        <div class="archive-dialog-content">
+            <MudText Typo="Typo.body1">
+                Czy na pewno chcesz przenieść tego najemcę do archiwum?
+            </MudText>
+            <div class="archive-tenant-name">
+                <MudIcon Icon="@Icons.Material.Filled.Business" Color="Color.Default" />
+                <MudText Typo="Typo.subtitle1" Class="fw-bold">@NazwaNajemcy</MudText>
+            </div>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                Najemca zniknie z listy aktywnych. W każdej chwili możesz przywrócić go z archiwum.
+            </MudText>
+        </div>
+    </DialogContent>
+
+    <DialogActions>
+        <div class="archive-dialog-actions">
+            <MudButton Variant="Variant.Text" Color="Color.Default" OnClick="Anuluj">
+                Anuluj
+            </MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Warning"
+                       StartIcon="@Icons.Material.Filled.Archive" OnClick="Potwierdz">
+                Przenieś do archiwum
+            </MudButton>
+        </div>
+    </DialogActions>
+</MudDialog>
+
+<style>
+    .tenant-archive-dialog .archive-dialog-icon {
+        display: flex;
+        width: 52px;
+        height: 52px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        color: #9a6700;
+        background: #fff4d6;
+    }
+
+    .tenant-archive-dialog .archive-dialog-content {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        padding: 8px 4px;
+    }
+
+    .tenant-archive-dialog .archive-tenant-name {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        background: #f8fafc;
+    }
+
+    .tenant-archive-dialog .archive-dialog-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        padding: 8px 4px 4px;
+    }
+</style>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public string NazwaNajemcy { get; set; } = string.Empty;
+
+    private void Anuluj() => MudDialog.Cancel();
+
+    private void Potwierdz() => MudDialog.Close(DialogResult.Ok(true));
+}

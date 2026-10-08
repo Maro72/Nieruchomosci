@@ -1,0 +1,116 @@
+.configuration-tabs ::deep .mud-tabs-toolbar {
+    padding: .4rem;
+    border-bottom: 1px solid #cbd5df !important;
+    border-radius: 10px 10px 0 0;
+    background-color: #e9edf1 !important;
+}
+
+.configuration-tabs ::deep .mud-tabs-toolbar-content {
+    background-color: #e9edf1 !important;
+}
+
+.configuration-tabs ::deep .mud-tab {
+    min-height: 46px;
+    margin: 0 .2rem;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    color: #52677b;
+    font-weight: 600;
+    transition: background-color .18s ease, color .18s ease, border-color .18s ease;
+}
+
+.configuration-tabs ::deep .mud-tab:hover:not(.mud-tab-active) {
+    background-color: #e1ebf4;
+    color: #19324b;
+}
+
+.configuration-tabs ::deep .mud-tab.mud-tab-active {
+    border-color: #cbd5df;
+    background-color: #fff !important;
+    color: #1e6fa8;
+    box-shadow: 0 1px 3px rgba(25, 50, 75, .1);
+}
+
+.configuration-tabs ::deep .mud-tab-slider {
+    display: none;
+}
+
+.configuration-tabs ::deep .storage-category-card {
+    min-height: 100%;
+    border-width: 1px !important;
+    border-left-width: 4px !important;
+    border-radius: 12px !important;
+    transition: box-shadow .18s ease, transform .18s ease;
+}
+
+.configuration-tabs ::deep .storage-category-card:hover {
+    box-shadow: 0 5px 16px rgba(25, 50, 75, .1);
+    transform: translateY(-2px);
+}
+
+.configuration-tabs ::deep .storage-issues-card {
+    border-color: #bfd8ed !important;
+    border-left-color: #2b83c4 !important;
+    background-color: #f0f7fd !important;
+}
+
+.configuration-tabs ::deep .storage-contracts-card {
+    border-color: #bfe5df !important;
+    border-left-color: #168f83 !important;
+    background-color: #effaf7 !important;
+}
+
+body:has(.mud-theme-dark) .configuration-tabs ::deep .mud-tabs-toolbar {
+    border-bottom-color: #263746 !important;
+    background-color: #111b25 !important;
+}
+
+body:has(.mud-theme-dark) .configuration-tabs ::deep .mud-tabs-toolbar-content {
+    background-color: #111b25 !important;
+}
+
+body:has(.mud-theme-dark) .configuration-tabs ::deep .mud-tab {
+    color: #a8c0d2;
+}
+
+body:has(.mud-theme-dark) .configuration-tabs ::deep .mud-tab:hover:not(.mud-tab-active) {
+    background-color: rgba(54, 191, 241, .1);
+    color: #eaf6ff;
+}
+
+body:has(.mud-theme-dark) .configuration-tabs ::deep .mud-tab.mud-tab-active {
+    border-color: #344b5e;
+    background-color: #1a2b3a !important;
+    color: #54d9ff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .2);
+}
+
+body:has(.mud-theme-dark) .configuration-tabs ::deep .storage-issues-card {
+    border-color: #285479 !important;
+    border-left-color: #40a9f5 !important;
+    background-color: #102a43 !important;
+}
+
+body:has(.mud-theme-dark) .configuration-tabs ::deep .storage-contracts-card {
+    border-color: #23615c !important;
+    border-left-color: #38c7ae !important;
+    background-color: #102f35 !important;
+}
+
+body:has(.mud-theme-dark) .configuration-tabs ::deep .storage-category-card .mud-typography,
+body:has(.mud-theme-dark) .configuration-tabs ::deep .storage-category-card code {
+    color: #e4f2fc;
+}
+
+@media (max-width: 600px) {
+    .configuration-tabs ::deep .mud-tabs-toolbar {
+        padding: .25rem;
+    }
+
+    .configuration-tabs ::deep .mud-tab {
+        min-height: 42px;
+        margin: 0 .1rem;
+        padding: 0 .65rem;
+        font-size: .75rem;
+    }
+}

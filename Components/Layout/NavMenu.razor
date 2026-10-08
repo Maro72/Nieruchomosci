@@ -10,12 +10,14 @@
         <AuthorizeView Policy="Budynki.Odczyt">
             <Authorized>
                 <MudNavGroup Title="Nieruchomości" @bind-Expanded="_nieruchomosciExpanded" Icon="@Icons.Material.Filled.Domain">
+                    <div class="nav-guide-branch">
                     <AuthorizeView Policy="Budynki.Edycja" Context="dashboardCtx">
                         <Authorized>
                             <MudNavLink Href="dashboard" Icon="@Icons.Material.Filled.Dashboard" Ripple="false">Dashboard</MudNavLink>
                         </Authorized>
                     </AuthorizeView>
                     <MudNavLink Href="fbudynki" Icon="@Icons.Material.Filled.Apartment" Ripple="false">Budynki</MudNavLink>
+                    </div>
                 </MudNavGroup>
             </Authorized>
         </AuthorizeView>
@@ -23,6 +25,7 @@
         <AuthorizeView Policy="Techniczny.Odczyt">
             <Authorized>
                 <MudNavGroup Title="Obsługa techniczna" @bind-Expanded="_obslugaExpanded" Icon="@Icons.Material.Filled.Build">
+                    <div class="nav-guide-branch">
                     <AuthorizeView Policy="Przeglady.Odczyt" Context="przegladyCtx">
                         <Authorized>
                             <MudNavLink Href="fprzeglady" Icon="@Icons.Material.Filled.EventNote" Ripple="false">Przeglądy</MudNavLink>
@@ -43,6 +46,7 @@
                             <MudNavLink Href="historiausterek" Icon="@Icons.Material.Filled.ManageHistory" Ripple="false">Historia usterek</MudNavLink>
                         </Authorized>
                     </AuthorizeView>
+                    </div>
                 </MudNavGroup>
             </Authorized>
         </AuthorizeView>
@@ -50,6 +54,7 @@
         <AuthorizeView Policy="Najem.Odczyt">
             <Authorized>
                 <MudNavGroup Title="Najem i umowy" @bind-Expanded="_umowyExpanded" Icon="@Icons.Material.Filled.Description">
+                    <div class="nav-guide-branch">
                     <AuthorizeView Policy="Najemcy.Odczyt" Context="najemcyCtx">
                         <Authorized>
                             <MudNavLink Href="najemcy" Icon="@Icons.Material.Filled.People" Ripple="false">Najemcy</MudNavLink>
@@ -62,9 +67,10 @@
                     </AuthorizeView>
                     <AuthorizeView Policy="Lokale.Odczyt" Context="lokaleCtx">
                         <Authorized>
-                            <MudNavLink Href="wynajem" Icon="@Icons.Material.Filled.Receipt" Ripple="false">Lokale i pomieszczenia</MudNavLink>
+                            <MudNavLink Href="wynajem" Icon="@Icons.Material.Filled.Receipt" Ripple="false">Pomieszczenia</MudNavLink>
                         </Authorized>
                     </AuthorizeView>
+                    </div>
                 </MudNavGroup>
             </Authorized>
         </AuthorizeView>
@@ -72,11 +78,15 @@
         <AuthorizeView Policy="Techniczny.Odczyt">
             <Authorized>
                 <MudNavGroup Title="Liczniki" @bind-Expanded="_licznikiExpanded" Icon="@Icons.Material.Filled.ReceiptLong">
+                    <div class="nav-guide-branch">
                     <MudNavGroup Title="Woda" @bind-Expanded="_wodaExpanded" Icon="@Icons.Material.Filled.WaterDrop">
-                        <MudNavLink Href="woda" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.WaterDrop" Ripple="false" Class="water-reading-nav-link">Odczyty i faktury</MudNavLink>
+                        <div class="nav-guide-branch">
+                        <MudNavLink Href="woda" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.WaterDrop" Ripple="false" Class="water-reading-nav-link">Odczyty</MudNavLink>
                         <MudNavLink Href="woda/zuzycia" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.BarChart" Ripple="false">Zużycia</MudNavLink>
+                        </div>
                     </MudNavGroup>
                     @*<MudNavLink Href="cieplo" Icon="@Icons.Material.Filled.LocalFireDepartment" Ripple="false">Ciepło</MudNavLink>*@
+                    </div>
                 </MudNavGroup>
             </Authorized>
         </AuthorizeView>
@@ -84,9 +94,10 @@
         <AuthorizeView Policy="Administracja.Odczyt">
             <Authorized>
                 <MudNavGroup Title="Administracja" @bind-Expanded="_administracjaExpanded" Icon="@Icons.Material.Filled.AdminPanelSettings">
+                    <div class="nav-guide-branch">
                     <AuthorizeView Policy="Uzytkownicy.Odczyt" Context="uzytkownicyCtx">
                         <Authorized>
-                            <MudNavLink Href="uzytkownicy" Icon="@Icons.Material.Filled.People" Ripple="false">Lista użytkowników</MudNavLink>
+                            <MudNavLink Href="uzytkownicy" Icon="@Icons.Material.Filled.People" Ripple="false">Użytkownicy</MudNavLink>
                         </Authorized>
                     </AuthorizeView>
                     <AuthorizeView Policy="Uprawnienia.Odczyt" Context="uprawnieniaCtx">
@@ -94,7 +105,9 @@
                             <MudNavLink Href="uprawnienia" Icon="@Icons.Material.Filled.VerifiedUser" Ripple="false">Uprawnienia</MudNavLink>
                         </Authorized>
                     </AuthorizeView>
+                    <MudNavLink Href="historia-logowan" Icon="@Icons.Material.Filled.History" Ripple="false">Historia logowań</MudNavLink>
                     <MudNavLink Href="administracja/liczniki" Icon="@Icons.Material.Filled.Speed" Ripple="false">Liczniki</MudNavLink>
+                    </div>
                 </MudNavGroup>
             </Authorized>
         </AuthorizeView>
@@ -102,8 +115,10 @@
         <AuthorizeView Policy="Budynki.Edycja">
             <Authorized>
                 <MudNavGroup Title="Konfiguracja" @bind-Expanded="_konfiguracjaExpanded" Icon="@Icons.Material.Filled.Settings">
+                    <div class="nav-guide-branch">
                     <MudNavLink Href="fterminy/terminy" Icon="@Icons.Material.Filled.MoreTime" Ripple="false">Definicje terminów</MudNavLink>
                     <MudNavLink Href="konfiguracja" Icon="@Icons.Material.Filled.Storage" Ripple="false">Baza danych i pliki</MudNavLink>
+                    </div>
                 </MudNavGroup>
             </Authorized>
         </AuthorizeView>

@@ -29,7 +29,7 @@
     <!-- ZAKŁADKI GŁÓWNE -->
     <div class="px-4 py-3">
         <MudPaper Elevation="2" Class="pa-4 rounded-lg">
-            <MudTabs Class="configuration-tabs" ApplyEffectsToInnerViews="true" PanelClass="pa-4" Color="Color.Primary" Variant="Variant.Text">
+            <MudTabs Class="configuration-tabs" ApplyEffectsToInnerViews="true" PanelClass="pa-4" Color="Color.Default" Variant="Variant.Text">
 
                 <!-- ========================================== -->
                 <!-- ZAKŁADKA 1: BAZA DANYCH MYSQL              -->
@@ -180,41 +180,35 @@
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <div>
                                 <MudText Typo="Typo.h6" Class="fw-bold">Kopie zapasowe bazy danych</MudText>
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">Skrypt PowerShell zapisuje skompresowane kopie w katalogu Backup.</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Kopie są zapisywane w katalogu Backup aplikacji. Pobrane pliki można zapisać na innym dysku.</MudText>
                             </div>
                             <MudIcon Icon="@Icons.Material.Filled.Backup" Color="Color.Primary" Size="Size.Large" />
                         </div>
-                        <MudGrid>
-                            <MudItem xs="12" sm="4">
-                                <MudSelect T="int" @bind-Value="_backupSettings.IntervalDays" Label="Interwał kopii" Variant="Variant.Outlined" Margin="Margin.Dense">
+                        <MudGrid Spacing="2" Class="align-items-center">
+                            <MudItem xs="12" sm="4" md="3">
+                                <MudSelect T="int" Value="_backupSettings.IntervalDays" ValueChanged="ZmienInterwalKopii" Label="Interwał kopii" Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true">
                                     <MudSelectItem Value="1">Co 1 dzień</MudSelectItem>
                                     <MudSelectItem Value="7">Co 7 dni</MudSelectItem>
                                     <MudSelectItem Value="14">Co 14 dni</MudSelectItem>
                                 </MudSelect>
                             </MudItem>
-                            <MudItem xs="12" sm="5">
-                                <MudTextField @bind-Value="_backupSettings.BackupPath" Label="Katalog kopii" Variant="Variant.Outlined" Margin="Margin.Dense"
-                                              HelperText="Przykład: C:\\Backup\\Mieszkaniec albo Backup. Na serwerze najlepiej podać pełną ścieżkę absolutną." />
+                            <MudItem xs="12" sm="3" md="2">
+                                <MudNumericField T="int" Value="_backupSettings.MaxCopies" ValueChanged="ZmienLimitKopii"
+                                                 Label="Maks. kopii" Min="1" Max="7" Variant="Variant.Outlined" Margin="Margin.Dense" />
                             </MudItem>
-                            <MudItem xs="12" sm="3">
-                                <MudNumericField @bind-Value="_backupSettings.MaxCopies" Label="Maks. kopii" Min="1" Max="7" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            <MudItem xs="12" sm="5" md="3" Class="d-flex align-center">
+                                <MudChip T="string" Color="Color.Info" Variant="Variant.Outlined"
+                                         Icon="@Icons.Material.Filled.Folder">
+                                    @BackupDirectoryName
+                                </MudChip>
+                            </MudItem>
+                            <MudItem xs="12" md="4" Class="d-flex justify-md-end">
+                                <MudButton Variant="Variant.Outlined" Color="Color.Success" StartIcon="@Icons.Material.Filled.Backup"
+                                           Size="Size.Small" Disabled="@_isBackupRunning" OnClick="UtworzKopieTeraz">
+                                    @(_isBackupRunning ? "Tworzenie..." : "Utwórz kopię")
+                                </MudButton>
                             </MudItem>
                         </MudGrid>
-
-                        <div class="d-flex flex-wrap justify-content-end align-items-center gap-2 mt-3">
-                            <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.FolderOpen"
-                                       Size="Size.Small" OnClick="WybierzKatalogKopii">
-                                Wybierz folder
-                            </MudButton>
-                            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Save"
-                                       Size="Size.Small" OnClick="ZapiszUstawieniaBackupu">
-                                Zapisz
-                            </MudButton>
-                            <MudButton Variant="Variant.Outlined" Color="Color.Success" StartIcon="@Icons.Material.Filled.Backup"
-                                       Size="Size.Small" Disabled="@_isBackupRunning" OnClick="UtworzKopieTeraz">
-                                @(_isBackupRunning ? "Tworzenie..." : "Utwórz kopię")
-                            </MudButton>
-                        </div>
 
                         <MudDivider Class="my-4" />
                         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -227,7 +221,7 @@
                         @if (_backupFiles.Count == 0)
                         {
                             <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
-                                Brak utworzonych kopii w katalogu <code>@_backupSettings.BackupPath</code>.
+                                Brak utworzonych kopii w katalogu <code>@BackupDirectoryName</code>.
                             </MudAlert>
                         }
                         else
@@ -237,11 +231,18 @@
                                     <MudTh>Nazwa pliku</MudTh>
                                     <MudTh>Data utworzenia</MudTh>
                                     <MudTh>Rozmiar</MudTh>
+                                    <MudTh>Akcje</MudTh>
                                 </HeaderContent>
                                 <RowTemplate>
                                     <MudTd DataLabel="Nazwa pliku"><MudIcon Icon="@Icons.Material.Filled.Archive" Color="Color.Info" Class="me-2" />@context.Name</MudTd>
                                     <MudTd DataLabel="Data utworzenia">@context.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</MudTd>
                                     <MudTd DataLabel="Rozmiar">@context.SizeMb.ToString("N2") MB</MudTd>
+                                    <MudTd DataLabel="Akcje">
+                                        <MudTooltip Text="Pobierz kopię — lokalizację wybierzesz w przeglądarce">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Download" Color="Color.Primary"
+                                                           Size="Size.Small" OnClick="@(() => PobierzKopieAsync(context))" />
+                                        </MudTooltip>
+                                    </MudTd>
                                 </RowTemplate>
                             </MudTable>
                         }
@@ -257,7 +258,7 @@
                     <MudGrid>
                         <!-- KATALOG 1: ZAŁĄCZNIKI USTEREK -->
                         <MudItem xs="12" md="6">
-                            <MudPaper Class="pa-4 border rounded-lg bg-light" Elevation="0">
+                            <MudPaper Class="pa-4 border rounded-lg storage-category-card storage-issues-card" Elevation="0">
                                 <div class="d-flex align-items-center gap-2 mb-3">
                                     <MudIcon Icon="@Icons.Material.Filled.FolderSpecial" Color="Color.Warning" Size="Size.Large" />
                                     <div>
@@ -289,7 +290,7 @@
 
                         <!-- KATALOG 2: ZAŁĄCZNIKI UMÓW -->
                         <MudItem xs="12" md="6">
-                            <MudPaper Class="pa-4 border rounded-lg bg-light" Elevation="0">
+                            <MudPaper Class="pa-4 border rounded-lg storage-category-card storage-contracts-card" Elevation="0">
                                 <div class="d-flex align-items-center gap-2 mb-3">
                                     <MudIcon Icon="@Icons.Material.Filled.FolderShared" Color="Color.Info" Size="Size.Large" />
                                     <div>
@@ -327,6 +328,7 @@
 </div>
 
 @code {
+    private const string BackupDirectoryName = "Backup";
     private DbConnectionModel _dbModel = new();
     private bool _isDbOnline = false;
     private bool _isTesting = false;
@@ -348,14 +350,6 @@
     private BackupSettings _backupSettings = new();
     private bool _isBackupRunning;
     private List<BackupFileInfo> _backupFiles = new();
-    private readonly string[] _backupFolderSuggestions =
-    {
-        "C:\\Backup\\Mieszkaniec",
-        "D:\\Backup\\Mieszkaniec",
-        "E:\\Backup\\Mieszkaniec",
-        "C:\\ProgramData\\Mieszkaniec\\Backup",
-        "Backup"
-    };
     private double _wolneMiejsceGb;
     private DateTime _ostatniaDiagnostyka = DateTime.MinValue;
 
@@ -365,6 +359,7 @@
     {
         _dbModel = DbConfigService.PobierzAktualnaKonfiguracje();
         _backupSettings = DbConfigService.PobierzUstawieniaBackupu();
+        _backupSettings.BackupPath = BackupDirectoryName;
         await TestujPolaczenie();
         SkanujMagazynPlikow();
         OdswiezListeBackupow();
@@ -444,10 +439,23 @@
     {
         _backupSettings.IntervalDays = _backupSettings.IntervalDays is 1 or 7 or 14 ? _backupSettings.IntervalDays : 7;
         _backupSettings.MaxCopies = Math.Clamp(_backupSettings.MaxCopies, 1, 7);
-        _backupSettings.BackupPath = string.IsNullOrWhiteSpace(_backupSettings.BackupPath) ? "Backup" : _backupSettings.BackupPath.Trim();
+        _backupSettings.BackupPath = BackupDirectoryName;
 
         var zapisano = await DbConfigService.ZapiszUstawieniaBackupuAsync(_backupSettings);
         Snackbar.Add(zapisano ? "Zapisano ustawienia kopii zapasowych." : "Nie udało się zapisać ustawień kopii.", zapisano ? Severity.Success : Severity.Error);
+    }
+
+    private async Task ZmienInterwalKopii(int intervalDays)
+    {
+        _backupSettings.IntervalDays = intervalDays;
+        await ZapiszUstawieniaBackupu();
+    }
+
+    private async Task ZmienLimitKopii(int maxCopies)
+    {
+        _backupSettings.MaxCopies = maxCopies;
+        await ZapiszUstawieniaBackupu();
+        OdswiezListeBackupow();
     }
 
     private async Task UtworzKopieTeraz()
@@ -455,7 +463,7 @@
         _isBackupRunning = true;
         try
         {
-            // Ręczna kopia korzysta z tych samych ustawień katalogu i rotacji co harmonogram Windows.
+            // Ręczna kopia korzysta z tego samego katalogu i limitu co harmonogram.
             var wynik = await BackupService.CreateBackupAsync();
             Snackbar.Add(wynik.Message, wynik.Success ? Severity.Success : Severity.Error);
             if (wynik.Success)
@@ -467,36 +475,11 @@
         }
     }
 
-    private async Task WybierzKatalogKopii()
-    {
-        var selected = await JS.InvokeAsync<string?>("selectFolderPath");
-        if (string.IsNullOrWhiteSpace(selected))
-        {
-            Snackbar.Add("Nie wybrano folderu. Możesz wpisać pełną ścieżkę ręcznie lub wybrać katalog, jeśli przeglądarka to obsługuje.", Severity.Info);
-            return;
-        }
-
-        _backupSettings.BackupPath = selected.Trim();
-        await ZapiszUstawieniaBackupu();
-        OdswiezListeBackupow();
-    }
-
-    private void UstawKatalogKopii(string? path)
-    {
-        if (string.IsNullOrWhiteSpace(path))
-            return;
-
-        _backupSettings.BackupPath = path.Trim();
-        OdswiezListeBackupow();
-    }
-
     private void OdswiezListeBackupow()
     {
         try
         {
-            var backupPath = Path.IsPathRooted(_backupSettings.BackupPath)
-                ? _backupSettings.BackupPath
-                : Path.Combine(Env.ContentRootPath, _backupSettings.BackupPath);
+            var backupPath = Path.Combine(Env.ContentRootPath, BackupDirectoryName);
 
             if (!Directory.Exists(backupPath))
             {
@@ -514,6 +497,41 @@
         {
             _backupFiles = new List<BackupFileInfo>();
             Snackbar.Add($"Nie można odczytać listy kopii: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task PobierzKopieAsync(BackupFileInfo backup)
+    {
+        if (!_backupFiles.Any(file => file.Name == backup.Name) ||
+            !string.Equals(Path.GetFileName(backup.Name), backup.Name, StringComparison.Ordinal))
+        {
+            Snackbar.Add("Wybrana kopia nie znajduje się na liście dostępnych plików.", Severity.Warning);
+            return;
+        }
+
+        var backupPath = Path.Combine(Env.ContentRootPath, BackupDirectoryName, backup.Name);
+        if (!File.Exists(backupPath))
+        {
+            Snackbar.Add("Wybrana kopia nie istnieje. Odśwież listę i spróbuj ponownie.", Severity.Error);
+            OdswiezListeBackupow();
+            return;
+        }
+
+        try
+        {
+            await using var fileStream = new FileStream(
+                backupPath,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.Read,
+                bufferSize: 81920,
+                useAsync: true);
+            using var streamReference = new DotNetStreamReference(fileStream);
+            await JS.InvokeVoidAsync("downloadFileFromStream", backup.Name, streamReference);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Nie udało się pobrać kopii: {ex.Message}", Severity.Error);
         }
     }
 

@@ -8,6 +8,7 @@ namespace Mieszkaniec.Services.Implementations;
 
 public sealed class BackupService : IBackupService
 {
+    private const string BackupDirectoryName = "Backup";
     private readonly IConfiguration _configuration;
     private readonly IWebHostEnvironment _environment;
     private readonly DbConnectionStringProvider _connectionStringProvider;
@@ -33,9 +34,7 @@ public sealed class BackupService : IBackupService
         try
         {
             var connection = new MySqlConnectionStringBuilder(connectionString);
-            var backupDirectory = Path.IsPathRooted(settings.BackupPath)
-                ? settings.BackupPath
-                : Path.Combine(_environment.ContentRootPath, settings.BackupPath);
+            var backupDirectory = Path.Combine(_environment.ContentRootPath, BackupDirectoryName);
 
             Directory.CreateDirectory(backupDirectory);
 

@@ -1,0 +1,155 @@
+@page "/historia-logowan"
+@attribute [Authorize(Policy = "Administracja.Odczyt")]
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.EntityFrameworkCore
+@using Mieszkaniec.Components.UI
+@using Mieszkaniec.Model.Context
+@using Mieszkaniec.Model.Entities
+@using MudBlazor
+@inject IDbContextFactory<MieszkaniecDbContext> DbContextFactory
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject IAuthorizationService AuthorizationService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ILogger<HistoriaLogowan> Logger
+
+<PageTitle>Historia logowań</PageTitle>
+
+<div class="d-flex flex-column modern-grid-scroll" style="height: calc(100vh - 64px); background-color: #f8fafc;">
+    <div class="flex-grow-1 overflow-auto px-4 mt-4">
+        @if (Laduje)
+        {
+            <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+        }
+        else if (!string.IsNullOrWhiteSpace(Blad))
+        {
+            <MudAlert Severity="Severity.Error" Variant="Variant.Outlined">@Blad</MudAlert>
+        }
+        else
+        {
+            <FGrid TItem="HistoriaLogowania"
+                   Items="@Logowania"
+                   Title="Historia logowań"
+                   ShowCrudActions="false">
+                <ExtraActions>
+                    <MudTooltip Text="Odśwież historię">
+                        <MudIconButton Icon="@Icons.Material.Filled.Refresh"
+                                       Color="Color.Default"
+                                       Size="Size.Small"
+                                       OnClick="OdswiezAsync" />
+                    </MudTooltip>
+                </ExtraActions>
+
+                <GridColumns>
+                    <PropertyColumn T="HistoriaLogowania" TProperty="string"
+                                    Property="x => x.Uzytkownik" Title="Użytkownik" />
+                    <TemplateColumn T="HistoriaLogowania" Title="Data i godzina logowania">
+                        <CellTemplate Context="ctx">
+                            @ctx.Item.DataLogowania.ToString("dd.MM.yyyy HH:mm:ss")
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="HistoriaLogowania" Title="Akcje" CellClass="text-center">
+                        <CellTemplate Context="ctx">
+                            <AuthorizeView Policy="Uzytkownicy.Edycja">
+                                <Authorized>
+                                    <MudTooltip Text="Usuń wpis historii">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                       Color="Color.Error"
+                                                       Size="Size.Small"
+                                                       Disabled="@_usuwanie"
+                                                       OnClick="@(() => PotwierdzUsuniecieAsync(ctx.Item))" />
+                                    </MudTooltip>
+                                </Authorized>
+                            </AuthorizeView>
+                        </CellTemplate>
+                    </TemplateColumn>
+                </GridColumns>
+            </FGrid>
+        }
+    </div>
+</div>
+
+@code {
+    private List<HistoriaLogowania> Logowania { get; set; } = [];
+    private bool Laduje { get; set; } = true;
+    private bool _usuwanie;
+    private string Blad { get; set; } = string.Empty;
+
+    protected override Task OnInitializedAsync() => OdswiezAsync();
+
+    private async Task OdswiezAsync()
+    {
+        Laduje = true;
+        Blad = string.Empty;
+
+        try
+        {
+            await using var db = await DbContextFactory.CreateDbContextAsync();
+            Logowania = await db.HistoriaLogowan
+                .AsNoTracking()
+                .OrderByDescending(log => log.DataLogowania)
+                .Take(1000)
+                .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Nie udało się wczytać historii logowań.");
+            Blad = "Nie udało się wczytać historii logowań. Sprawdź połączenie z bazą danych.";
+        }
+        finally
+        {
+            Laduje = false;
+        }
+    }
+
+    private async Task PotwierdzUsuniecieAsync(HistoriaLogowania logowanie)
+    {
+        var stanAutoryzacji = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var uprawnieniaEdycji = await AuthorizationService.AuthorizeAsync(stanAutoryzacji.User, "Uzytkownicy.Edycja");
+        if (!uprawnieniaEdycji.Succeeded)
+        {
+            Snackbar.Add("Brak uprawnień do usuwania wpisów historii logowań.", Severity.Error);
+            return;
+        }
+
+        var potwierdzono = await DialogService.ShowMessageBoxAsync(
+            "Usuwanie wpisu historii",
+            $"Czy na pewno chcesz usunąć wpis logowania użytkownika „{logowanie.Uzytkownik}” z dnia {logowanie.DataLogowania:dd.MM.yyyy HH:mm:ss}?",
+            yesText: "Usuń",
+            cancelText: "Anuluj");
+
+        if (potwierdzono != true)
+        {
+            return;
+        }
+
+        _usuwanie = true;
+        try
+        {
+            await using var db = await DbContextFactory.CreateDbContextAsync();
+            var liczbaUsunietych = await db.HistoriaLogowan
+                .Where(wpis => wpis.Id == logowanie.Id)
+                .ExecuteDeleteAsync();
+
+            if (liczbaUsunietych == 0)
+            {
+                Snackbar.Add("Wpis nie istnieje lub został już usunięty.", Severity.Warning);
+            }
+            else
+            {
+                Logowania.RemoveAll(wpis => wpis.Id == logowanie.Id);
+                Snackbar.Add("Wpis historii logowań został usunięty.", Severity.Success);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Nie udało się usunąć wpisu historii logowań o identyfikatorze {LogowanieId}.", logowanie.Id);
+            Snackbar.Add("Nie udało się usunąć wpisu historii logowań.", Severity.Error);
+        }
+        finally
+        {
+            _usuwanie = false;
+        }
+    }
+}

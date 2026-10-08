@@ -21,6 +21,7 @@
     <MudDataGrid T="TItem"
                  Items="@Items"
                  @key="@GridKey"
+                 QuickFilter="@MatchesSearch"
                  Hover="true"
                  Striped="true"
                  Bordered="true"
@@ -78,12 +79,15 @@
 
                 <MudSpacer />
 
-                <div style="width: 240px; z-index: 10;" class="py-1">
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
-                        <input type="text" class="form-control form-control-sm border-start-0 bg-light-inline" placeholder="Szukaj..." value="@SearchText" @oninput="HandleSearch" />
+                @if (ShowSearch)
+                {
+                    <div style="width: 240px; z-index: 10;" class="py-1">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                            <input type="text" class="form-control form-control-sm border-start-0 bg-light-inline" placeholder="Szukaj..." value="@_searchText" @oninput="HandleSearch" />
+                        </div>
                     </div>
-                </div>
+                }
             }
         </ToolBarContent>
 

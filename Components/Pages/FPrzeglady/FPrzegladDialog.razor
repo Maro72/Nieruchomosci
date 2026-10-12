@@ -2,153 +2,156 @@
 @using Mieszkaniec.Model.Entities
 @using Mieszkaniec.Services.Interfaces
 @using System.IO
+@using Microsoft.AspNetCore.Components.Forms
 @using MudBlazor
 
 <MudDialog Class="review-dialog">
     <TitleContent>
-        <div class="d-flex align-items-center gap-3 custom-dialog-header">
-            <div class="p-2 rounded bg-light border text-success shadow-sm">
-                <i class="bi bi-calendar2-check fs-4"></i>
-            </div>
-            <div>
-                <h5 class="m-0 fw-bold text-dark">@(IsRealizeMode ? "Zamykanie i Realizacja Przeglądu" : (Model.Id == 0 ? "Planowanie Przeglądu" : "Edycja Terminu"))</h5>
-                <small class="text-muted">Przypisanie i archiwizacja kontroli technicznej obiektu</small>
-            </div>
-        </div>
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3" Class="pa-2">
+            <MudAvatar Color="Color.Success" Variant="Variant.Outlined">
+                <MudIcon Icon="@Icons.Material.Filled.EventAvailable" />
+            </MudAvatar>
+            <MudStack Spacing="0">
+                <MudText Typo="Typo.h6">@(IsRealizeMode ? "Zamykanie i Realizacja Przeglądu" : (Model.Id == 0 ? "Planowanie Przeglądu" : "Edycja Terminu"))</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">Przypisanie i archiwizacja kontroli technicznej obiektu</MudText>
+            </MudStack>
+        </MudStack>
     </TitleContent>
 
     <DialogContent>
-        <EditForm Model="@Model" OnValidSubmit="Submit">
-            <DataAnnotationsValidator />
+        <MudForm @ref="_form" Model="Model">
 
-            <div class="container-fluid px-1 pt-2 pb-1">
-                <div class="row g-0">
+            <MudGrid Spacing="2" Class="pt-2 pb-1">
 
                     @* 1. WYBÓR BUDYNKU *@
-                    <div class="col-12 mb-3">
-                        <label class="form-label small fw-semibold text-secondary mb-1 d-block">Wybierz Nieruchomość</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-building text-muted"></i></span>
-                            <select class="form-select border-start-0" style="border-left: none;" @bind="Model.ObiektId" disabled="@IsRealizeMode" required>
-                                <option value="0">Wybierz budynek...</option>
-                                @foreach (var ob in ListaObiektow)
-                                {
-                                    <option value="@ob.Id">@ob.Nazwa</option>
-                                }
-                            </select>
-                        </div>
-                    </div>
+                    <MudItem xs="12">
+                        <MudSelect T="int" @bind-Value="Model.ObiektId" Label="Wybierz nieruchomość"
+                                   Variant="Variant.Outlined" Margin="Margin.Dense" Disabled="@IsRealizeMode"
+                                   Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Apartment">
+                            <MudSelectItem T="int" Value="0">Wybierz budynek...</MudSelectItem>
+                            @foreach (var ob in ListaObiektow)
+                            {
+                                <MudSelectItem T="int" Value="@ob.Id">@ob.Nazwa</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
 
                     @* 2. WYBÓR TYPU *@
-                    <div class="col-12 mb-3">
-                        <label class="form-label small fw-semibold text-secondary mb-1 d-block">Typ Przeglądu (Reguła)</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-sliders text-muted"></i></span>
-                            <select class="form-select border-start-0" style="border-left: none;" @bind="Model.TerminDefinicjaId" disabled="@IsRealizeMode" required>
-                                <option value="0">Wybierz typ z definicji...</option>
-                                @foreach (var def in ListaDefinicji)
-                                {
-                                    <option value="@def.Id">@def.NazwaTypu</option>
-                                }
-                            </select>
-                        </div>
-                    </div>
+                    <MudItem xs="12">
+                        <MudSelect T="int" @bind-Value="Model.TerminDefinicjaId" Label="Typ przeglądu (reguła)"
+                                   Variant="Variant.Outlined" Margin="Margin.Dense" Disabled="@IsRealizeMode"
+                                   Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Tune">
+                            <MudSelectItem T="int" Value="0">Wybierz typ z definicji...</MudSelectItem>
+                            @foreach (var def in ListaDefinicji)
+                            {
+                                <MudSelectItem T="int" Value="@def.Id">@def.NazwaTypu</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
 
                     @* 3. DATA WYKONANIA *@
-                    <div class="col-md-6 mb-3 pe-md-2">
+                    <MudItem xs="12" md="6">
                         <MudDatePicker @bind-Date="DataWykonaniaPicker"
                                        Label="Data wykonania"
-                                       Variant="Variant.Text"
-                                       PickerVariant="PickerVariant.Dialog"
+                                       Variant="Variant.Outlined"
+                                       Margin="Margin.Dense"
                                        DateFormat="dd.MM.yyyy"
                                        Editable="true"
                                        Required="true"
+                                       RequiredError="Data wykonania jest wymagana"
                                        Adornment="Adornment.End"
                                        AdornmentIcon="@Icons.Material.Filled.CalendarMonth"
                                        Class="review-date-picker" />
-                    </div>
+                    </MudItem>
 
-                    <div class="col-md-6 mb-3 ps-md-2">
+                    <MudItem xs="12" md="6">
                         <MudTextField @bind-Value="Model.NumerProtokołu"
                                       Label="Nr protokołu"
-                                      Variant="Variant.Text"
+                                      Variant="Variant.Outlined"
                                       Margin="Margin.Dense"
                                       MaxLength="100"
                                       Placeholder="np. PROT/09/2026"
-                                      Adornment="Adornment.End"
+                                      Adornment="Adornment.Start"
                                       AdornmentIcon="@Icons.Material.Filled.Description" />
-                    </div>
+                    </MudItem>
 
-                    <div class="col-md-6 mb-3 pe-md-2">
+                    <MudItem xs="12" md="6">
                         <MudDatePicker @bind-Date="Model.DataProtokołu"
                                        Label="Data protokołu"
-                                       Variant="Variant.Text"
-                                       PickerVariant="PickerVariant.Dialog"
+                                       Variant="Variant.Outlined"
+                                       Margin="Margin.Dense"
                                        DateFormat="dd.MM.yyyy"
                                        Editable="true"
                                        Clearable="true"
                                        Adornment="Adornment.End"
                                        AdornmentIcon="@Icons.Material.Filled.Event"
                                        Class="review-date-picker" />
-                    </div>
+                    </MudItem>
 
                     @* 4. OCENA TECHNICZNA *@
-                    <div class="col-md-6 mb-3 ps-md-2">
-                        <label class="form-label small fw-semibold text-secondary mb-1 d-block">Ocena Techniczna</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-clipboard-check text-muted"></i></span>
-                            <select class="form-select border-start-0" style="border-left: none;" @bind="Model.WynikOcena">
-                                <option value="">Wybierz wynik...</option>
-                                @foreach (var oc in OpcjeOceny)
-                                {
-                                    <option value="@oc">@oc</option>
-                                }
-                            </select>
-                        </div>
-                    </div>
+                    <MudItem xs="12" md="6">
+                        <MudSelect T="string" @bind-Value="Model.WynikOcena" Label="Ocena techniczna"
+                                   Variant="Variant.Outlined" Margin="Margin.Dense"
+                                   Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AssignmentTurnedIn">
+                            <MudSelectItem T="string" Value="@string.Empty">Wybierz wynik...</MudSelectItem>
+                            @foreach (var oc in OpcjeOceny)
+                            {
+                                <MudSelectItem T="string" Value="@oc">@oc</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
 
                     @* 5. INSPEKTOR / REPREZENTANT *@
-                    <div class="col-12 mb-3">
-                        <label class="form-label small fw-semibold text-secondary mb-1 d-block">Inżynier / Inspektor / Firma realizująca</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-person-badge text-muted"></i></span>
-                            <input type="text" class="form-control border-start-0" style="border-left: none;" @bind="Model.OsobaWykonujaca" placeholder="np. inż. Jan Kowalski" maxlength="255" />
-                        </div>
-                    </div>
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="Model.OsobaWykonujaca"
+                                      Label="Inżynier / Inspektor / Firma realizująca"
+                                      Placeholder="np. inż. Jan Kowalski"
+                                      Variant="Variant.Outlined"
+                                      Margin="Margin.Dense"
+                                      MaxLength="255"
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Badge" />
+                    </MudItem>
 
-                    <div class="col-12 mb-3">
-                        <label class="form-label small fw-semibold text-secondary mb-1 d-block">Uwagi</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0 align-items-start pt-2"><i class="bi bi-chat-left-text text-muted"></i></span>
-                            <textarea class="form-control border-start-0" style="border-left: none;" @bind="Model.Uwagi" rows="2" placeholder="Dodatkowe uwagi do przeglądu..."></textarea>
-                        </div>
-                    </div>
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="Model.Uwagi"
+                                      Label="Uwagi"
+                                      Placeholder="Dodatkowe uwagi do przeglądu..."
+                                      Variant="Variant.Outlined"
+                                      Margin="Margin.Dense"
+                                      Lines="2"
+                                      AutoGrow="true"
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Chat" />
+                    </MudItem>
 
                     @* 6. UPLOADER PLIKU PROTOKOŁU *@
-                    <div class="col-12 mb-1">
-                        <label class="form-label small fw-semibold text-secondary mb-1 d-block">Dołącz Protokół / Skan (PDF, JPG)</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0 text-success"><i class="bi bi-file-earmark-arrow-up"></i></span>
-                            <InputFile OnChange="@OnInputFileChange" class="form-control border-start-0" style="border-left: none; padding-top: 5px;" />
-                        </div>
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.subtitle2" Class="mb-1">Dołącz protokół / skan (PDF, JPG)</MudText>
+                        <MudFileUpload T="IBrowserFile" FilesChanged="OnInputFileChange" Accept=".pdf,.jpg,.jpeg">
+                            <ActivatorContent>
+                                <MudButton Variant="Variant.Outlined"
+                                           Color="Color.Success"
+                                           StartIcon="@Icons.Material.Filled.AttachFile">
+                                    Wybierz plik
+                                </MudButton>
+                            </ActivatorContent>
+                        </MudFileUpload>
                         @if (!string.IsNullOrEmpty(WybranyPlikNazwa))
                         {
-                            <div class="text-success small mt-1 fw-semibold d-flex align-items-center gap-1">
-                                <i class="bi bi-check-circle-fill"></i> Przygotowano: @WybranyPlikNazwa (@WybranyPlikRozmiarKB KB)
-                            </div>
+                            <MudText Typo="Typo.caption" Color="Color.Success" Class="mt-1">
+                                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" />
+                                Przygotowano: @WybranyPlikNazwa (@WybranyPlikRozmiarKB KB)
+                            </MudText>
                         }
-                    </div>
-
-                </div>
-            </div>
-        </EditForm>
+                    </MudItem>
+            </MudGrid>
+        </MudForm>
     </DialogContent>
 
     <DialogActions>
-        <div class="d-flex justify-content-end gap-2 pe-4 pb-3">
-            <MudButton Variant="Variant.Filled" Color="Color.Default" StartIcon="@Icons.Material.Filled.Close" Size="Size.Small" Class="border text-dark px-3" OnClick="Cancel">Anuluj</MudButton>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Save" Size="Size.Small" Class="px-4" OnClick="Submit">Zapisz</MudButton>
-        </div>
+        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Close" Color="Color.Error" OnClick="Cancel">Anuluj</MudButton>
+        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Primary" OnClick="Submit">Zapisz</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -164,7 +167,8 @@
     protected List<TerminDefinicja> ListaDefinicji { get; set; } = new();
     protected List<string> OpcjeOceny { get; set; } = new() { "Pozytywny", "Pozytywny z uwagami", "Negatywny" };
 
-    private Microsoft.AspNetCore.Components.Forms.IBrowserFile? _wybranyPlik;
+    private MudForm _form = default!;
+    private IBrowserFile? _wybranyPlik;
     protected string WybranyPlikNazwa = string.Empty;
     protected long WybranyPlikRozmiarKB = 0;
 
@@ -186,18 +190,22 @@
         ListaDefinicji = await DefiniceService.GetAllActiveAsync();
     }
 
-    private void OnInputFileChange(Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs e)
+    private Task OnInputFileChange(IBrowserFile file)
     {
-        _wybranyPlik = e.File;
+        _wybranyPlik = file;
         if (_wybranyPlik != null)
         {
             WybranyPlikNazwa = _wybranyPlik.Name;
             WybranyPlikRozmiarKB = _wybranyPlik.Size / 1024;
         }
+
+        return Task.CompletedTask;
     }
 
     private async Task Submit()
     {
+        await _form.Validate();
+        if (!_form.IsValid) return;
         if (Model.ObiektId == 0 || Model.TerminDefinicjaId == 0) return;
 
         // Wyliczanie daty następnego przeglądu (zostaje bez zmian)

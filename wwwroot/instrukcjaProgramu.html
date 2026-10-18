@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Ilustrowana instrukcja obsługi systemu Boryszew Nieruchomości dla użytkownika.">
+  <title>Instrukcja programu — Boryszew Nieruchomości</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172b4d;
+      --muted: #53657f;
+      --blue: #175cd3;
+      --blue-pale: #eff6ff;
+      --green: #16804a;
+      --green-pale: #ecfdf3;
+      --amber: #a15c07;
+      --amber-pale: #fff7e8;
+      --red: #b42318;
+      --line: #dbe4f0;
+      --paper: #ffffff;
+      --ground: #edf2f8;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--ground);
+      color: var(--ink);
+      font: 16px/1.62 "Segoe UI", Arial, sans-serif;
+    }
+    a { color: var(--blue); }
+    .toolbar {
+      position: sticky;
+      z-index: 5;
+      top: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding: .65rem max(calc((100% - 1040px) / 2), 1rem);
+      background: #102a56;
+      color: #fff;
+      box-shadow: 0 2px 10px #102a5633;
+    }
+    .toolbar strong { letter-spacing: .02em; }
+    .toolbar button {
+      border: 0;
+      border-radius: 7px;
+      padding: .55rem .9rem;
+      background: #fff;
+      color: #102a56;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    main {
+      width: min(100% - 2rem, 1040px);
+      margin: 2rem auto;
+      padding: clamp(1.2rem, 4vw, 3.5rem);
+      background: var(--paper);
+      border-radius: 18px;
+      box-shadow: 0 12px 45px #18315317;
+    }
+    .cover {
+      position: relative;
+      overflow: hidden;
+      min-height: 370px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: clamp(1.5rem, 5vw, 4rem);
+      border-radius: 16px;
+      color: #fff;
+      background: linear-gradient(125deg, #102a56, #175cd3 75%, #4794ee);
+    }
+    .cover:after {
+      content: "";
+      position: absolute;
+      width: 310px;
+      height: 310px;
+      right: -70px;
+      bottom: -125px;
+      border: 1px solid #ffffff55;
+      border-radius: 50%;
+      box-shadow: 0 0 0 35px #ffffff0d, 0 0 0 75px #ffffff0a;
+    }
+    .eyebrow {
+      margin: 0 0 .75rem;
+      color: #d3e5ff;
+      font-size: .83rem;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    h1 { max-width: 720px; margin: 0; font-size: clamp(2.2rem, 6vw, 4rem); line-height: 1.08; }
+    .cover p { max-width: 670px; margin: 1.1rem 0 0; color: #e7f0ff; font-size: 1.15rem; }
+    .version {
+      display: inline-flex;
+      align-self: flex-start;
+      margin-top: 1.5rem;
+      padding: .35rem .75rem;
+      border: 1px solid #ffffff70;
+      border-radius: 30px;
+      color: #fff;
+      font-size: .88rem;
+    }
+    .intro-grid, .card-grid, .two-col {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+    }
+    .intro-grid { margin: 1.3rem 0 2.2rem; }
+    .card {
+      padding: 1rem 1.1rem;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+    }
+    .card h3 { margin: .1rem 0 .45rem; font-size: 1.05rem; }
+    .card p, .card ul { margin: .3rem 0; }
+    .card-blue { border-left: 5px solid var(--blue); background: var(--blue-pale); }
+    .card-green { border-left: 5px solid var(--green); background: var(--green-pale); }
+    .card-amber { border-left: 5px solid #e6a23c; background: var(--amber-pale); }
+    nav.contents {
+      margin: 1.2rem 0 2.5rem;
+      padding: 1.2rem 1.4rem;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #f8faff;
+    }
+    nav.contents h2 { margin-top: 0; }
+    nav.contents ol { columns: 2; column-gap: 2.5rem; padding-left: 1.3rem; }
+    nav.contents li { break-inside: avoid; margin: .28rem 0; }
+    h2 {
+      margin: 2.4rem 0 .75rem;
+      padding-bottom: .45rem;
+      border-bottom: 2px solid var(--line);
+      color: #123b76;
+      font-size: 1.65rem;
+      line-height: 1.25;
+    }
+    h3 { margin: 1.2rem 0 .35rem; color: #183d70; }
+    p { margin: .5rem 0 .8rem; }
+    .lead { color: var(--muted); font-size: 1.05rem; }
+    .diagram {
+      margin: 1rem 0 1.3rem;
+      padding: .75rem;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #f8fbff;
+    }
+    .diagram svg { display: block; width: 100%; height: auto; min-width: 660px; }
+    .diagram figcaption { padding: .5rem .5rem 0; color: var(--muted); font-size: .9rem; }
+    .step-list { counter-reset: step; list-style: none; padding: 0; }
+    .step-list li {
+      position: relative;
+      min-height: 2.5rem;
+      margin: .65rem 0;
+      padding: .55rem .8rem .55rem 3.1rem;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: #fff;
+    }
+    .step-list li:before {
+      counter-increment: step;
+      content: counter(step);
+      position: absolute;
+      left: .7rem;
+      top: .48rem;
+      width: 1.65rem;
+      height: 1.65rem;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--blue);
+      color: #fff;
+      font-weight: 800;
+      font-size: .85rem;
+    }
+    .menu-table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+    .menu-table th, .menu-table td { padding: .7rem; border: 1px solid var(--line); text-align: left; vertical-align: top; }
+    .menu-table th { background: #edf4ff; color: #123b76; }
+    .menu-table tr:nth-child(even) td { background: #fafcff; }
+    .note {
+      margin: 1rem 0;
+      padding: .85rem 1rem;
+      border-left: 4px solid var(--blue);
+      border-radius: 0 8px 8px 0;
+      background: var(--blue-pale);
+    }
+    .warning { border-left-color: #e6a23c; background: var(--amber-pale); }
+    .danger { border-left-color: var(--red); background: #fff1f0; }
+    .small { color: var(--muted); font-size: .92rem; }
+    .tag {
+      display: inline-block;
+      padding: .12rem .45rem;
+      border-radius: 5px;
+      background: #eaf1fc;
+      color: #234b82;
+      font-size: .9em;
+      font-weight: 700;
+    }
+    footer {
+      margin-top: 2.7rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: .9rem;
+    }
+    @media (max-width: 680px) {
+      main { width: 100%; margin: 0; padding: 1rem; border-radius: 0; }
+      .cover { min-height: 300px; }
+      .intro-grid, .card-grid, .two-col { grid-template-columns: 1fr; }
+      nav.contents ol { columns: 1; }
+      .menu-table { font-size: .9rem; }
+    }
+    @page { size: A4; margin: 15mm 14mm; }
+    @media print {
+      body { background: #fff; font-size: 10.5pt; }
+      .toolbar { display: none; }
+      main { width: auto; max-width: none; margin: 0; padding: 0; box-shadow: none; }
+      .cover { min-height: 235mm; border-radius: 0; break-after: page; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .card, .diagram, .note, .menu-table, .step-list li { break-inside: avoid; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      h2 { break-after: avoid; }
+      nav.contents { break-after: page; }
+      .diagram svg { min-width: 0; }
+      a { color: inherit; text-decoration: none; }
+      a[href^="#"]:after { content: ""; }
+      footer { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <strong>Instrukcja programu</strong>
+    <button type="button" onclick="window.print()">Drukuj / Zapisz jako PDF</button>
+  </div>
+  <main>
+    <header class="cover">
+      <p class="eyebrow">Boryszew Nieruchomości</p>
+      <h1>Instrukcja obsługi programu</h1>
+      <p>Przewodnik dla użytkownika: jak znaleźć budynek, obsłużyć najem, dodać zgłoszenie i pracować z odczytami liczników.</p>
+      <span class="version">Wydanie aplikacji: v2026.10.18.1 · poprawka · październik 2026</span>
+    </header>
+
+    <section class="intro-grid" aria-label="Najważniejsze informacje">
+      <div class="card card-blue">
+        <h3>Dla kogo jest ta instrukcja?</h3>
+        <p>Dla osób, które korzystają z codziennych funkcji systemu i nie administrują serwerem ani bazą danych.</p>
+      </div>
+      <div class="card card-green">
+        <h3>Najważniejsza zasada</h3>
+        <p>Wybierz moduł z menu, znajdź rekord, zaznacz go i użyj właściwej czynności. Dostępne przyciski zależą od przyznanych uprawnień.</p>
+      </div>
+    </section>
+
+    <nav class="contents">
+      <h2>Spis treści</h2>
+      <ol>
+        <li><a href="#start">Uruchomienie i logowanie</a></li>
+        <li><a href="#mapa">Mapa działania programu</a></li>
+        <li><a href="#menu">Menu i moduły</a></li>
+        <li><a href="#listy">Praca z listą danych</a></li>
+        <li><a href="#budynki">Budynki i pomieszczenia</a></li>
+        <li><a href="#najem">Najemcy i umowy</a></li>
+        <li><a href="#technika">Usterki, remonty i przeglądy</a></li>
+        <li><a href="#woda">Liczniki i woda</a></li>
+        <li><a href="#bezpieczenstwo">Bezpieczna praca</a></li>
+        <li><a href="#pomoc">Gdy coś nie działa</a></li>
+      </ol>
+    </nav>
+
+    <section id="start">
+      <h2>1. Uruchomienie i logowanie</h2>
+      <ol class="step-list">
+        <li>Otwórz adres aplikacji przekazany przez administratora. Najlepiej używaj aktualnej wersji przeglądarki.</li>
+        <li>Na ekranie logowania wpisz swój login i hasło, a następnie wybierz <strong>Zaloguj</strong>.</li>
+        <li>Po zalogowaniu otwórz wybraną grupę w menu bocznym. Grupy można rozwinąć i zwinąć.</li>
+        <li>Po zakończeniu pracy wybierz wylogowanie lub zamknij własną sesję zgodnie z zasadami firmy.</li>
+      </ol>
+      <div class="note warning"><strong>Nie widzisz pozycji w menu?</strong> Najczęściej oznacza to brak uprawnienia do danego modułu. Poproś administratora systemu o sprawdzenie dostępu.</div>
+    </section>
+
+    <section id="mapa">
+      <h2>2. Mapa działania programu</h2>
+      <p class="lead">Poniższy schemat pokazuje najczęstsze ścieżki pracy. Nie każdy użytkownik ma dostęp do wszystkich gałęzi.</p>
+      <figure class="diagram">
+        <svg viewBox="0 0 1000 500" role="img" aria-labelledby="flow-title flow-desc">
+          <title id="flow-title">Schemat działania programu</title>
+          <desc id="flow-desc">Logowanie prowadzi do pulpitu i modułów budynków, najmu, obsługi technicznej oraz liczników wody.</desc>
+          <defs>
+            <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#6c83a5"/></marker>
+            <style>
+              .box{rx:14;stroke-width:2}
+              .t{font:700 17px 'Segoe UI',Arial,sans-serif;fill:#17345f;text-anchor:middle}
+              .s{font:14px 'Segoe UI',Arial,sans-serif;fill:#435873;text-anchor:middle}
+              .ln{stroke:#6c83a5;stroke-width:2;fill:none;marker-end:url(#arrow)}
+            </style>
+          </defs>
+          <rect class="box" x="390" y="18" width="220" height="64" fill="#e9f2ff" stroke="#175cd3"/>
+          <text class="t" x="500" y="45">Logowanie</text><text class="s" x="500" y="66">login i hasło użytkownika</text>
+          <path class="ln" d="M500 82v35"/>
+          <rect class="box" x="390" y="118" width="220" height="64" fill="#e9f2ff" stroke="#175cd3"/>
+          <text class="t" x="500" y="145">Pulpit</text><text class="s" x="500" y="166">wskaźniki i najważniejsze sprawy</text>
+          <path class="ln" d="M500 182v32M500 214H120v34M500 214H370v34M500 214H630v34M500 214H880v34"/>
+          <rect class="box" x="20" y="250" width="200" height="76" fill="#eff6ff" stroke="#175cd3"/>
+          <text class="t" x="120" y="280">Nieruchomości</text><text class="s" x="120" y="303">budynki i lokale</text>
+          <rect class="box" x="270" y="250" width="200" height="76" fill="#ecfdf3" stroke="#16804a"/>
+          <text class="t" x="370" y="280">Najem i umowy</text><text class="s" x="370" y="303">najemcy, lokale, umowy</text>
+          <rect class="box" x="530" y="250" width="200" height="76" fill="#fff7e8" stroke="#e6a23c"/>
+          <text class="t" x="630" y="280">Obsługa techniczna</text><text class="s" x="630" y="303">usterki, remonty, przeglądy</text>
+          <rect class="box" x="780" y="250" width="200" height="76" fill="#eafafa" stroke="#159a9c"/>
+          <text class="t" x="880" y="280">Liczniki</text><text class="s" x="880" y="303">odczyty i rozliczenia wody</text>
+          <path class="ln" d="M120 326v48M370 326v48M630 326v48M880 326v48"/>
+          <rect class="box" x="20" y="378" width="200" height="86" fill="#fff" stroke="#b7c9e1"/>
+          <text class="t" x="120" y="409">Ewidencja obiektów</text><text class="s" x="120" y="433">właściwe dane budynku</text><text class="s" x="120" y="451">i pomieszczeń</text>
+          <rect class="box" x="270" y="378" width="200" height="86" fill="#fff" stroke="#b7c9e1"/>
+          <text class="t" x="370" y="409">Obsługa najmu</text><text class="s" x="370" y="433">przypisz lokal do umowy</text><text class="s" x="370" y="451">i kontroluj jej status</text>
+          <rect class="box" x="530" y="378" width="200" height="86" fill="#fff" stroke="#b7c9e1"/>
+          <text class="t" x="630" y="409">Prowadzenie spraw</text><text class="s" x="630" y="433">zapisz status, wykonanie</text><text class="s" x="630" y="451">i dokumenty</text>
+          <rect class="box" x="780" y="378" width="200" height="86" fill="#fff" stroke="#b7c9e1"/>
+          <text class="t" x="880" y="409">Rozliczenia</text><text class="s" x="880" y="433">sprawdź odczyt i fakturę</text><text class="s" x="880" y="451">za wybrany okres</text>
+        </svg>
+        <figcaption>Wspólny schemat: wejście do systemu → wybór obszaru → praca na liście lub formularzu → zapis i sprawdzenie komunikatu.</figcaption>
+      </figure>
+    </section>
+
+    <section id="menu">
+      <h2>3. Menu i moduły</h2>
+      <table class="menu-table">
+        <thead><tr><th>Grupa w menu</th><th>Co można tam znaleźć</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Nieruchomości</strong></td><td>Pulpit z najważniejszymi wskaźnikami oraz ewidencja budynków.</td></tr>
+          <tr><td><strong>Obsługa techniczna</strong></td><td>Przeglądy techniczne, zgłoszenia usterek, prace remontowe i historia usterek.</td></tr>
+          <tr><td><strong>Najem i umowy</strong></td><td>Rejestr najemców, umowy najmu i pomieszczenia dostępne do wynajęcia.</td></tr>
+          <tr><td><strong>Liczniki → Woda</strong></td><td>Odczyty liczników, faktury, podsumowania i wykresy zużycia.</td></tr>
+          <tr><td><strong>Administracja</strong></td><td>Użytkownicy, uprawnienia, historia logowań oraz ewidencja liczników — po nadaniu odpowiedniego dostępu.</td></tr>
+          <tr><td><strong>Konfiguracja</strong></td><td>Definicje terminów oraz ustawienia bazy i plików. Zwykle obsługuje je administrator.</td></tr>
+        </tbody>
+      </table>
+      <p class="small">Nazwy lub widoczność pozycji mogą się różnić zależnie od przypisanych uprawnień.</p>
+    </section>
+
+    <section id="listy">
+      <h2>4. Praca z listą danych</h2>
+      <p>W wielu modułach dane są wyświetlane w tabeli. Pasek nad tabelą może zawierać wyszukiwarkę, filtry oraz przyciski akcji.</p>
+      <figure class="diagram">
+        <svg viewBox="0 0 900 180" role="img" aria-labelledby="list-title">
+          <title id="list-title">Schemat pracy z listą danych</title>
+          <defs><marker id="arrow2" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#6c83a5"/></marker></defs>
+          <g font-family="Segoe UI,Arial,sans-serif" text-anchor="middle">
+            <g><rect x="10" y="38" width="160" height="78" rx="12" fill="#e9f2ff" stroke="#175cd3" stroke-width="2"/><text x="90" y="70" font-size="17" font-weight="700" fill="#17345f">1. Otwórz</text><text x="90" y="94" font-size="14" fill="#435873">właściwy moduł</text></g>
+            <g><rect x="195" y="38" width="160" height="78" rx="12" fill="#e9f2ff" stroke="#175cd3" stroke-width="2"/><text x="275" y="70" font-size="17" font-weight="700" fill="#17345f">2. Znajdź</text><text x="275" y="94" font-size="14" fill="#435873">szukaj / filtruj</text></g>
+            <g><rect x="380" y="38" width="160" height="78" rx="12" fill="#e9f2ff" stroke="#175cd3" stroke-width="2"/><text x="460" y="70" font-size="17" font-weight="700" fill="#17345f">3. Zaznacz</text><text x="460" y="94" font-size="14" fill="#435873">wybrany wiersz</text></g>
+            <g><rect x="565" y="38" width="150" height="78" rx="12" fill="#ecfdf3" stroke="#16804a" stroke-width="2"/><text x="640" y="70" font-size="17" font-weight="700" fill="#17345f">4. Wybierz</text><text x="640" y="94" font-size="14" fill="#435873">Dodaj / Edytuj</text></g>
+            <g><rect x="740" y="38" width="150" height="78" rx="12" fill="#ecfdf3" stroke="#16804a" stroke-width="2"/><text x="815" y="70" font-size="17" font-weight="700" fill="#17345f">5. Zapisz</text><text x="815" y="94" font-size="14" fill="#435873">sprawdź komunikat</text></g>
+            <path d="M170 77h20M355 77h20M540 77h20M715 77h20" stroke="#6c83a5" stroke-width="2" marker-end="url(#arrow2)"/>
+          </g>
+        </svg>
+      </figure>
+      <ul>
+        <li><strong>Szukaj</strong> — wpisz fragment nazwy, adresu lub innej widocznej informacji.</li>
+        <li><strong>Filtry</strong> — zawężają listę, np. do wybranego budynku, statusu albo roku. Wybierz <span class="tag">Wyczyść</span>, aby wrócić do pełnego widoku.</li>
+        <li><strong>Edytuj</strong> — najpierw kliknij wiersz, który chcesz zmienić. Jeśli przycisk jest nieaktywny, wybierz rekord lub sprawdź uprawnienia.</li>
+        <li><strong>Usuń</strong> — kliknij rekord i potwierdź operację w oknie. W niektórych modułach rekord z powiązanymi danymi jest archiwizowany zamiast trwale usuwany.</li>
+        <li><strong>Odśwież</strong> — ikona okrężnej strzałki ponownie wczytuje dane.</li>
+        <li><strong>Excel / Drukuj</strong> — jeśli są widoczne, eksportują albo drukują dane z bieżącego widoku.</li>
+      </ul>
+      <div class="note warning">Przed zapisaniem formularza sprawdź nazwę budynku, numer lokalu, daty oraz kwoty. Po udanym zapisie aplikacja wyświetla komunikat.</div>
+    </section>
+
+    <section id="budynki">
+      <h2>5. Budynki i pomieszczenia</h2>
+      <div class="two-col">
+        <div>
+          <h3>Budynki</h3>
+          <ol class="step-list">
+            <li>Otwórz <strong>Nieruchomości → Budynki</strong>.</li>
+            <li>Użyj wyszukiwania, aby znaleźć obiekt po nazwie lub adresie.</li>
+            <li>Wybierz <strong>Dodaj</strong> albo zaznacz obiekt i wybierz <strong>Edytuj</strong>.</li>
+            <li>Wypełnij dane i zapisz. Przełącznik <strong>Aktualne / Archiwalne</strong> służy do przeglądania obiektów zarchiwizowanych.</li>
+          </ol>
+        </div>
+        <div>
+          <h3>Pomieszczenia i grunty</h3>
+          <ol class="step-list">
+            <li>Otwórz <strong>Najem i umowy → Pomieszczenia</strong> i ustaw filtr budynku, jeśli chcesz zawęzić listę.</li>
+            <li>Dodając pozycję, wybierz budynek i typ; uzupełnij numer, powierzchnię i stawkę.</li>
+            <li>Typy obejmują m.in. biuro, magazyn, grunt/działkę oraz części wspólne.</li>
+            <li>WC, korytarz i węzeł CO są oznaczane jako <strong>część wspólna</strong> i nie są liczone do czynszu najmu.</li>
+          </ol>
+        </div>
+      </div>
+      <div class="note">Przy pomieszczeniach lista pokazuje m.in. powierzchnię wynajętą, pozostałą, stawkę i status. Usunięcie jest dostępne tylko dla wolnych, niezarezerwowanych lokali.</div>
+    </section>
+
+    <section id="najem">
+      <h2>6. Najemcy i umowy</h2>
+      <figure class="diagram">
+        <svg viewBox="0 0 900 190" role="img" aria-labelledby="rent-title">
+          <title id="rent-title">Schemat obsługi najmu</title>
+          <defs><marker id="arrow3" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#6c83a5"/></marker></defs>
+          <g font-family="Segoe UI,Arial,sans-serif" text-anchor="middle">
+            <g><rect x="30" y="42" width="185" height="82" rx="13" fill="#e9f2ff" stroke="#175cd3" stroke-width="2"/><text x="122" y="76" font-size="17" font-weight="700" fill="#17345f">Najemca</text><text x="122" y="100" font-size="14" fill="#435873">dane kontrahenta</text></g>
+            <g><rect x="265" y="42" width="185" height="82" rx="13" fill="#e9f2ff" stroke="#175cd3" stroke-width="2"/><text x="357" y="76" font-size="17" font-weight="700" fill="#17345f">Pomieszczenie</text><text x="357" y="100" font-size="14" fill="#435873">lokal lub grunt</text></g>
+            <g><rect x="500" y="42" width="170" height="82" rx="13" fill="#ecfdf3" stroke="#16804a" stroke-width="2"/><text x="585" y="76" font-size="17" font-weight="700" fill="#17345f">Umowa</text><text x="585" y="100" font-size="14" fill="#435873">daty i warunki</text></g>
+            <g><rect x="720" y="42" width="160" height="82" rx="13" fill="#ecfdf3" stroke="#16804a" stroke-width="2"/><text x="800" y="76" font-size="17" font-weight="700" fill="#17345f">Kontrola</text><text x="800" y="100" font-size="14" fill="#435873">status i aneksy</text></g>
+            <path d="M215 83h45M450 83h45M670 83h45" stroke="#6c83a5" stroke-width="2" marker-end="url(#arrow3)"/>
+            <text x="450" y="160" font-size="14" fill="#53657f">Lokal przypisuje się do umowy; sprawdź stawkę, powierzchnię i daty przed zapisaniem.</text>
+          </g>
+        </svg>
+      </figure>
+      <h3>Dodanie lub aktualizacja umowy</h3>
+      <ol class="step-list">
+        <li>Najpierw sprawdź, czy najemca i wynajmowane pomieszczenie są już w systemie.</li>
+        <li>W rejestrze umów wybierz <strong>Dodaj</strong> lub zaznacz umowę i kliknij <strong>Edytuj</strong>.</li>
+        <li>W zakładce <strong>Dane Podstawowe</strong> wpisz numer umowy, najemcę i daty obowiązywania.</li>
+        <li>W zakładce <strong>Wynajmowane Lokale</strong> wybierz lokal, powierzchnię, stawkę i sposób rozliczenia, a następnie kliknij <strong>Przypisz</strong>.</li>
+        <li>Sprawdź tabelę przypisanych lokali i miesięczną sumę. Zapisz umowę przyciskiem na dole formularza.</li>
+        <li>Aneksy dodawaj do zapisanej umowy. Datę lub szczegóły wypowiedzenia uzupełnia się w danych podstawowych.</li>
+      </ol>
+      <p>W rejestrze można przełączać widok umów aktywnych i archiwalnych. Wskaźnik umów wygasających pomaga zauważyć zbliżający się koniec okresu.</p>
+    </section>
+
+    <section id="technika">
+      <h2>7. Usterki, remonty i przeglądy</h2>
+      <div class="card-grid">
+        <div class="card card-amber">
+          <h3>Zgłoszenie usterki</h3>
+          <ol>
+            <li>Otwórz <strong>Obsługa techniczna → Zgłoszenia usterek</strong>.</li>
+            <li>Wybierz <strong>Dodaj</strong> i wskaż budynek, kategorię, status, priorytet oraz datę.</li>
+            <li>Wpisz osobę zgłaszającą i konkretny opis problemu.</li>
+            <li>Po naprawie uzupełnij datę zakończenia i uwagi konserwatora; możesz dołączyć PDF lub JPG.</li>
+            <li>Zapisz formularz. Filtry pozwalają znaleźć budynek, kategorię i status; przełącznik pokazuje archiwum.</li>
+          </ol>
+        </div>
+        <div class="card card-blue">
+          <h3>Przeglądy i remonty</h3>
+          <ul>
+            <li><strong>Przeglądy</strong> są grupowane według budynków. Filtruj po budynku, typie i statusie pilności; użyj przycisku dodania, aby wprowadzić nowy termin lub wynik.</li>
+            <li><strong>Prace remontowe</strong> można przeglądać jako listę albo tablicę Kanban, jeśli masz uprawnienie do edycji. Dostępny jest też widok archiwalny.</li>
+            <li><strong>Historia usterek</strong> służy do odczytu wcześniejszych zgłoszeń i wykonanych prac.</li>
+            <li>Przed zamknięciem sprawy wpisz wynik, status oraz datę wykonania, jeśli formularz je udostępnia.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="note warning">Zgłoszenie zarchiwizowane może być tylko do odczytu. Jeśli nie można go zmienić, sprawdź, czy nie jesteś w widoku archiwum.</div>
+    </section>
+
+    <section id="woda">
+      <h2>8. Liczniki i woda</h2>
+      <h3>Import odczytów z dokumentu PDF</h3>
+      <ol class="step-list">
+        <li>Otwórz <strong>Liczniki → Woda → Odczyty Liczników</strong> i wybierz plik PDF z odczytami.</li>
+        <li>System spróbuje rozpoznać odczyty. Sprawdź wykryty miesiąc, numer licznika, budynek i wartości.</li>
+        <li>W oknie importu skontroluj dane; wyłącz pozycje, których nie chcesz importować, i popraw błędne wartości, jeśli jest taka możliwość.</li>
+        <li>Zatwierdź import. Odczyty zostaną zapisane, a lista odświeżona. Jeśli licznik nie ma przypisanego budynku, przypisz go przed zapisem.</li>
+      </ol>
+      <h3>Odczyt ręczny, przegląd i faktura</h3>
+      <ul>
+        <li>Rozwiń miesiąc, aby zobaczyć odczyty. Wybierz wiersz, aby edytować lub usunąć odczyt; usunięcie wymaga potwierdzenia.</li>
+        <li>Przyciski <strong>Dodaj licznik</strong> i <strong>Przypisz licznik</strong> służą do ewidencji urządzenia oraz powiązania go z budynkiem.</li>
+        <li>W zakładce <strong>Faktury i Podsumowanie</strong> można wczytać PDF faktury i zweryfikować dane przed zapisaniem. Gdy rozpoznanie się nie powiedzie, wprowadź dane ręcznie.</li>
+        <li>Podsumowanie przedstawia okres, numer faktury, zużycie, ilość do faktury oraz wartości netto i brutto. Edycja i usuwanie dotyczą wybranego wiersza z fakturą.</li>
+        <li>W menu <strong>Zużycia</strong> wybierz rok i opcjonalnie budynek, aby porównać miesięczne ilości do fakturowania na wykresie.</li>
+      </ul>
+      <div class="note danger"><strong>Rozpoznawanie PDF nie zastępuje kontroli człowieka.</strong> Przed zatwierdzeniem sprawdź numer licznika, przypisanie do budynku, okres oraz różnicę między stanem początkowym i końcowym.</div>
+    </section>
+
+    <section id="bezpieczenstwo">
+      <h2>9. Bezpieczna praca</h2>
+      <div class="card-grid">
+        <div class="card card-green">
+          <h3>Dbaj o dane</h3>
+          <ul>
+            <li>Nie udostępniaj nikomu swojego loginu ani hasła.</li>
+            <li>Nie wpisuj danych w rekordzie, którego nie masz pewności.</li>
+            <li>Dołączaj tylko dokumenty dotyczące danej sprawy.</li>
+            <li>Po pracy wyloguj się, szczególnie na wspólnym komputerze.</li>
+          </ul>
+        </div>
+        <div class="card card-amber">
+          <h3>Archiwum a usuwanie</h3>
+          <p>Przełączniki <strong>Aktualne / Archiwalne</strong> zmieniają widok listy, a nie kasują danych. Rekordy powiązane z innymi danymi mogą być zachowywane w archiwum, aby nie utracić historii.</p>
+          <p>Przed potwierdzeniem trwałego usuwania przeczytaj treść okna potwierdzenia.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="pomoc">
+      <h2>10. Gdy coś nie działa</h2>
+      <table class="menu-table">
+        <thead><tr><th>Problem</th><th>Co zrobić</th></tr></thead>
+        <tbody>
+          <tr><td>Nie ma modułu w menu</td><td>Sprawdź z administratorem, czy masz przyznane uprawnienie.</td></tr>
+          <tr><td>Nie widzę rekordu</td><td>Usuń filtry, przełącz Aktualne/Archiwalne, sprawdź rok i odśwież dane.</td></tr>
+          <tr><td>Przycisk Edytuj lub Usuń jest nieaktywny</td><td>Najpierw zaznacz wiersz. Niektóre rekordy nie mogą być usunięte, np. lokal będący w najmie.</td></tr>
+          <tr><td>Import PDF rozpoznał błędną wartość</td><td>Nie zatwierdzaj danych bez weryfikacji. Popraw je w oknie importu albo wprowadź ręcznie.</td></tr>
+          <tr><td>Nie udało się zapisać</td><td>Przeczytaj komunikat aplikacji, sprawdź wymagane pola i spróbuj ponownie. Nie klikaj wielokrotnie, jeśli nie wiesz, czy operacja już się wykonała.</td></tr>
+          <tr><td>Problem nadal występuje</td><td>Przekaż administratorowi nazwę modułu, przybliżoną godzinę i treść komunikatu. Nie wysyłaj hasła ani poufnych danych.</td></tr>
+        </tbody>
+      </table>
+      <div class="note"><strong>Wydruk lub PDF:</strong> kliknij u góry <em>Drukuj / Zapisz jako PDF</em>, wybierz drukarkę „Zapisz jako PDF”, a następnie zapisz dokument pod nazwą <strong>instrukcjaProgramu.pdf</strong>.</div>
+    </section>
+
+    <footer>
+      Instrukcja użytkownika programu Boryszew Nieruchomości · wydanie v2026.10.18.1.
+      Przyciski i zakres dostępnych danych zależą od roli użytkownika oraz aktualnej konfiguracji systemu.
+    </footer>
+  </main>
+</body>
+</html>

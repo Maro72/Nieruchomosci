@@ -67,7 +67,18 @@
                 </NotAuthorized>
             </AuthorizeView>
 
-            @* --- WSKAŹNIK STANU BAZY DANYCH --- *@
+            <MudTooltip Text="Otwórz instrukcję programu">
+                <MudButton Href="/instrukcjaProgramu.html"
+                           Target="_blank"
+                           Variant="Variant.Text"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.HelpOutline"
+                           AriaLabel="Pomoc — otwórz instrukcję programu">
+                    Pomoc
+                </MudButton>
+            </MudTooltip>
+
+            @* --- WSKAŹNIK STANU BAZY DANYCH — tymczasowo ukryty na pasku ---
             <div class="d-flex align-items-center gap-2 me-3 px-3 py-1 rounded"
                  style="background-color: @(isOnline ? "rgba(34, 197, 94, 0.1)" : "rgba(239, 68, 68, 0.1)"); border: 1px solid @(isOnline ? "#22c55e" : "#ef4444");">
                 <div style="width: 10px; height: 10px; border-radius: 50%; background-color: @(isOnline ? "#22c55e" : "#ef4444");"></div>
@@ -76,6 +87,7 @@
                     MySql: @(isOnline ? "Połączono" : "Rozłączono")
                 </MudText>
             </div>
+            *@
 
             @* Przełącznik zmienia paletę aplikacji i zapisuje wybór w przeglądarce. *@
             <MudTooltip Text="@( _isDarkMode ? "Przełącz na jasny motyw" : "Przełącz na ciemny motyw" )">

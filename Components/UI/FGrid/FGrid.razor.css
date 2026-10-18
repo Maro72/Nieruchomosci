@@ -89,11 +89,6 @@
         font-weight: 600 !important;
     }
 
-/* Selected row podświetlenie wiersza */
-::deep .mud-table-row.selected-row-highlight {
-    background-color: #B5BE57 !important;
-}
-
 /* Header */
 ::deep .mud-table-head .mud-table-cell,
 ::deep .mud-table-head .mud-table-cell * {

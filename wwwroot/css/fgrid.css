@@ -1,0 +1,15 @@
+.app-theme-root:not(.app-dark-theme) .fgrid .mud-table-root .mud-table-body .mud-table-row.selected-row-highlight > .mud-table-cell {
+    background-color: #bfdbfe !important;
+}
+
+.app-theme-root:not(.app-dark-theme) .fgrid .mud-table-root .mud-table-body .mud-table-row.selected-row-highlight > .mud-table-cell:first-child {
+    box-shadow: inset 4px 0 0 #1d4ed8 !important;
+}
+
+.app-dark-theme .fgrid .mud-table-root .mud-table-body .mud-table-row.selected-row-highlight > .mud-table-cell {
+    background-color: #263b52 !important;
+}
+
+.app-dark-theme .fgrid .mud-table-root .mud-table-body .mud-table-row.selected-row-highlight > .mud-table-cell:first-child {
+    box-shadow: inset 4px 0 0 #60a5fa !important;
+}

@@ -104,7 +104,7 @@ namespace Mieszkaniec.Components.Pages.Umowy
 
         protected async Task OpenDodajDialog()
         {
-            var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+            var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
 
             // Jeśli użytkownik jest w widoku filtrowania najemcy i klika "Dodaj umowę",
             // możemy mu od razu domyślnie podpiąć tego najemcę w formularzu!
@@ -133,7 +133,7 @@ namespace Mieszkaniec.Components.Pages.Umowy
         {
             if (umowa == null) return;
 
-            var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+            var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
 
             var klonUmowy = new UmowaNajmu
             {

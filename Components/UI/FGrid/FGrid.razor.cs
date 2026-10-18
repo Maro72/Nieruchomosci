@@ -149,8 +149,7 @@ namespace Mieszkaniec.Components.UI
         private async Task HandleRowClick(DataGridRowClickEventArgs<TItem> args)
         {
             SelectedItem = args.Item;
-            // Wymuszamy przerysowanie żeby przycisk Edytuj się odblokował
-            StateHasChanged();
+            await SelectedItemChanged.InvokeAsync(SelectedItem);
         }
     }
 }

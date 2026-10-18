@@ -5,7 +5,7 @@
 @using Mieszkaniec.Model.Entities
 @using Microsoft.AspNetCore.Components.Forms
 
-<MudDialog>
+<MudDialog Class="contract-editor-dialog">
     <TitleContent>
         <div class="d-flex align-items-center px-2 pt-2 mb-2">
             <div class="bg-light shadow-sm rounded p-2 me-3 border d-flex align-items-center justify-content-center">
@@ -172,7 +172,7 @@
 
                                 @if (Model.WynajmowaneLokale != null && Model.WynajmowaneLokale.Any())
                                 {
-                                    <div class="overflow-auto border rounded shadow-sm" style="max-height: 250px;">
+                                    <div class="overflow-auto border rounded shadow-sm assigned-locals-scroll" style="max-height: 250px;">
                                         <table class="table table-sm table-bordered table-hover align-middle mb-0 assigned-locals-table">
                                             <thead class="table-light sticky-top">
                                                 <tr>
@@ -263,8 +263,8 @@
 
                                     @if (Model.Aneksy != null && Model.Aneksy.Any())
                                     {
-                                        <div class="overflow-auto border rounded shadow-sm" style="max-height: 200px;">
-                                            <table class="table table-sm table-bordered table-hover align-middle mb-0" style="font-size: 0.85rem;">
+                                        <div class="overflow-auto border rounded shadow-sm contract-amendments-scroll" style="max-height: 200px;">
+                                            <table class="table table-sm table-bordered table-hover align-middle mb-0 contract-amendments-table" style="font-size: 0.85rem;">
                                                 <thead class="table-light sticky-top">
                                                     <tr>
                                                         <th style="min-width: 80px;">Numer</th>
@@ -342,13 +342,15 @@
     </DialogContent>
     <DialogActions>
         <div class="contract-dialog-actions">
-            <MudButton Variant="Variant.Outlined" Color="Color.Default"
+            <MudButton Variant="Variant.Filled" Color="Color.Error"
                        StartIcon="@Icons.Material.Filled.Close" OnClick="Cancel">
                 Zamknij
             </MudButton>
-            <button type="submit" form="umowaForm" class="save-contract-button">
-                <i class="bi bi-save me-1"></i> Zapisz umowę
-            </button>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Save"
+                       ButtonType="ButtonType.Submit" form="umowaForm">
+                Zapisz umowę
+            </MudButton>
         </div>
     </DialogActions>
 </MudDialog>

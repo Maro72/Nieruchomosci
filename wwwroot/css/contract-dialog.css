@@ -1,0 +1,54 @@
+.contract-editor-dialog .mud-dialog-content {
+    max-height: calc(100vh - 190px);
+    overflow-y: auto;
+}
+
+@media (max-width: 960px) {
+    .assigned-locals-table {
+        min-width: 760px;
+    }
+}
+
+@media (max-width: 600px) {
+    .contract-editor-dialog {
+        width: calc(100vw - 24px) !important;
+        max-width: calc(100vw - 24px) !important;
+        margin: 12px;
+    }
+
+    .contract-editor-dialog .mud-dialog-content {
+        max-height: calc(100vh - 160px);
+        max-height: calc(100dvh - 160px);
+        padding: 12px;
+    }
+
+    .contract-editor-dialog .mud-dialog-title {
+        padding: 12px 12px 0;
+    }
+
+    .contract-editor-dialog .mud-dialog-actions {
+        padding: 4px 12px 12px;
+    }
+
+    .contract-dialog-actions {
+        gap: 8px;
+        padding: 8px 0 0;
+    }
+
+    .contract-dialog-actions .mud-button-root {
+        flex: 1 1 0;
+        min-width: 0;
+        padding-inline: 8px;
+    }
+
+    .contract-amendments-table {
+        min-width: 460px;
+    }
+}
+
+@media (max-height: 600px) {
+    .contract-editor-dialog .mud-dialog-content {
+        max-height: calc(100vh - 140px);
+        max-height: calc(100dvh - 140px);
+    }
+}

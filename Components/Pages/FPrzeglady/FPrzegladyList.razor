@@ -25,9 +25,13 @@
             <button type="button" class="btn btn-sm btn-light border shadow-sm fw-bold px-3" @onclick="EksportujDoExcela">
                 <i class="bi bi-file-earmark-excel text-success me-1"></i> Eksport Excel
             </button>
-            <button type="button" class="btn btn-sm fw-bold px-3 text-white shadow-sm" style="background-color: #5a4bda;" @onclick="OpenCreateDialog">
-                <i class="bi bi-plus-circle me-1"></i> Dodaj Przegląd
-            </button>
+            <AuthorizeView Policy="Przeglady.Edycja">
+                <Authorized>
+                    <button type="button" class="btn btn-sm fw-bold px-3 text-white shadow-sm" style="background-color: #5a4bda;" @onclick="OpenCreateDialog">
+                        <i class="bi bi-plus-circle me-1"></i> Dodaj Przegląd
+                    </button>
+                </Authorized>
+            </AuthorizeView>
         </div>
     </div>
 
@@ -216,27 +220,26 @@
                                                     </td>
                                                     <td class="text-center" @onclick:stopPropagation="true">
                                                         <div class="d-flex align-items-center justify-content-center gap-2">
-                                                            @* Przycisk Edycji *@
-                                                            <button type="button" class="btn btn-sm p-1 text-primary hover-bg-light rounded" title="Edytuj parametry" @onclick="() => OpenEditDialog(p)">
-                                                                <i class="bi bi-pencil-square fs-6"></i>
-                                                            </button>
-
-                                                            @* Przycisk Archiwizacji / Zrealizowania *@
-                                                            @if (p.Status != "Wykonany")
-                                                            {
-                                                                <button type="button" class="btn btn-sm p-1 text-muted hover-primary rounded" title="Zrealizuj i archiwizuj" @onclick="() => OpenRealizeDialog(p)">
-                                                                    <i class="bi bi-archive fs-6"></i>
-                                                                </button>
-                                                            }
-                                                            else
+                                                            <AuthorizeView Policy="Przeglady.Edycja">
+                                                                <Authorized>
+                                                                    <button type="button" class="btn btn-sm p-1 text-primary hover-bg-light rounded" title="Edytuj parametry" @onclick="() => OpenEditDialog(p)">
+                                                                        <i class="bi bi-pencil-square fs-6"></i>
+                                                                    </button>
+                                                                    @if (p.Status != "Wykonany")
+                                                                    {
+                                                                        <button type="button" class="btn btn-sm p-1 text-muted hover-primary rounded" title="Zrealizuj i archiwizuj" @onclick="() => OpenRealizeDialog(p)">
+                                                                            <i class="bi bi-archive fs-6"></i>
+                                                                        </button>
+                                                                    }
+                                                                    <button type="button" class="btn btn-sm p-1 text-danger hover-bg-light rounded" title="Usuń trwale" @onclick="() => RequestDelete(p)">
+                                                                        <i class="bi bi-trash fs-6"></i>
+                                                                    </button>
+                                                                </Authorized>
+                                                            </AuthorizeView>
+                                                            @if (p.Status == "Wykonany")
                                                             {
                                                                 <i class="bi bi-check-all text-success fs-5" title="Zarchiwizowany"></i>
                                                             }
-
-                                                            @* Przycisk Usuwania *@
-                                                            <button type="button" class="btn btn-sm p-1 text-danger hover-bg-light rounded" title="Usuń trwale" @onclick="() => RequestDelete(p)">
-                                                                <i class="bi bi-trash fs-6"></i>
-                                                            </button>
                                                         </div>
                                                     </td>
                                                 </tr>

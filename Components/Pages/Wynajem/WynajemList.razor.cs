@@ -20,11 +20,13 @@ namespace Mieszkaniec.Components.Pages.Wynajem
         private decimal SumaPowierzchniWolnej { get; set; } = 0;
         private decimal SumaPowierzchniWynajetej { get; set; } = 0;
         private decimal SumaCzynszu { get; set; } = 0;
+        private bool CzyPotwierdzicUsuniecie { get; set; }
+        private string TrescPotwierdzeniaUsuniecia { get; set; } = string.Empty;
+        private LokalWynajem? LokalDoUsuniecia { get; set; }
 
 
         protected override async Task OnInitializedAsync()
         {
-            ListaBudynkow = await ObiektService.PobierzWszystkieAsync() ?? new List<Obiekt>();
             ListaNajemcow = await NajemcaService.PobierzAktywnychAsync() ?? new List<Najemca>();
             await ZaktualizujWidok();
         }
@@ -75,6 +77,12 @@ namespace Mieszkaniec.Components.Pages.Wynajem
 
         private async Task ZaktualizujWidok()
         {
+            ListaBudynkow = await ObiektService.GetAllActiveAsync();
+            if (WybranyBudynekId != 0 && !ListaBudynkow.Any(budynek => budynek.Id == WybranyBudynekId))
+            {
+                WybranyBudynekId = 0;
+            }
+
             List<LokalWynajem> pobraneLokale;
 
             // 1. Pobieranie danych z bazy (wszystkich lub dla wybranego budynku)
@@ -128,6 +136,56 @@ namespace Mieszkaniec.Components.Pages.Wynajem
                 "Zarezerwowany" => Color.Warning,
                 _ => Color.Default
             };
+        }
+
+        private static bool CzyLokalMoznaUsunac(LokalWynajem lokal) =>
+            lokal.PowierzchniaWynajetaM2 <= 0 &&
+            lokal.StatusAktualny == "Wolny" &&
+            lokal.Status != "Zarezerwowany";
+
+        private Task PotwierdzUsuniecieLokalu(LokalWynajem lokal)
+        {
+            if (!CzyLokalMoznaUsunac(lokal))
+            {
+                Snackbar.Add("Nie można usunąć lokalu wynajętego, częściowo wynajętego ani zarezerwowanego.", Severity.Warning);
+                return Task.CompletedTask;
+            }
+
+            LokalDoUsuniecia = lokal;
+            TrescPotwierdzeniaUsuniecia =
+                $"Czy na pewno chcesz usunąć wolny lokal „{lokal.NumerLokalu}” z budynku „{lokal.Obiekt?.Nazwa ?? "nieznany"}”?";
+            CzyPotwierdzicUsuniecie = true;
+            return Task.CompletedTask;
+        }
+
+        private async Task ObsluzPotwierdzenieUsuniecia(bool czyPotwierdzono)
+        {
+            CzyPotwierdzicUsuniecie = false;
+            var lokal = LokalDoUsuniecia;
+            LokalDoUsuniecia = null;
+
+            if (!czyPotwierdzono || lokal is null)
+            {
+                return;
+            }
+
+            try
+            {
+                var usunieto = await LokalService.UsunAsync(lokal.Id);
+                if (!usunieto)
+                {
+                    Snackbar.Add("Nie można usunąć lokalu, ponieważ jest wynajęty, zarezerwowany lub już nie istnieje.", Severity.Warning);
+                    await ZaktualizujWidok();
+                    return;
+                }
+
+                Snackbar.Add($"Lokal „{lokal.NumerLokalu}” został usunięty.", Severity.Success);
+                await ZaktualizujWidok();
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Nie udało się usunąć lokalu: {ex.Message}", Severity.Error);
+            }
         }
 
         private async Task OpenDodajDialog()

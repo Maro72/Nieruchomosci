@@ -9,10 +9,11 @@ namespace Mieszkaniec.Model.Dto
         public int Miesiac { get; set; }
         
         public int SumaZuzyciaLiczniki { get; set; }
+
+        public int SumaKorekt { get; set; }
+
+        public int SumaDoZafakturowania { get; set; }
         
         public FakturaWody? Faktura { get; set; }
-        
-        public decimal Uchyb => (Faktura?.ZuzycieFakturowane_m3 ?? 0) - SumaZuzyciaLiczniki;
     }
 }
-

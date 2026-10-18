@@ -38,21 +38,21 @@
             {
                 <div class="custom-toolbar-buttons d-flex align-items-center gap-1 py-1" style="z-index: 10;">
                     @* Akcja jest renderowana tylko wtedy, gdy strona ją podłączyła. *@
-                    @if (ShowCrudActions && OnAdd.HasDelegate)
+                    @if (ShowCrudActions && CanUseCrudActions && OnAdd.HasDelegate)
                     {
-                        <button type="button" class="btn btn-sm btn-link text-secondary fw-medium px-2 py-1.5 d-flex align-items-center gap-1 text-decoration-none small-font" @onclick="OnAdd">
+                        <button type="button" class="btn btn-sm btn-link text-secondary fw-medium px-2 py-1.5 d-flex align-items-center gap-1 text-decoration-none small-font" @onclick="HandleAdd">
                             <i class="bi bi-plus-lg"></i> Dodaj
                         </button>
                     }
-                    @if (ShowCrudActions && OnEdit.HasDelegate)
+                    @if (ShowCrudActions && CanUseCrudActions && OnEdit.HasDelegate)
                     {
-                        <button type="button" class="btn btn-sm btn-link text-secondary fw-medium px-2 py-1.5 d-flex align-items-center gap-1 text-decoration-none small-font" disabled="@(SelectedItem == null)" @onclick="() => OnEdit.InvokeAsync(SelectedItem)">
+                        <button type="button" class="btn btn-sm btn-link text-secondary fw-medium px-2 py-1.5 d-flex align-items-center gap-1 text-decoration-none small-font" disabled="@(SelectedItem == null || (CanEdit != null && !CanEdit(SelectedItem)))" @onclick="HandleEdit">
                             <i class="bi bi-pencil-square"></i> Edytuj
                         </button>
                     }
-                    @if (ShowCrudActions && OnDelete.HasDelegate)
+                    @if (ShowCrudActions && CanUseCrudActions && OnDelete.HasDelegate)
                     {
-                        <button type="button" class="btn btn-sm btn-link text-danger fw-medium px-2 py-1.5 d-flex align-items-center gap-1 text-decoration-none small-font" disabled="@(SelectedItem == null || (CanDelete != null && !CanDelete(SelectedItem)))" @onclick="() => OnDelete.InvokeAsync(SelectedItem)">
+                        <button type="button" class="btn btn-sm btn-link text-danger fw-medium px-2 py-1.5 d-flex align-items-center gap-1 text-decoration-none small-font" disabled="@(SelectedItem == null || (CanDelete != null && !CanDelete(SelectedItem)))" @onclick="HandleDelete">
                             <i class="bi bi-trash"></i> Usuń
                         </button>
                     }

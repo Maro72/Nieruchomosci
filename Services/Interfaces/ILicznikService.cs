@@ -12,8 +12,10 @@ public interface ILicznikService
     Task AktualizujLicznikAsync(Licznik licznik);
     Task DodajOdczytAsync(OdczytWody odczyt);
     Task AktualizujOdczytAsync(OdczytWody odczyt);
+    Task<bool> UsunOdczytAsync(int id);
     Task ZapiszFaktureAsync(FakturaWody faktura);
     Task AktualizujFaktureAsync(FakturaWody faktura);
+    Task<bool> UsunFaktureAsync(int id);
     Task<List<OdczytZPdfDto>> PrzetworzSkanAsync(IBrowserFile file);
     Task<FakturaWody?> ParsujFaktureAsync(IBrowserFile file);
     Task ZapiszOdczytyAsync(List<OdczytZPdfDto> odczyty);

@@ -67,24 +67,23 @@ namespace Mieszkaniec.Services.Implementations
 
             if (obiekt == null) return "Błąd: Nie znaleziono obiektu.";
 
-            // Sprawdzenie, czy obiekt ma powiązane przeglądy
-            bool maPowiazania = await context.Przeglady.AnyAsync(p => p.ObiektId == id);
+            bool maPowiazania =
+                await context.Przeglady.AnyAsync(p => p.ObiektId == id) ||
+                await context.LokaleWynajem.AnyAsync(l => l.ObiektId == id) ||
+                await context.PraceRemontowe.AnyAsync(p => p.ObiektId == id) ||
+                await context.UsterkiBud.AnyAsync(u => u.ObiektId == id) ||
+                await context.Liczniki.AnyAsync(l => l.ObiektId == id);
 
             if (maPowiazania)
             {
-                // Logika Archiwizacji (Soft Delete)
                 obiekt.CzyArchiwum = true;
-                context.Obiekty.Update(obiekt);
                 await context.SaveChangesAsync();
-                return "Obiekt posiada historię przeglądów. Został przeniesiony do archiwum.";
+                return "Obiekt ma powiązane dane (przeglądy, lokale, naprawy, usterki lub liczniki). Został zarchiwizowany i ukryty w widoku aktualnym; powiązane dane zachowano.";
             }
-            else
-            {
-                // Logika Trwałego Usunięcia
-                context.Obiekty.Remove(obiekt);
-                await context.SaveChangesAsync();
-                return "Obiekt nie posiadał powiązań i został trwale usunięty.";
-            }
+
+            context.Obiekty.Remove(obiekt);
+            await context.SaveChangesAsync();
+            return "Obiekt nie miał powiązanych danych i został trwale usunięty.";
         }
 
         public async Task<List<Obiekt>> PobierzWszystkieAsync()

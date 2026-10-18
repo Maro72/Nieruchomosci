@@ -1,5 +1,5 @@
 @page "/historia-logowan"
-@attribute [Authorize(Policy = "Administracja.Odczyt")]
+@attribute [Authorize(Policy = "HistoriaLogowan.Odczyt")]
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.EntityFrameworkCore
@@ -8,7 +8,6 @@
 @using Mieszkaniec.Model.Entities
 @using MudBlazor
 @inject IDbContextFactory<MieszkaniecDbContext> DbContextFactory
-@inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject IAuthorizationService AuthorizationService
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -70,10 +69,20 @@
     </div>
 </div>
 
+<PotwierdzenieDialog IsVisible="@_pokazPotwierdzenieUsuniecia"
+                     Title="Usuwanie wpisu historii"
+                     Message="@_komunikatPotwierdzeniaUsuniecia"
+                     ThemeClass="danger"
+                     ConfirmText="Usuń"
+                     OnAnswer="ObsluzPotwierdzenieUsunieciaAsync" />
+
 @code {
     private List<HistoriaLogowania> Logowania { get; set; } = [];
     private bool Laduje { get; set; } = true;
     private bool _usuwanie;
+    private bool _pokazPotwierdzenieUsuniecia;
+    private HistoriaLogowania? _wpisDoUsuniecia;
+    private string _komunikatPotwierdzeniaUsuniecia = string.Empty;
     private string Blad { get; set; } = string.Empty;
 
     protected override Task OnInitializedAsync() => OdswiezAsync();
@@ -113,13 +122,18 @@
             return;
         }
 
-        var potwierdzono = await DialogService.ShowMessageBoxAsync(
-            "Usuwanie wpisu historii",
-            $"Czy na pewno chcesz usunąć wpis logowania użytkownika „{logowanie.Uzytkownik}” z dnia {logowanie.DataLogowania:dd.MM.yyyy HH:mm:ss}?",
-            yesText: "Usuń",
-            cancelText: "Anuluj");
+        _wpisDoUsuniecia = logowanie;
+        _komunikatPotwierdzeniaUsuniecia = $"Czy na pewno chcesz usunąć wpis logowania użytkownika „{logowanie.Uzytkownik}” z dnia {logowanie.DataLogowania:dd.MM.yyyy HH:mm:ss}?";
+        _pokazPotwierdzenieUsuniecia = true;
+    }
 
-        if (potwierdzono != true)
+    private async Task ObsluzPotwierdzenieUsunieciaAsync(bool czyPotwierdzono)
+    {
+        _pokazPotwierdzenieUsuniecia = false;
+        var logowanie = _wpisDoUsuniecia;
+        _wpisDoUsuniecia = null;
+
+        if (!czyPotwierdzono || logowanie is null)
         {
             return;
         }

@@ -55,12 +55,13 @@ public sealed class LicznikService : ILicznikService
             {
                 g.Key.Rok,
                 g.Key.Miesiac,
-                Suma = g.Sum(x => x.IloscDoZafakturowania)
+                SumaZuzycia = g.Sum(x => x.Zuzycie),
+                SumaKorekt = g.Sum(x => x.Korekta ?? 0),
+                SumaDoZafakturowania = g.Sum(x => x.IloscDoZafakturowania)
             })
             .ToListAsync();
         var faktury = await db.FakturyWody.AsNoTracking().ToListAsync();
-        var okresy = odczyty.Select(x => (x.Rok, x.Miesiac))
-            .Concat(faktury.Select(x => (x.Rok, x.Miesiac)))
+        var okresy = faktury.Select(x => (x.Rok, x.Miesiac))
             .Distinct()
             .OrderByDescending(x => x.Rok)
             .ThenByDescending(x => x.Miesiac);
@@ -70,7 +71,11 @@ public sealed class LicznikService : ILicznikService
             Rok = okres.Rok,
             Miesiac = okres.Miesiac,
             SumaZuzyciaLiczniki = odczyty
-                .FirstOrDefault(x => x.Rok == okres.Rok && x.Miesiac == okres.Miesiac)?.Suma ?? 0,
+                .FirstOrDefault(x => x.Rok == okres.Rok && x.Miesiac == okres.Miesiac)?.SumaZuzycia ?? 0,
+            SumaKorekt = odczyty
+                .FirstOrDefault(x => x.Rok == okres.Rok && x.Miesiac == okres.Miesiac)?.SumaKorekt ?? 0,
+            SumaDoZafakturowania = odczyty
+                .FirstOrDefault(x => x.Rok == okres.Rok && x.Miesiac == okres.Miesiac)?.SumaDoZafakturowania ?? 0,
             Faktura = faktury.FirstOrDefault(x => x.Rok == okres.Rok && x.Miesiac == okres.Miesiac)
         }).ToList();
     }
@@ -107,6 +112,19 @@ public sealed class LicznikService : ILicznikService
         await db.SaveChangesAsync();
     }
 
+    public async Task<bool> UsunOdczytAsync(int id)
+    {
+        await using var db = await _dbContextFactory.CreateDbContextAsync();
+        var odczyt = await db.OdczytyWody.SingleOrDefaultAsync(item => item.Id == id);
+        if (odczyt is null)
+        {
+            return false;
+        }
+
+        db.OdczytyWody.Remove(odczyt);
+        return await db.SaveChangesAsync() > 0;
+    }
+
     public async Task ZapiszFaktureAsync(FakturaWody faktura)
     {
         ArgumentNullException.ThrowIfNull(faktura);
@@ -121,6 +139,19 @@ public sealed class LicznikService : ILicznikService
         await using var db = await _dbContextFactory.CreateDbContextAsync();
         db.FakturyWody.Update(faktura);
         await db.SaveChangesAsync();
+    }
+
+    public async Task<bool> UsunFaktureAsync(int id)
+    {
+        await using var db = await _dbContextFactory.CreateDbContextAsync();
+        var faktura = await db.FakturyWody.SingleOrDefaultAsync(item => item.Id == id);
+        if (faktura is null)
+        {
+            return false;
+        }
+
+        db.FakturyWody.Remove(faktura);
+        return await db.SaveChangesAsync() > 0;
     }
 
     public async Task<List<OdczytZPdfDto>> PrzetworzSkanAsync(IBrowserFile file)

@@ -12,6 +12,7 @@
 <div class="modern-grid-scroll">
     <FGrid TItem="Najemca"
            Items="@FiltrowaniNajemcy"
+           CrudPolicy="Najemcy.Edycja"
            Title="Wykaz Najemców"
            ShowToolbar="true"
            ShowSearch="true"
@@ -68,24 +69,28 @@
                         <MudTooltip Text="Umowy najemcy">
                             <MudIconButton Icon="@Icons.Material.Filled.Description" Size="Size.Small" Color="Color.Secondary" Href="@($"/umowy?najemcaId={ctx.Item.Id}")" />
                         </MudTooltip>
-                        @if (!ctx.Item.CzyArchiwalny)
-                        {
-                            <MudTooltip Text="Przenieś do archiwum">
-                                <MudIconButton Icon="@Icons.Material.Filled.Archive"
-                                               Size="Size.Small"
-                                               Color="Color.Warning"
-                                               OnClick="@(() => ZarchiwizujNajemce(ctx.Item))" />
-                            </MudTooltip>
-                        }
-                        else
-                        {
-                            <MudTooltip Text="Przywróć z archiwum">
-                                <MudIconButton Icon="@Icons.Material.Filled.Unarchive"
-                                               Size="Size.Small"
-                                               Color="Color.Success"
-                                               OnClick="@(() => PrzywrocNajemce(ctx.Item))" />
-                            </MudTooltip>
-                        }
+                        <AuthorizeView Policy="Najemcy.Edycja">
+                            <Authorized>
+                                @if (!ctx.Item.CzyArchiwalny)
+                                {
+                                    <MudTooltip Text="Przenieś do archiwum">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Archive"
+                                                       Size="Size.Small"
+                                                       Color="Color.Warning"
+                                                       OnClick="@(() => ZarchiwizujNajemce(ctx.Item))" />
+                                    </MudTooltip>
+                                }
+                                else
+                                {
+                                    <MudTooltip Text="Przywróć z archiwum">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Unarchive"
+                                                       Size="Size.Small"
+                                                       Color="Color.Success"
+                                                       OnClick="@(() => PrzywrocNajemce(ctx.Item))" />
+                                    </MudTooltip>
+                                }
+                            </Authorized>
+                        </AuthorizeView>
                     </div>
                 </CellTemplate>
             </MudBlazor.TemplateColumn>

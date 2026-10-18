@@ -1,4 +1,5 @@
 @page "/woda"
+@attribute [Authorize(Policy = "Techniczny.Odczyt")]
 @using Mieszkaniec.Model.Dto
 @using Mieszkaniec.Services.Interfaces
 @using Mieszkaniec.Model.Entities
@@ -126,38 +127,34 @@
                                 <MudText Typo="Typo.h6" Class="section-heading">Miesięczne odczyty liczników</MudText>
                                 <MudText Class="reading-muted">Zużycie, korekta i ilość do faktury według budynku i licznika.</MudText>
                             </div>
-                            @if (DostepneLata.Any())
-                            {
-                                <div class="d-flex align-items-center gap-2">
-                                    <MudSelect T="int" @bind-Value="RokWidoku" Dense="true" Label="Rok" Style="width: 130px">
+                            <div class="d-flex align-items-center gap-2">
+                                @if (DostepneLata.Any())
+                                {
+                                    <MudSelect T="int" Value="RokWidoku" ValueChanged="OnRokOdczytowChanged" Dense="true" Label="Rok" Style="width: 130px">
                                         @foreach (var rok in DostepneLata)
                                         {
                                             <MudSelectItem T="int" Value="@rok">@rok</MudSelectItem>
                                         }
                                     </MudSelect>
-                                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.Add" OnClick="OtworzDialogDodajOdczyt">
-                                        Dodaj odczyt
-                                    </MudButton>
-                                </div>
-                            }
+                                }
+                                <AuthorizeView Policy="Liczniki.Edycja">
+                                    <Authorized>
+                                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.Add" OnClick="OtworzDialogDodajOdczyt">
+                                            Dodaj odczyt
+                                        </MudButton>
+                                    </Authorized>
+                                </AuthorizeView>
+                            </div>
                         </div>
-                        @if (liczniki?.Any() == true && MiesiaceZOdczytami.Any())
+                        @if (OdczytyRoku.Any())
                         {
                             <MudExpansionPanels MultiExpansion="true" Elevation="0" Class="d-flex flex-column gap-2">
                                 @foreach (var miesiac in MiesiaceZOdczytami)
                                 {
-                                  var odczytyMiesiaca = liczniki
-    .SelectMany(licznik => licznik.OdczytyWody
-        .Where(odczyt => odczyt.Rok == RokWidoku && odczyt.Miesiac == miesiac)
-        .Select(odczyt => new { Licznik = licznik, Odczyt = odczyt }))
-    .DistinctBy(x => x.Odczyt.Id)             // 1. Najpierw usuń ewentualne duplikaty
-    .OrderByDescending(x => x.Odczyt.Zuzycie) // 2. Główne sortowanie: zużycie malejąco
-    .ThenBy(x => x.Licznik.Obiekt?.Nazwa)     // 3. Dodatkowe sortowanie przy remisach
-    .ThenBy(x => x.Licznik.NumerLicznika)
-    .ToList();
-                                    <MudExpansionPanel Style="border: 1px solid #e2e8f0; border-radius: 8px !important; overflow: hidden; background-color: #ffffff;">
+                                    var odczytyMiesiaca = OdczytyMiesiaca(miesiac);
+                                    <MudExpansionPanel @key="miesiac" Style="border: 1px solid #e2e8f0; border-radius: 8px !important; overflow: hidden; background-color: #ffffff;">
                                         <TitleContent>
-                                            <div class="d-flex align-items-center justify-content-between w-100 pe-3">
+                                            <div class="d-flex align-items-center justify-content-between w-100 pe-3 flex-wrap gap-2">
                                                 <div class="d-flex align-items-center gap-3">
                                                     <div class="bg-light p-2 rounded text-primary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
                                                         <MudIcon Icon="@Icons.Material.Filled.WaterDrop" />
@@ -167,7 +164,7 @@
                                                         <small class="text-muted">Odczyty liczników wody</small>
                                                     </div>
                                                 </div>
-                                                <div class="d-flex align-items-center gap-2">
+                                                <div class="d-flex align-items-center gap-2 flex-wrap">
                                                     <span class="badge bg-light text-secondary border px-2 py-1.5 rounded-pill">@odczytyMiesiaca.Count odczytów</span>
                                                     <span class="badge bg-primary text-white px-2 py-1.5 rounded-pill">Zużycie: @odczytyMiesiaca.Sum(x => x.Odczyt.Zuzycie).ToString("N0") m³</span>
                                                     <span class="badge bg-light text-secondary border px-2 py-1.5 rounded-pill">Do faktury: @odczytyMiesiaca.Sum(x => x.Odczyt.IloscDoZafakturowania).ToString("N0") m³</span>
@@ -175,48 +172,46 @@
                                             </div>
                                         </TitleContent>
                                         <ChildContent>
-                                            <div class="table-responsive border-top bg-white">
-                                                <table class="table table-sm table-hover align-middle mb-0" style="font-size: 0.85rem;">
-                                                    <thead class="table-light text-secondary">
-                                                        <tr>
-                                                            <th class="ps-3">Budynek</th>
-                                                            <th>Nr licznika</th>
-                                                            <th class="text-end">Stan początkowy</th>
-                                                            <th class="text-end">Stan końcowy</th>
-                                                            <th class="text-end">Zużycie</th>
-                                                            <th class="text-end">Korekta</th>
-                                                            <th class="text-end">Do faktury</th>
-                                                            <th class="text-center pe-3">Akcje</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        @foreach (var pozycja in odczytyMiesiaca)
-                                                        {
-                                                            <tr>
-                                                                <td class="ps-3">@(pozycja.Licznik.Obiekt?.Nazwa ?? "Nieprzypisany")</td>
-                                                                <td class="text-start">@pozycja.Licznik.NumerLicznika</td>
-                                                                <td class="text-end ">@pozycja.Odczyt.StanPoczatkowy</td>
-                                                                <td class="text-end">@pozycja.Odczyt.StanKoncowy</td>
-                                                                <td class="text-end">@pozycja.Odczyt.Zuzycie m³</td>
-                                                                <td class="text-end text-danger">@(pozycja.Odczyt.Korekta?.ToString() ?? "-")</td>
-                                                                <td class="text-primary text-end fw-bold">@pozycja.Odczyt.IloscDoZafakturowania m³</td>
-                                                                <td class="text-center pe-3">
-                                                                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Primary" Title="Edytuj odczyt" OnClick="@(() => OtworzDialogEdycjiOdczytu(pozycja.Odczyt))" />
-                                                                </td>
-                                                            </tr>
-                                                        }
-                                                    </tbody>
-                                                    <tfoot class="table-light">
-                                                        <tr class="fw-bold">
-                                                            <td colspan="4" class="ps-3">Razem</td>
-                                                            <td class="text-end">@odczytyMiesiaca.Sum(x => x.Odczyt.Zuzycie) m³</td>
-                                                            <td class="text-end">@odczytyMiesiaca.Sum(x => x.Odczyt.Korekta ?? 0)</td>
-                                                            <td class="text-end">@odczytyMiesiaca.Sum(x => x.Odczyt.IloscDoZafakturowania) m³</td>
-                                                            <td></td>
-                                                        </tr>
-                                                    </tfoot>
-                                                </table>
-                                            </div>
+                                            <FGrid TItem="OdczytWodyWiersz"
+                                                   Items="@odczytyMiesiaca"
+                                                   GridKey="@(gridKey + miesiac)"
+                                                   CrudPolicy="Liczniki.Edycja"
+                                                   Title="@($"Odczyty liczników — {NazwaMiesiaca(miesiac)} {RokWidoku}")"
+                                                   SelectedItem="@WybranyOdczyt(miesiac)"
+                                                   SelectedItemChanged="@(wiersz => UstawWybranyOdczyt(miesiac, wiersz))"
+                                                   ShowToolbar="true"
+                                                   ShowSearch="true"
+                                                   OnEdit="EdytujOdczytWiersza"
+                                                   OnDelete="PotwierdzUsuniecieOdczytu">
+                                                <ToolbarLeftContent>
+                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                        @odczytyMiesiaca.Count odczytów · zużycie @odczytyMiesiaca.Sum(x => x.Odczyt.Zuzycie).ToString("N0") m³ · do faktury @odczytyMiesiaca.Sum(x => x.Odczyt.IloscDoZafakturowania).ToString("N0") m³
+                                                    </MudText>
+                                                </ToolbarLeftContent>
+                                                <GridColumns>
+                                                    <TemplateColumn T="OdczytWodyWiersz" Title="Budynek">
+                                                        <CellTemplate Context="ctx">@(ctx.Item.Licznik.Obiekt?.Nazwa ?? "Nieprzypisany")</CellTemplate>
+                                                    </TemplateColumn>
+                                                    <TemplateColumn T="OdczytWodyWiersz" Title="Nr licznika">
+                                                        <CellTemplate Context="ctx">@ctx.Item.Licznik.NumerLicznika</CellTemplate>
+                                                    </TemplateColumn>
+                                                    <TemplateColumn T="OdczytWodyWiersz" Title="Stan początkowy">
+                                                        <CellTemplate Context="ctx">@ctx.Item.Odczyt.StanPoczatkowy</CellTemplate>
+                                                    </TemplateColumn>
+                                                    <TemplateColumn T="OdczytWodyWiersz" Title="Stan końcowy">
+                                                        <CellTemplate Context="ctx">@ctx.Item.Odczyt.StanKoncowy</CellTemplate>
+                                                    </TemplateColumn>
+                                                    <TemplateColumn T="OdczytWodyWiersz" Title="Zużycie">
+                                                        <CellTemplate Context="ctx">@($"{ctx.Item.Odczyt.Zuzycie:N0} m³")</CellTemplate>
+                                                    </TemplateColumn>
+                                                    <TemplateColumn T="OdczytWodyWiersz" Title="Korekta">
+                                                        <CellTemplate Context="ctx">@(ctx.Item.Odczyt.Korekta?.ToString() ?? "-")</CellTemplate>
+                                                    </TemplateColumn>
+                                                    <TemplateColumn T="OdczytWodyWiersz" Title="Do faktury">
+                                                        <CellTemplate Context="ctx">@($"{ctx.Item.Odczyt.IloscDoZafakturowania:N0} m³")</CellTemplate>
+                                                    </TemplateColumn>
+                                                </GridColumns>
+                                            </FGrid>
                                         </ChildContent>
                                     </MudExpansionPanel>
                                 }
@@ -273,75 +268,74 @@
             </MudItem>
 
         <MudItem xs="12">
-            <MudCard>
-                <MudCardContent>
-                    <MudText Typo="Typo.h6">Podsumowanie Miesięczne Zużycia Wody</MudText>
-                    @if (podsumowania != null)
-                    {
-                        <MudTable Items="@podsumowania" Hover="true" Dense="true" Class="mt-4">
-                            <HeaderContent>
-                                <MudTh>Nr faktury</MudTh>
-                                <MudTh>Okres</MudTh>
-                                <MudTh>Ilość</MudTh>
-                                <MudTh>Netto</MudTh>
-                                <MudTh>Brutto</MudTh>
-                                <MudTh>Akcje</MudTh>
-                            </HeaderContent>
-                            <RowTemplate Context="podsumowanieCtx">
-                                <MudTd DataLabel="Nr faktury">@(podsumowanieCtx.Faktura?.NumerFaktury ?? "-")</MudTd>
-                                <MudTd DataLabel="Okres">@podsumowanieCtx.Okres</MudTd>
-                                <MudTd DataLabel="Ilość">
-                                    @if (podsumowanieCtx.Faktura is null)
-                                    {
-                                        <span>-</span>
-                                    }
-                                    else
-                                    {
-                                        <span>@podsumowanieCtx.Faktura.ZuzycieFakturowane_m3.ToString("N2") m³</span>
-                                    }
-                                </MudTd>
-                                <MudTd DataLabel="Netto">
-                                    @if (podsumowanieCtx.Faktura is null)
-                                    {
-                                        <span>-</span>
-                                    }
-                                    else
-                                    {
-                                        <span>@podsumowanieCtx.Faktura.WartoscNetto.ToString("N2") PLN</span>
-                                    }
-                                </MudTd>
-                                <MudTd DataLabel="Brutto">
-                                    @if (podsumowanieCtx.Faktura is null)
-                                    {
-                                        <span>-</span>
-                                    }
-                                    else
-                                    {
-                                        <span>@podsumowanieCtx.Faktura.WartoscBrutto.ToString("N2") PLN</span>
-                                    }
-                                </MudTd>
-                                <MudTd DataLabel="Akcje">
-                                    @if (podsumowanieCtx.Faktura is not null)
-                                    {
-                                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                        Color="Color.Primary"
-                                        Size="Size.Small"
-                                        Title="Edytuj fakturę"
-                                        OnClick="@(() => OtworzDialogEdycjiFaktury(podsumowanieCtx.Faktura))" />
-                                    }
-                                </MudTd>
-                            </RowTemplate>
-                            <FooterContent>
-                                <MudTd colspan="2"><strong>Razem</strong></MudTd>
-                                <MudTd><strong>@LacznaIloscFakturowana.ToString("N2") m³</strong></MudTd>
-                                <MudTd><strong>@LacznaWartoscNetto.ToString("N2") PLN</strong></MudTd>
-                                <MudTd><strong>@LacznaWartoscBrutto.ToString("N2") PLN</strong></MudTd>
-                                <MudTd></MudTd>
-                            </FooterContent>
-                        </MudTable>
-                    }
-                </MudCardContent>
-            </MudCard>
+            <FGrid TItem="PodsumowanieMiesiacaWody"
+                   Items="@(podsumowania ?? new List<PodsumowanieMiesiacaWody>())"
+                   GridKey="@gridKey"
+                   CrudPolicy="Liczniki.Edycja"
+                   CanEdit="CzyMoznaEdytowacFakture"
+                   CanDelete="CzyMoznaUsunacFakture"
+                   Title="Podsumowanie miesięczne zużycia wody"
+                   ShowToolbar="true"
+                   ShowCrudActions="true"
+                   ShowSearch="true"
+                   @bind-SelectedItem="WybranePodsumowanieFaktury"
+                   OnEdit="EdytujFakturePodsumowania"
+                   OnDelete="PotwierdzUsuniecieFaktury">
+                <ToolbarLeftContent>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                        Usuwanie dotyczy wyłącznie faktury. Odczyty liczników pozostają bez zmian.
+                    </MudText>
+                </ToolbarLeftContent>
+                <GridColumns>
+                    <PropertyColumn T="PodsumowanieMiesiacaWody" TProperty="string"
+                                    Property="x => x.Okres" Title="Okres" />
+                    <TemplateColumn T="PodsumowanieMiesiacaWody" Title="Nr faktury">
+                        <CellTemplate Context="ctx">
+                            @(ctx.Item.Faktura?.NumerFaktury ?? "-")
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="PodsumowanieMiesiacaWody" Title="Zużycie">
+                        <CellTemplate Context="ctx">
+                            @($"{ctx.Item.SumaZuzyciaLiczniki:N2} m³")
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="PodsumowanieMiesiacaWody" Title="Do faktury">
+                        <CellTemplate Context="ctx">
+                            <span class="text-primary fw-bold">@($"{ctx.Item.SumaDoZafakturowania:N2} m³")</span>
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="PodsumowanieMiesiacaWody" Title="Netto">
+                        <CellTemplate Context="ctx">
+                            @(ctx.Item.Faktura is null ? "-" : $"{ctx.Item.Faktura.WartoscNetto:N2} PLN")
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="PodsumowanieMiesiacaWody" Title="Brutto">
+                        <CellTemplate Context="ctx">
+                            @(ctx.Item.Faktura is null ? "-" : $"{ctx.Item.Faktura.WartoscBrutto:N2} PLN")
+                        </CellTemplate>
+                    </TemplateColumn>
+                </GridColumns>
+            </FGrid>
+            <MudGrid Class="mt-3" Spacing="2">
+                <MudItem xs="12" sm="4">
+                    <MudPaper Outlined="true" Class="pa-3">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Łączne zużycie z faktur</MudText>
+                        <MudText Typo="Typo.h6">@LacznaIloscFakturowana.ToString("N2") m³</MudText>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudPaper Outlined="true" Class="pa-3">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Łączna wartość netto</MudText>
+                        <MudText Typo="Typo.h6">@LacznaWartoscNetto.ToString("N2") PLN</MudText>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudPaper Outlined="true" Class="pa-3">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Łączna wartość brutto</MudText>
+                        <MudText Typo="Typo.h6">@LacznaWartoscBrutto.ToString("N2") PLN</MudText>
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
         </MudItem>
 
         <MudItem xs="12" md="6">
@@ -398,6 +392,19 @@
 </MudTabPanel>
 </MudTabs>
 
+<PotwierdzenieDialog IsVisible="@czyPotwierdzicUsuniecieFaktury"
+                     Title="Usuwanie faktury"
+                     Message="@trescPotwierdzeniaUsunieciaFaktury"
+                     ThemeClass="danger"
+                     ConfirmText="Usuń fakturę"
+                     OnAnswer="ObsluzPotwierdzenieUsunieciaFaktury" />
+<PotwierdzenieDialog IsVisible="@czyPotwierdzicUsuniecieOdczytu"
+                     Title="Usuwanie odczytu"
+                     Message="@trescPotwierdzeniaUsunieciaOdczytu"
+                     ThemeClass="danger"
+                     ConfirmText="Usuń odczyt"
+                     OnAnswer="ObsluzPotwierdzenieUsunieciaOdczytu" />
+
 @code {
     private bool trwaPrzetwarzanie = false;
     private bool trwaPrzetwarzanieFaktury = false;
@@ -406,10 +413,93 @@
     private List<PodsumowanieMiesiacaWody> podsumowania;
     private int RokWidoku = DateTime.Now.Year;
     private int gridKey;
+    private readonly Dictionary<int, OdczytWodyWiersz?> wybraneOdczytyWedlugMiesiaca = new();
+    private bool czyPotwierdzicUsuniecieFaktury;
+    private string trescPotwierdzeniaUsunieciaFaktury = string.Empty;
+    private FakturaWody? fakturaDoUsuniecia;
+    private PodsumowanieMiesiacaWody? WybranePodsumowanieFaktury;
+    private bool czyPotwierdzicUsuniecieOdczytu;
+    private string trescPotwierdzeniaUsunieciaOdczytu = string.Empty;
+    private OdczytWodyWiersz? odczytDoUsuniecia;
+    private sealed record OdczytWodyWiersz(Licznik Licznik, OdczytWody Odczyt);
+    private List<OdczytWodyWiersz> OdczytyRoku => liczniki?
+        .SelectMany(licznik => licznik.OdczytyWody.Select(odczyt => new OdczytWodyWiersz(licznik, odczyt)))
+        .Where(wiersz => wiersz.Odczyt.Rok == RokWidoku)
+        .DistinctBy(wiersz => wiersz.Odczyt.Id)
+        .OrderByDescending(wiersz => wiersz.Odczyt.Miesiac)
+        .ThenByDescending(wiersz => wiersz.Odczyt.Zuzycie)
+        .ThenBy(wiersz => wiersz.Licznik.Obiekt?.Nazwa)
+        .ThenBy(wiersz => wiersz.Licznik.NumerLicznika)
+        .ToList() ?? new List<OdczytWodyWiersz>();
+    private IEnumerable<int> MiesiaceZOdczytami => OdczytyRoku
+        .Select(wiersz => wiersz.Odczyt.Miesiac)
+        .Distinct()
+        .OrderByDescending(miesiac => miesiac);
 
     private decimal LacznaIloscFakturowana => podsumowania?.Sum(x => x.Faktura?.ZuzycieFakturowane_m3 ?? 0m) ?? 0m;
     private decimal LacznaWartoscNetto => podsumowania?.Sum(x => x.Faktura?.WartoscNetto ?? 0m) ?? 0m;
     private decimal LacznaWartoscBrutto => podsumowania?.Sum(x => x.Faktura?.WartoscBrutto ?? 0m) ?? 0m;
+
+    private static bool CzyMoznaUsunacFakture(PodsumowanieMiesiacaWody podsumowanie) =>
+        podsumowanie.Faktura is not null;
+
+    private static bool CzyMoznaEdytowacFakture(PodsumowanieMiesiacaWody podsumowanie) =>
+        podsumowanie.Faktura is not null;
+
+    private Task EdytujFakturePodsumowania(PodsumowanieMiesiacaWody podsumowanie)
+    {
+        if (podsumowanie.Faktura is null)
+        {
+            Snackbar.Add("Ten okres nie ma przypisanej faktury do edycji.", Severity.Warning);
+            return Task.CompletedTask;
+        }
+
+        return OtworzDialogEdycjiFaktury(podsumowanie.Faktura);
+    }
+
+    private Task PotwierdzUsuniecieFaktury(PodsumowanieMiesiacaWody podsumowanie)
+    {
+        if (podsumowanie.Faktura is null)
+        {
+            Snackbar.Add("Ten okres nie ma przypisanej faktury do usunięcia.", Severity.Warning);
+            return Task.CompletedTask;
+        }
+
+        fakturaDoUsuniecia = podsumowanie.Faktura;
+        trescPotwierdzeniaUsunieciaFaktury =
+            $"Czy na pewno usunąć fakturę „{podsumowanie.Faktura.NumerFaktury}” za okres {podsumowanie.Okres}? Odczyty liczników za ten okres pozostaną bez zmian.";
+        czyPotwierdzicUsuniecieFaktury = true;
+        return Task.CompletedTask;
+    }
+
+    private async Task ObsluzPotwierdzenieUsunieciaFaktury(bool czyPotwierdzono)
+    {
+        czyPotwierdzicUsuniecieFaktury = false;
+        var faktura = fakturaDoUsuniecia;
+        fakturaDoUsuniecia = null;
+
+        if (!czyPotwierdzono || faktura is null)
+        {
+            return;
+        }
+
+        try
+        {
+            var usunieto = await LicznikService.UsunFaktureAsync(faktura.Id);
+            if (!usunieto)
+            {
+                Snackbar.Add("Faktura nie istnieje lub została już usunięta.", Severity.Warning);
+                return;
+            }
+
+            Snackbar.Add($"Faktura „{faktura.NumerFaktury}” została usunięta. Odczyty liczników pozostały bez zmian.", Severity.Success);
+            await OdswiezDane();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Nie udało się usunąć faktury: {ex.Message}", Severity.Error);
+        }
+    }
 
     private string[] EtykietyZuzycia => podsumowania?
         .Where(x => x.Faktura is not null)
@@ -454,12 +544,22 @@
         .Distinct()
         .OrderByDescending(x => x) ?? Enumerable.Empty<int>();
 
-    private IEnumerable<int> MiesiaceZOdczytami => liczniki?
-        .SelectMany(x => x.OdczytyWody)
-        .Where(x => x.Rok == RokWidoku)
-        .Select(x => x.Miesiac)
-        .Distinct()
-        .OrderByDescending(x => x) ?? Enumerable.Empty<int>();
+    private Task OnRokOdczytowChanged(int rok)
+    {
+        RokWidoku = rok;
+        wybraneOdczytyWedlugMiesiaca.Clear();
+        gridKey++;
+        return Task.CompletedTask;
+    }
+
+    private List<OdczytWodyWiersz> OdczytyMiesiaca(int miesiac) =>
+        OdczytyRoku.Where(wiersz => wiersz.Odczyt.Miesiac == miesiac).ToList();
+
+    private OdczytWodyWiersz? WybranyOdczyt(int miesiac) =>
+        wybraneOdczytyWedlugMiesiaca.GetValueOrDefault(miesiac);
+
+    private void UstawWybranyOdczyt(int miesiac, OdczytWodyWiersz? wiersz) =>
+        wybraneOdczytyWedlugMiesiaca[miesiac] = wiersz;
 
     private static string NazwaMiesiaca(int miesiac) => miesiac switch
     {
@@ -487,6 +587,8 @@
     {
         liczniki = await LicznikService.PobierzWszystkieLicznikiWodyAsync();
         podsumowania = await LicznikService.PobierzPodsumowaniaAsync();
+        WybranePodsumowanieFaktury = null;
+        wybraneOdczytyWedlugMiesiaca.Clear();
         gridKey++;
 
         if (DostepneLata.Any() && !DostepneLata.Contains(RokWidoku))
@@ -560,6 +662,48 @@
             await LicznikService.AktualizujOdczytAsync(zaktualizowanyOdczyt);
             Snackbar.Add("Odczyt został zaktualizowany.", Severity.Success);
             await OdswiezDane();
+        }
+    }
+
+    private Task EdytujOdczytWiersza(OdczytWodyWiersz wiersz) =>
+        OtworzDialogEdycjiOdczytu(wiersz.Odczyt);
+
+    private Task PotwierdzUsuniecieOdczytu(OdczytWodyWiersz wiersz)
+    {
+        odczytDoUsuniecia = wiersz;
+        trescPotwierdzeniaUsunieciaOdczytu =
+            $"Czy na pewno usunąć odczyt licznika „{wiersz.Licznik.NumerLicznika}” za {NazwaMiesiaca(wiersz.Odczyt.Miesiac)} {wiersz.Odczyt.Rok}? Operacji nie można cofnąć.";
+        czyPotwierdzicUsuniecieOdczytu = true;
+        return Task.CompletedTask;
+    }
+
+    private async Task ObsluzPotwierdzenieUsunieciaOdczytu(bool czyPotwierdzono)
+    {
+        czyPotwierdzicUsuniecieOdczytu = false;
+        var wiersz = odczytDoUsuniecia;
+        odczytDoUsuniecia = null;
+
+        if (!czyPotwierdzono || wiersz is null)
+        {
+            return;
+        }
+
+        try
+        {
+            var usunieto = await LicznikService.UsunOdczytAsync(wiersz.Odczyt.Id);
+            if (!usunieto)
+            {
+                Snackbar.Add("Odczyt nie istnieje lub został już usunięty.", Severity.Warning);
+                return;
+            }
+
+            Snackbar.Add($"Odczyt licznika „{wiersz.Licznik.NumerLicznika}” został usunięty.", Severity.Success);
+            wybraneOdczytyWedlugMiesiaca.Remove(wiersz.Odczyt.Miesiac);
+            await OdswiezDane();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Nie udało się usunąć odczytu: {ex.Message}", Severity.Error);
         }
     }
 

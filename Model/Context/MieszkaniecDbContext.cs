@@ -175,7 +175,9 @@ namespace Mieszkaniec.Model.Context
                 new Uprawnienie { Id = 29, NazwaSystemowa = "Uprawnienia.Odczyt", Opis = "Podgląd ról i uprawnień" },
                 new Uprawnienie { Id = 30, NazwaSystemowa = "Uprawnienia.Edycja", Opis = "Nadawanie ról i uprawnień" },
                 new Uprawnienie { Id = 31, NazwaSystemowa = "Konfiguracja.Odczyt", Opis = "Podgląd konfiguracji systemu" },
-                new Uprawnienie { Id = 32, NazwaSystemowa = "Konfiguracja.Edycja", Opis = "Zarządzanie konfiguracją systemu" }
+                new Uprawnienie { Id = 32, NazwaSystemowa = "Konfiguracja.Edycja", Opis = "Zarządzanie konfiguracją systemu" },
+                new Uprawnienie { Id = 33, NazwaSystemowa = "Liczniki.Odczyt", Opis = "Podgląd liczników wody" },
+                new Uprawnienie { Id = 34, NazwaSystemowa = "Liczniki.Edycja", Opis = "Dodawanie i edycja liczników wody" }
             );
         }
     }

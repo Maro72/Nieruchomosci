@@ -42,6 +42,10 @@ namespace Mieszkaniec.Components.Pages.Umowy
         protected long WybranyPlikRozmiarKB = 0;
 
         private bool _trwaPrzetwarzanie = false;
+        protected bool CzyPotwierdzicOperacje { get; set; }
+        protected string TytulPotwierdzenia { get; set; } = string.Empty;
+        protected string TrescPotwierdzenia { get; set; } = string.Empty;
+        private Func<Task>? _potwierdzonaAkcja;
 
         protected override async Task OnInitializedAsync()
         {
@@ -316,39 +320,44 @@ namespace Mieszkaniec.Components.Pages.Umowy
             }
         }
 
-        protected async Task UsunZalacznik(ZalacznikUmowy zalacznik)
+        protected Task UsunZalacznik(ZalacznikUmowy zalacznik)
         {
-            if (zalacznik == null || _trwaPrzetwarzanie) return;
+            if (zalacznik == null || _trwaPrzetwarzanie) return Task.CompletedTask;
 
-            bool potwierdzenie = await JS.InvokeAsync<bool>("confirm", $"Czy na pewno usunąć plik: {zalacznik.NazwaPliku}?");
-            if (potwierdzenie)
+            TytulPotwierdzenia = "Usuwanie załącznika";
+            TrescPotwierdzenia = $"Czy na pewno usunąć plik „{zalacznik.NazwaPliku}”?";
+            _potwierdzonaAkcja = () => UsunZalacznikPotwierdzony(zalacznik);
+            CzyPotwierdzicOperacje = true;
+            return Task.CompletedTask;
+        }
+
+        private async Task UsunZalacznikPotwierdzony(ZalacznikUmowy zalacznik)
+        {
+            _trwaPrzetwarzanie = true;
+            try
             {
-                _trwaPrzetwarzanie = true;
-                try
+                bool sukces = await UmowaService.UsunZalacznikAsync(zalacznik.Id);
+                if (sukces)
                 {
-                    bool sukces = await UmowaService.UsunZalacznikAsync(zalacznik.Id);
-                    if (sukces)
+                    Model.Zalaczniki.Remove(zalacznik);
+
+                    var pelnaSciezka = Path.Combine(Directory.GetCurrentDirectory(), zalacznik.SciezkaPliku.TrimStart('/'));
+                    if (File.Exists(pelnaSciezka))
                     {
-                        Model.Zalaczniki.Remove(zalacznik);
-
-                        var pelnaSciezka = Path.Combine(Directory.GetCurrentDirectory(), zalacznik.SciezkaPliku.TrimStart('/'));
-                        if (File.Exists(pelnaSciezka))
-                        {
-                            File.Delete(pelnaSciezka);
-                        }
-
-                        StateHasChanged();
-                        await JS.InvokeVoidAsync("alert", "Załącznik został usunięty.");
+                        File.Delete(pelnaSciezka);
                     }
+
+                    StateHasChanged();
+                    await JS.InvokeVoidAsync("alert", "Załącznik został usunięty.");
                 }
-                catch (Exception ex)
-                {
-                    await JS.InvokeVoidAsync("alert", $"Błąd usuwania załącznika: {ex.Message}");
-                }
-                finally
-                {
-                    _trwaPrzetwarzanie = false;
-                }
+            }
+            catch (Exception ex)
+            {
+                await JS.InvokeVoidAsync("alert", $"Błąd usuwania załącznika: {ex.Message}");
+            }
+            finally
+            {
+                _trwaPrzetwarzanie = false;
             }
         }
 
@@ -416,37 +425,53 @@ namespace Mieszkaniec.Components.Pages.Umowy
             }
         }
 
-        protected async Task UsunAneks(AneksUmowy aneks)
+        protected Task UsunAneks(AneksUmowy aneks)
         {
-            if (aneks == null || _trwaPrzetwarzanie) return;
+            if (aneks == null || _trwaPrzetwarzanie) return Task.CompletedTask;
 
-            bool potwierdzenie = await JS.InvokeAsync<bool>("confirm", $"Czy na pewno chcesz usunąć aneks nr {aneks.NumerAneksu}?");
+            TytulPotwierdzenia = "Usuwanie aneksu";
+            TrescPotwierdzenia = $"Czy na pewno chcesz usunąć aneks nr {aneks.NumerAneksu}?";
+            _potwierdzonaAkcja = () => UsunAneksPotwierdzony(aneks);
+            CzyPotwierdzicOperacje = true;
+            return Task.CompletedTask;
+        }
 
-            if (potwierdzenie)
+        private async Task UsunAneksPotwierdzony(AneksUmowy aneks)
+        {
+            _trwaPrzetwarzanie = true;
+            try
             {
-                _trwaPrzetwarzanie = true;
-                try
+                bool sukces = await UmowaService.UsunAneksAsync(aneks.Id);
+                if (sukces)
                 {
-                    bool sukces = await UmowaService.UsunAneksAsync(aneks.Id);
-                    if (sukces)
-                    {
-                        Model.Aneksy.Remove(aneks);
-                        StateHasChanged();
-                        await JS.InvokeVoidAsync("alert", "Aneks usunięty.");
-                    }
-                    else
-                    {
-                        await JS.InvokeVoidAsync("alert", "Nie udało się usunąć aneksu z bazy.");
-                    }
+                    Model.Aneksy.Remove(aneks);
+                    StateHasChanged();
+                    await JS.InvokeVoidAsync("alert", "Aneks usunięty.");
                 }
-                catch (Exception ex)
+                else
                 {
-                    await JS.InvokeVoidAsync("alert", $"Wystąpił błąd podczas usuwania: {ex.Message}");
+                    await JS.InvokeVoidAsync("alert", "Nie udało się usunąć aneksu z bazy.");
                 }
-                finally
-                {
-                    _trwaPrzetwarzanie = false;
-                }
+            }
+            catch (Exception ex)
+            {
+                await JS.InvokeVoidAsync("alert", $"Wystąpił błąd podczas usuwania: {ex.Message}");
+            }
+            finally
+            {
+                _trwaPrzetwarzanie = false;
+            }
+        }
+
+        protected async Task ObsluzPotwierdzenieAsync(bool czyPotwierdzono)
+        {
+            CzyPotwierdzicOperacje = false;
+            var akcja = _potwierdzonaAkcja;
+            _potwierdzonaAkcja = null;
+
+            if (czyPotwierdzono && akcja != null)
+            {
+                await akcja();
             }
         }
 

@@ -28,8 +28,7 @@ namespace Mieszkaniec.Components.Pages.FAwarie
 
         protected List<string> OpcjeStatusow { get; set; } = new() { "Nowe", "W weryfikacji", "W naprawie", "Zakończone" };
 
-        // POPRAWKA: Zmiana "DisableBackdropClick" na poprawną nazwę "BackdropClick = false" w MudBlazor
-        protected DialogOptions DialogOptions = new() { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true, BackdropClick = false };
+        protected DialogOptions DialogOptions = new() { MaxWidth = MaxWidth.Small, FullWidth = true, CloseButton = true, BackdropClick = false };
 
         protected string Title => Model?.Id == 0 ? "Zarejestruj nowe zgłoszenie awarii" : (Model?.CzyArchiwum == true ? "Podgląd awarii (Zablokowane)" : "Edycja zgłoszenia awarii");
 

@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.JSInterop;
 using MudBlazor;
 using System;
@@ -13,6 +15,8 @@ namespace Mieszkaniec.Components.UI
     public partial class FGrid<TItem> : ComponentBase
     {
         [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
+        [Inject] private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = default!;
+        [Inject] private IAuthorizationService AuthorizationService { get; set; } = default!;
         [Parameter] public string Title { get; set; } = "Lista";
         [Parameter] public IEnumerable<TItem> Items { get; set; } = Array.Empty<TItem>();
         [Parameter] public TItem? SelectedItem { get; set; }
@@ -30,7 +34,9 @@ namespace Mieszkaniec.Components.UI
         [Parameter] public EventCallback OnAdd { get; set; }
         [Parameter] public EventCallback<TItem> OnEdit { get; set; }
         [Parameter] public EventCallback<TItem> OnDelete { get; set; }
+        [Parameter] public Func<TItem, bool>? CanEdit { get; set; }
         [Parameter] public Func<TItem, bool>? CanDelete { get; set; }
+        [Parameter] public string? CrudPolicy { get; set; }
         [Parameter] public bool ShowCrudActions { get; set; } = true;
         [Parameter] public bool ShowToolbar { get; set; } = true;
         [Parameter] public bool ShowPrint { get; set; } = true;
@@ -38,14 +44,26 @@ namespace Mieszkaniec.Components.UI
         [Parameter] public bool ShowPager { get; set; } = true;
         private string _searchText = "";
         private string _lastParameterSearchText = "";
+        protected bool CanUseCrudActions { get; private set; }
 
-        protected override void OnParametersSet()
+        protected override async Task OnParametersSetAsync()
         {
             if (!string.Equals(SearchText, _lastParameterSearchText, StringComparison.Ordinal))
             {
                 _lastParameterSearchText = SearchText;
                 _searchText = SearchText;
             }
+
+            if (string.IsNullOrWhiteSpace(CrudPolicy))
+            {
+                CanUseCrudActions = true;
+                return;
+            }
+
+            CanUseCrudActions = false;
+            var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var authorizationResult = await AuthorizationService.AuthorizeAsync(authenticationState.User, CrudPolicy);
+            CanUseCrudActions = authorizationResult.Succeeded;
         }
 
         protected bool MatchesSearch(TItem item)
@@ -151,5 +169,21 @@ namespace Mieszkaniec.Components.UI
             SelectedItem = args.Item;
             await SelectedItemChanged.InvokeAsync(SelectedItem);
         }
+
+        protected Task HandleAdd() => CanUseCrudActions ? OnAdd.InvokeAsync() : Task.CompletedTask;
+
+        protected Task HandleEdit() =>
+            CanUseCrudActions &&
+            SelectedItem is not null &&
+            (CanEdit is null || CanEdit(SelectedItem))
+                ? OnEdit.InvokeAsync(SelectedItem)
+                : Task.CompletedTask;
+
+        protected Task HandleDelete() =>
+            CanUseCrudActions &&
+            SelectedItem is not null &&
+            (CanDelete is null || CanDelete(SelectedItem))
+                ? OnDelete.InvokeAsync(SelectedItem)
+                : Task.CompletedTask;
     }
 }

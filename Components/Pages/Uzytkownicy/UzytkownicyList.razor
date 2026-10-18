@@ -19,6 +19,7 @@
         <div class="flex-grow-1 overflow-auto px-4 mt-4">
             <FGrid TItem="Uzytkownik"
                    Items="@Uzytkownicy"
+                   CrudPolicy="Uzytkownicy.Edycja"
                    Title="Zarządzanie Użytkownikami"
                    ShowToolbar="true"
                    ShowSearch="true"
@@ -87,7 +88,11 @@
 
                     <MudBlazor.TemplateColumn T="Uzytkownik" Title="Akcje" CellClass="text-end">
                         <CellTemplate Context="ctx">
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => UsunUzytkownika(ctx.Item.Id))" Title="Usuń" />
+                            <AuthorizeView Policy="Uzytkownicy.Edycja">
+                                <Authorized>
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => UsunUzytkownika(ctx.Item.Id))" Title="Usuń" />
+                                </Authorized>
+                            </AuthorizeView>
                         </CellTemplate>
                     </MudBlazor.TemplateColumn>
                 </GridColumns>
@@ -95,3 +100,10 @@
         </div>
     }
 </div>
+
+<PotwierdzenieDialog IsVisible="@CzyPotwierdzicUsuniecie"
+                     Title="Potwierdzenie usunięcia"
+                     Message="Czy na pewno chcesz trwale usunąć tego użytkownika z systemu?"
+                     ThemeClass="danger"
+                     ConfirmText="Usuń"
+                     OnAnswer="ObsluzPotwierdzenieUsuniecia" />

@@ -64,13 +64,30 @@ namespace Mieszkaniec.Services.Implementations
         public async Task<bool> UsunAsync(int id)
         {
             using var context = _contextFactory.CreateDbContext();
-            var lokal = await context.LokaleWynajem.FindAsync(id);
-            if (lokal != null)
+            var lokal = await context.LokaleWynajem
+                .Include(item => item.HistoriaUmow)
+                    .ThenInclude(relacja => relacja.UmowaNajmu)
+                .SingleOrDefaultAsync(item => item.Id == id);
+
+            if (lokal is null)
             {
-                context.LokaleWynajem.Remove(lokal);
-                return await context.SaveChangesAsync() > 0;
+                return false;
             }
-            return false;
+
+            var maAktywnaUmowe = lokal.HistoriaUmow.Any(relacja =>
+                relacja.UmowaNajmu?.CzyAktywna == true &&
+                relacja.PowierzchniaWynajetaM2 > 0);
+
+            if (maAktywnaUmowe ||
+                lokal.Status != "Wolny" ||
+                lokal.StatusAktualny != "Wolny" ||
+                lokal.PowierzchniaWynajetaM2 > 0)
+            {
+                return false;
+            }
+
+            context.LokaleWynajem.Remove(lokal);
+            return await context.SaveChangesAsync() > 0;
         }
 
         public async Task<WynajemStatystyki> PobierzStatystykiDlaObiektuAsync(int obiektId)

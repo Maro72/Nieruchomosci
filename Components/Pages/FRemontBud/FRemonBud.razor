@@ -12,6 +12,7 @@
     <FGrid TItem="PraceRemontowe"
            Title="@(CzyArchiwum ? "Archiwum zakończonych i anulowanych remontów" : "Prace Remontowe")"
            Items="@ListaPrac"
+           CrudPolicy="Remonty.Edycja"
            GridKey="@gridKey"
            @bind-SelectedItem="WybranyRemont"
            ShowCrudActions="@(!CzyArchiwum)"
@@ -67,18 +68,26 @@
 
             @if (CzyArchiwum)
             {
-                <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Unarchive" Color="Color.Primary"
-                           Size="Size.Small" Disabled="@(WybranyRemont is null)"
-                           OnClick="OtworzDialogPrzywrocenia" Class="me-2">
-                    Przywróć
-                </MudButton>
+                <AuthorizeView Policy="Remonty.Edycja" Context="remontyEditContext">
+                    <Authorized>
+                        <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Unarchive" Color="Color.Primary"
+                                   Size="Size.Small" Disabled="@(WybranyRemont is null)"
+                                   OnClick="OtworzDialogPrzywrocenia" Class="me-2">
+                            Przywróć
+                        </MudButton>
+                    </Authorized>
+                </AuthorizeView>
             }
             else
             {
-                <MudToggleGroup T="bool" Value="CzyWidokKanban" ValueChanged="OnWidokChanged" Color="Color.Default" Size="Size.Small" Dense="true" Class="me-2">
-                    <MudToggleItem Value="false"><MudIcon Icon="@Icons.Material.Filled.List" Size="Size.Small" /> Lista</MudToggleItem>
-                    <MudToggleItem Value="true"><MudIcon Icon="@Icons.Material.Filled.Dashboard" Size="Size.Small" /> Kanban</MudToggleItem>
-                </MudToggleGroup>
+                <AuthorizeView Policy="Remonty.Edycja" Context="kanbanEditContext">
+                    <Authorized>
+                        <MudToggleGroup T="bool" Value="CzyWidokKanban" ValueChanged="OnWidokChanged" Color="Color.Default" Size="Size.Small" Dense="true" Class="me-2">
+                            <MudToggleItem Value="false"><MudIcon Icon="@Icons.Material.Filled.List" Size="Size.Small" /> Lista</MudToggleItem>
+                            <MudToggleItem Value="true"><MudIcon Icon="@Icons.Material.Filled.Dashboard" Size="Size.Small" /> Kanban</MudToggleItem>
+                        </MudToggleGroup>
+                    </Authorized>
+                </AuthorizeView>
 
             }
 
@@ -219,14 +228,17 @@ else
                     <MudToggleItem Value="true"><MudIcon Icon="@Icons.Material.Filled.Archive" Size="Size.Small" /> Archiwum</MudToggleItem>
                 </MudToggleGroup>
 
-                <MudToggleGroup T="bool" Value="CzyWidokKanban" ValueChanged="OnWidokChanged" Color="Color.Default" Size="Size.Small" Dense="true">
-                    <MudToggleItem Value="false"><MudIcon Icon="@Icons.Material.Filled.List" Size="Size.Small" /> Lista</MudToggleItem>
-                    <MudToggleItem Value="true"><MudIcon Icon="@Icons.Material.Filled.Dashboard" Size="Size.Small" /> Kanban</MudToggleItem>
-                </MudToggleGroup>
-
-                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" Color="Color.Primary" Size="Size.Small" OnClick="OpenCreateDialog">
-                    Dodaj
-                </MudButton>
+                <AuthorizeView Policy="Remonty.Edycja" Context="kanbanToolbarEditContext">
+                    <Authorized>
+                        <MudToggleGroup T="bool" Value="CzyWidokKanban" ValueChanged="OnWidokChanged" Color="Color.Default" Size="Size.Small" Dense="true">
+                            <MudToggleItem Value="false"><MudIcon Icon="@Icons.Material.Filled.List" Size="Size.Small" /> Lista</MudToggleItem>
+                            <MudToggleItem Value="true"><MudIcon Icon="@Icons.Material.Filled.Dashboard" Size="Size.Small" /> Kanban</MudToggleItem>
+                        </MudToggleGroup>
+                        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" Color="Color.Primary" Size="Size.Small" OnClick="OpenCreateDialog">
+                            Dodaj
+                        </MudButton>
+                    </Authorized>
+                </AuthorizeView>
 
                 <MudIconButton Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" OnClick="RefreshGridAsync" Title="Odśwież" />
             </MudStack>

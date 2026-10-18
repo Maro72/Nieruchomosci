@@ -20,6 +20,7 @@ namespace Mieszkaniec.Components.Pages.Obiekty
         [Inject] protected IDialogService DialogService { get; set; } = default!;
         [Inject] protected IJSRuntime JSRuntime { get; set; } = default!; // Wstrzyknięcie JS do pobierania Excela
         [Inject] protected AuthenticationStateProvider AuthenticationStateProvider { get; set; } = default!;
+        [Inject] protected ISnackbar Snackbar { get; set; } = default!;
 
         protected List<Obiekt> WszystkieObiekty { get; set; } = new();
         protected List<Obiekt> FiltrowanaListaObiektow { get; set; } = new();
@@ -186,7 +187,21 @@ namespace Mieszkaniec.Components.Pages.Obiekty
             {
                 if (OczekujacaAkcja == TypAkcji.Usunięcie)
                 {
-                    await ObiektService.DeleteOrArchiveAsync(ObiektDoPrzetworzenia.Id);
+                    try
+                    {
+                        var wynikUsuwania = await ObiektService.DeleteOrArchiveAsync(ObiektDoPrzetworzenia.Id);
+                        var typPowiadomienia = wynikUsuwania.StartsWith("Błąd:", StringComparison.Ordinal)
+                            ? Severity.Error
+                            : wynikUsuwania.Contains("zarchiwizowany", StringComparison.OrdinalIgnoreCase)
+                                ? Severity.Info
+                                : Severity.Success;
+                        Snackbar.Add(wynikUsuwania, typPowiadomienia);
+                    }
+                    catch (Exception ex)
+                    {
+                        Snackbar.Add($"Nie udało się usunąć ani zarchiwizować obiektu: {ex.Message}", Severity.Error);
+                    }
+
                     WybranyObiekt = null;
                     await OdswiezDane();
                 }

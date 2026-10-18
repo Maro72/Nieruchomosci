@@ -9,6 +9,7 @@
 <FGrid TItem="TerminDefinicja"
        Title="Słownik: Definicje Terminów"
        Items="@ListaDefinicji"
+       CrudPolicy="Konfiguracja.Edycja"
        GridKey="@gridKey"
        @bind-SelectedItem="WybranyTermin"
        OnAdd="OpenCreateDialog"

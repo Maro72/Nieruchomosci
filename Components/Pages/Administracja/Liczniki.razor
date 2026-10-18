@@ -1,9 +1,10 @@
 @page "/administracja/liczniki"
-@attribute [Authorize(Policy = "Administracja.Odczyt")]
+@attribute [Authorize(Policy = "Liczniki.Odczyt")]
 @using Mieszkaniec.Model.Entities
 @using Mieszkaniec.Services.Interfaces
 @using Mieszkaniec.Components.Pages.Liczniki
 @using MudBlazor
+@using Microsoft.AspNetCore.Components.Authorization
 @inject ILicznikService LicznikService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
@@ -17,9 +18,13 @@
                 <MudText Typo="Typo.h5">Administracja licznikami</MudText>
                 <MudText Typo="Typo.body2" Color="Color.Secondary">Numery liczników, przypisane budynki, uwagi i statusy.</MudText>
             </div>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="DodajLicznik">
-                Dodaj licznik
-            </MudButton>
+            <AuthorizeView Policy="Liczniki.Edycja">
+                <Authorized>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="DodajLicznik">
+                        Dodaj licznik
+                    </MudButton>
+                </Authorized>
+            </AuthorizeView>
         </div>
 
         @if (liczniki is null)
@@ -52,7 +57,11 @@
                     </MudChip>
                 </MudTd>
                 <MudTd DataLabel="Akcje">
-                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" Title="Edytuj licznik" OnClick="@(() => EdytujLicznik(licznik))" />
+                    <AuthorizeView Policy="Liczniki.Edycja">
+                        <Authorized>
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" Title="Edytuj licznik" OnClick="@(() => EdytujLicznik(licznik))" />
+                        </Authorized>
+                    </AuthorizeView>
                 </MudTd>
             </RowTemplate>
             <PagerContent>

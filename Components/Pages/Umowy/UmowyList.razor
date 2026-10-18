@@ -21,6 +21,7 @@
         <div class="flex-grow-1 overflow-auto px-4 modern-grid-scroll">
             <FGrid TItem="UmowaNajmu"
                    Items="@Umowy"
+                   CrudPolicy="Umowy.Zarzadzanie"
                    Title="Rejestr Umów Najmu"
                    ShowToolbar="true"
                    ShowSearch="true"
@@ -228,6 +229,13 @@
         </div>
     }
 </div>
+
+<PotwierdzenieDialog IsVisible="@CzyPotwierdzicUsuniecie"
+                     Title="Potwierdź usunięcie umowy"
+                     Message="@TrescPotwierdzeniaUsuniecia"
+                     ThemeClass="danger"
+                     ConfirmText="Usuń umowę"
+                     OnAnswer="ObsluzPotwierdzenieUsuniecia" />
 
 <style>
     .modern-grid-scroll .mud-table-container {

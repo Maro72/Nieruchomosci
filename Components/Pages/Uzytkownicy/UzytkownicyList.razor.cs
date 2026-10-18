@@ -16,6 +16,8 @@ namespace Mieszkaniec.Components.Pages.Uzytkownicy
         protected List<Uzytkownik> Uzytkownicy { get; set; } = new();
         protected List<Rola> DostepneRole { get; set; } = new();
         protected List<Uprawnienie> DostepneUprawnienia { get; set; } = new();
+        protected bool CzyPotwierdzicUsuniecie { get; set; }
+        private int? _uzytkownikDoUsunieciaId;
 
         protected override async Task OnInitializedAsync()
         {
@@ -70,20 +72,27 @@ namespace Mieszkaniec.Components.Pages.Uzytkownicy
             }
         }
 
-        protected async Task UsunUzytkownika(int id)
+        protected Task UsunUzytkownika(int id)
         {
-            // Poprawka CS1061: Zmiana na bezpieczne wywołanie asynchroniczne ShowMessageBoxAsync
-            bool? result = await DialogService.ShowMessageBoxAsync(
-                "Potwierdzenie usunięcia",
-                "Czy na pewno chcesz trwale usunąć tego użytkownika z systemu?",
-                yesText: "Usuń", cancelText: "Anuluj");
+            _uzytkownikDoUsunieciaId = id;
+            CzyPotwierdzicUsuniecie = true;
+            return Task.CompletedTask;
+        }
 
-            if (result == true)
+        protected async Task ObsluzPotwierdzenieUsuniecia(bool czyPotwierdzono)
+        {
+            CzyPotwierdzicUsuniecie = false;
+            if (!czyPotwierdzono || !_uzytkownikDoUsunieciaId.HasValue)
             {
-                await UzytkownikService.UsunUzytkownikaAsync(id);
-                Snackbar.Add("Użytkownik został usunięty.", Severity.Info);
-                await OdswiezListe();
+                _uzytkownikDoUsunieciaId = null;
+                return;
             }
+
+            var id = _uzytkownikDoUsunieciaId.Value;
+            _uzytkownikDoUsunieciaId = null;
+            await UzytkownikService.UsunUzytkownikaAsync(id);
+            Snackbar.Add("Użytkownik został usunięty.", Severity.Info);
+            await OdswiezListe();
         }
     }
 }

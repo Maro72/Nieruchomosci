@@ -977,6 +977,18 @@ namespace Mieszkaniec.Migrations
                             Id = 32,
                             NazwaSystemowa = "Konfiguracja.Edycja",
                             Opis = "Zarządzanie konfiguracją systemu"
+                        },
+                        new
+                        {
+                            Id = 33,
+                            NazwaSystemowa = "Liczniki.Odczyt",
+                            Opis = "Podgląd liczników wody"
+                        },
+                        new
+                        {
+                            Id = 34,
+                            NazwaSystemowa = "Liczniki.Edycja",
+                            Opis = "Dodawanie i edycja liczników wody"
                         });
                 });
 

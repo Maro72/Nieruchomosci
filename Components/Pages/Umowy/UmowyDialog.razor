@@ -354,3 +354,10 @@
         </div>
     </DialogActions>
 </MudDialog>
+
+<PotwierdzenieDialog IsVisible="@CzyPotwierdzicOperacje"
+                     Title="@TytulPotwierdzenia"
+                     Message="@TrescPotwierdzenia"
+                     ThemeClass="danger"
+                     ConfirmText="Usuń"
+                     OnAnswer="ObsluzPotwierdzenieAsync" />

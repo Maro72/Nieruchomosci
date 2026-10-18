@@ -6,9 +6,11 @@
 @using Mieszkaniec.Components.UI
 @using MudBlazor
 
+<div class="faults-grid">
 <FGrid TItem="UsterkiBud"
        Title="Awarie i Usterki"
        Items="@ListaUsterek"
+       CrudPolicy="Awarie.Obsluga"
        GridKey="@gridKey"
        @bind-SelectedItem="ObiektDoPrzetworzenia"
        OnAdd="OpenCreateDialog"
@@ -89,7 +91,7 @@
 
     @* --- KOLUMNY GRIDA --- *@
     <GridColumns>
-        <PropertyColumn T="UsterkiBud" TProperty="DateTime" Property="x => x.DataZgloszenia" Title="Data wpłynięcia" Width="130px" Format="yyyy-MM-dd" HeaderClass="justify-center" CellClass="justify-center text-center fw-medium">
+        <PropertyColumn T="UsterkiBud" TProperty="DateTime" Property="x => x.DataZgloszenia" Title="Data wpłynięcia" Width="145px" HeaderStyle="width:145px; min-width:145px; max-width:145px;" CellStyle="width:145px; min-width:145px; max-width:145px;" Format="yyyy-MM-dd" HeaderClass="justify-center" CellClass="justify-center text-center fw-medium">
             <CellTemplate Context="wiersz">
                 <div class="w-100" @onclick="@(() => WybierzWiersz(wiersz.Item))" style="cursor:pointer;">
                     @wiersz.Item.DataZgloszenia.ToString("yyyy-MM-dd")
@@ -97,7 +99,7 @@
             </CellTemplate>
         </PropertyColumn>
 
-        <PropertyColumn T="UsterkiBud" TProperty="string" Property="x => x.Status" Title="Status" Width="140px" HeaderClass="justify-center" CellClass="justify-center text-center">
+        <PropertyColumn T="UsterkiBud" TProperty="string" Property="x => x.Status" Title="Status" Width="135px" HeaderStyle="width:135px; min-width:135px; max-width:135px;" CellStyle="width:135px; min-width:135px; max-width:135px;" HeaderClass="justify-center" CellClass="justify-center text-center">
             <CellTemplate Context="wiersz">
                 <span class="custom-badge @WyznaczKlasuStatusu(wiersz.Item.Status)" @onclick="@(() => WybierzWiersz(wiersz.Item))" style="cursor:pointer;">
                     <i class="bi bi-circle-fill me-1" style="font-size: 0.4rem;"></i>
@@ -106,7 +108,7 @@
             </CellTemplate>
         </PropertyColumn>
 
-        <PropertyColumn T="UsterkiBud" TProperty="string" Property="x => x.PriorytetUsterki != null ? x.PriorytetUsterki.Nazwa : string.Empty" Title="Priorytet" Width="130px" HeaderClass="justify-center" CellClass="justify-center text-center">
+        <PropertyColumn T="UsterkiBud" TProperty="string" Property="x => x.PriorytetUsterki != null ? x.PriorytetUsterki.Nazwa : string.Empty" Title="Priorytet" Width="135px" HeaderStyle="width:135px; min-width:135px; max-width:135px;" CellStyle="width:135px; min-width:135px; max-width:135px;" HeaderClass="justify-center" CellClass="justify-center text-center">
             <CellTemplate Context="wiersz">
                 <div class="w-100" @onclick="@(() => WybierzWiersz(wiersz.Item))" style="cursor:pointer;">
                     @if (wiersz.Item.PriorytetUsterki != null)
@@ -120,7 +122,7 @@
             </CellTemplate>
         </PropertyColumn>
 
-        <PropertyColumn T="UsterkiBud" TProperty="string" Property="x => x.Obiekt.Nazwa" Title="Nieruchomość" Width="180px">
+        <PropertyColumn T="UsterkiBud" TProperty="string" Property="x => x.Obiekt.Nazwa" Title="Budynek" Width="150px" HeaderStyle="width:150px; min-width:150px; max-width:150px;" CellStyle="width:150px; min-width:150px; max-width:150px;">
             <CellTemplate Context="wiersz">
                 <div class="w-100" @onclick="@(() => WybierzWiersz(wiersz.Item))" style="cursor:pointer;">
                     @(wiersz.Item.Obiekt?.Nazwa ?? "-")
@@ -128,21 +130,29 @@
             </CellTemplate>
         </PropertyColumn>
 
-        <PropertyColumn T="UsterkiBud" TProperty="string" Property="x => x.OpisZgłoszenia" Title="Opis problemu i zgłoszenia" Width="280px">
+        <PropertyColumn T="UsterkiBud" TProperty="string" Property="x => x.OpisZgłoszenia" Title="Opis problemu i zgłoszenia" Width="430px" HeaderStyle="width:430px; min-width:430px; max-width:430px;" CellStyle="width:430px; min-width:430px; max-width:430px;" CellClass="fault-description-cell">
             <CellTemplate Context="wiersz">
-                <div class="d-flex align-items-start w-100" @onclick="@(() => WybierzWiersz(wiersz.Item))" style="cursor:pointer;">
-                    <i class="bi @(wiersz.Item.RodzajUsterki?.KlasaIkony ?? "bi-tools") text-danger me-2 mt-1" style="font-size: 1.1rem;"></i>
-                    <div>
-                        <span class="fw-semibold text-dark d-block text-wrap">@wiersz.Item.OpisZgłoszenia</span>
-                        <small class="text-muted d-block" style="font-size: 0.75rem;">
-                            Zgłosił(a): <strong class="text-secondary">@wiersz.Item.OsobaZglaszajaca</strong>
+                <div class="fault-description" @onclick="@(() => WybierzWiersz(wiersz.Item))">
+                    <span class="fault-description__icon">
+                        <i class="bi @(wiersz.Item.RodzajUsterki?.KlasaIkony ?? "bi-tools")" aria-hidden="true"></i>
+                    </span>
+                    <div class="fault-description__content">
+                        <MudTooltip Text="@wiersz.Item.OpisZgłoszenia" Placement="Placement.Right" Arrow="true">
+                            <ChildContent>
+                                <span class="fault-description__text">@wiersz.Item.OpisZgłoszenia</span>
+                            </ChildContent>
+                        </MudTooltip>
+                        <small class="fault-description__reporter">
+                            <i class="bi bi-person-circle" aria-hidden="true"></i>
+                            <span>Zgłosił(a):</span>
+                            <strong>@wiersz.Item.OsobaZglaszajaca</strong>
                         </small>
                     </div>
                 </div>
             </CellTemplate>
         </PropertyColumn>
 
-        <PropertyColumn T="UsterkiBud" TProperty="string" Property="x => x.UwagiKonserwatora" Title="Komentarz / Notatki naprawy" Width="220px">
+        <PropertyColumn T="UsterkiBud" TProperty="string" Property="x => x.UwagiKonserwatora" Title="Komentarz / Notatki naprawy" Width="220px" HeaderStyle="width:220px; min-width:220px; max-width:220px;" CellStyle="width:220px; min-width:220px; max-width:220px;">
             <CellTemplate Context="wiersz">
                 <div class="w-100" @onclick="@(() => WybierzWiersz(wiersz.Item))" style="cursor:pointer;">
                     @wiersz.Item.UwagiKonserwatora
@@ -151,7 +161,7 @@
         </PropertyColumn>
 
         @* --- ZAAWANSOWANA KOLUMNA PDF MUDBLAZOR (Nowa, tak jak w Przeglądach) --- *@
-        <PropertyColumn T="UsterkiBud" TProperty="int" Property="x => x.Zalaczniki != null ? x.Zalaczniki.Count : 0" Title="Załączniki" Width="100px" HeaderClass="justify-center" CellClass="justify-center text-center">
+        <PropertyColumn T="UsterkiBud" TProperty="int" Property="x => x.Zalaczniki != null ? x.Zalaczniki.Count : 0" Title="Załączniki" Width="100px" HeaderStyle="width:100px; min-width:100px; max-width:100px;" CellStyle="width:100px; min-width:100px; max-width:100px;" HeaderClass="justify-center" CellClass="justify-center text-center">
             <CellTemplate Context="wiersz">
                 <div class="w-100 d-flex justify-content-center" @onclick="@(() => WybierzWiersz(wiersz.Item))" style="cursor:pointer;">
                     @if (wiersz.Item.Zalaczniki != null && wiersz.Item.Zalaczniki.Any())
@@ -175,6 +185,7 @@
         </PropertyColumn>
     </GridColumns>
 </FGrid>
+</div>
 
 <FAwarieDialog @bind-IsVisible="IsDialogVisible"
                Model="EdytowanyModel"
@@ -190,4 +201,3 @@
                      ThemeClass="@ConfirmTheme"
                      IconClass="@ConfirmIcon"
                      OnAnswer="HandleConfirmationAnswer" />
-

@@ -36,6 +36,9 @@ namespace Mieszkaniec.Components.Pages.Umowy
         protected int NieaktywneUmowy { get; set; }
 
         protected int WygasajaceUmowy { get; set; }
+        protected bool CzyPotwierdzicUsuniecie { get; set; }
+        protected string TrescPotwierdzeniaUsuniecia { get; set; } = string.Empty;
+        private UmowaNajmu? _umowaDoUsuniecia;
 
 
 
@@ -193,34 +196,29 @@ namespace Mieszkaniec.Components.Pages.Umowy
                 options);
         }
 
-        protected async Task PotwierdzUsuniecieUmowy(UmowaNajmu umowa)
+        protected Task PotwierdzUsuniecieUmowy(UmowaNajmu umowa)
         {
             if (umowa.CzyAktywna)
             {
                 Snackbar.Add("Najpierw przenieś umowę do archiwum, aby ją usunąć.", Severity.Warning);
-                return;
+                return Task.CompletedTask;
             }
 
-            var parameters = new DialogParameters
-            {
-                ["NumerUmowy"] = umowa.NumerUmowy,
-                ["NazwaNajemcy"] = umowa.Najemca?.NazwaFirmyOsoby ?? "nieznany najemca"
-            };
-            var options = new DialogOptions
-            {
-                MaxWidth = MaxWidth.Small,
-                FullWidth = true,
-                CloseButton = true,
-                CloseOnEscapeKey = true
-            };
+            _umowaDoUsuniecia = umowa;
+            var najemca = umowa.Najemca?.NazwaFirmyOsoby ?? "nieznany najemca";
+            TrescPotwierdzeniaUsuniecia =
+                $"Czy na pewno chcesz trwale usunąć umowę archiwalną {umowa.NumerUmowy} najemcy {najemca}? Przypisane lokale, aneksy i załączniki również zostaną trwale usunięte. Tej operacji nie można cofnąć.";
+            CzyPotwierdzicUsuniecie = true;
+            return Task.CompletedTask;
+        }
 
-            var dialog = await DialogService.ShowAsync<UsunUmoweDialog>(
-                "Potwierdź usunięcie umowy",
-                parameters,
-                options);
-            var result = await dialog.Result;
+        protected async Task ObsluzPotwierdzenieUsuniecia(bool czyPotwierdzono)
+        {
+            CzyPotwierdzicUsuniecie = false;
+            var umowa = _umowaDoUsuniecia;
+            _umowaDoUsuniecia = null;
 
-            if (result.Canceled || result.Data is not true)
+            if (!czyPotwierdzono || umowa is null)
             {
                 return;
             }

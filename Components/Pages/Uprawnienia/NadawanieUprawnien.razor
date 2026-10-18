@@ -1,5 +1,5 @@
 @page "/uprawnienia"
-@attribute [Authorize(Policy = "Uprawnienia.Odczyt")]
+@attribute [Authorize(Policy = "Uprawnienia.Edycja")]
 @using MudBlazor
 @using Mieszkaniec.Model.Entities
 @using Mieszkaniec.Services.Interfaces
@@ -82,13 +82,13 @@
                         <div class="col-12">
                             <MudText Typo="Typo.subtitle2" Class="fw-bold text-secondary mb-2 text-uppercase" Style="letter-spacing: 0.5px;">Szybkie Szablony Ról</MudText>
                             <div class="d-flex flex-wrap gap-2">
-                                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Build" Size="Size.Small" OnClick='() => ZastosujSzablon("Konserwator")' Disabled="CzyJestAdminem()">
+                                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Build" Size="Size.Small" OnClick='() => ZastosujSzablon("Konserwator")'>
                                     Szablon: Konserwator / Technik
                                 </MudButton>
-                                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Business" Size="Size.Small" OnClick='() => ZastosujSzablon("Zarządca")' Disabled="CzyJestAdminem()">
+                                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Business" Size="Size.Small" OnClick='() => ZastosujSzablon("Zarządca")'>
                                     Szablon: Zarządca Nieruchomości
                                 </MudButton>
-                                <MudButton Variant="Variant.Outlined" Color="Color.Info" StartIcon="@Icons.Material.Filled.Description" Size="Size.Small" OnClick='() => ZastosujSzablon("Agent")' Disabled="CzyJestAdminem()">
+                                <MudButton Variant="Variant.Outlined" Color="Color.Info" StartIcon="@Icons.Material.Filled.Description" Size="Size.Small" OnClick='() => ZastosujSzablon("Agent")'>
                                     Szablon: Agent Najmu
                                 </MudButton>
                                 <MudButton Variant="Variant.Outlined" Color="Color.Warning" StartIcon="@Icons.Material.Filled.Star" Size="Size.Small" OnClick='() => ZastosujSzablon("Admin")'>
@@ -101,7 +101,7 @@
                         {
                             <div class="col-12">
                                 <MudAlert Severity="Severity.Info" Class="my-1 py-2">
-                                    <span class="fw-bold">Rola Administratora:</span> Dostęp do wszystkich stron i funkcji systemu przyznany automatycznie.
+                                    <span class="fw-bold">Rola Administratora:</span> Dostęp do wszystkich stron i funkcji systemu przyznany automatycznie. Aby zmienić dostęp, wybierz szablon innej roli.
                                 </MudAlert>
                             </div>
                         }
@@ -188,7 +188,8 @@
         new("Umowy", "Umowy najmu i aneksy", "Umowy.Odczyt", "Umowy.Zarzadzanie", Icons.Material.Filled.Description),
         new("Użytkownicy", "Konta użytkowników", "Uzytkownicy.Odczyt", "Uzytkownicy.Edycja", Icons.Material.Filled.People),
         new("Uprawnienia", "Nadawanie ról i dostępów", "Uprawnienia.Odczyt", "Uprawnienia.Edycja", Icons.Material.Filled.VerifiedUser),
-        new("Konfiguracja", "Baza danych, pliki i ustawienia", "Konfiguracja.Odczyt", "Konfiguracja.Edycja", Icons.Material.Filled.Settings)
+        new("Konfiguracja", "Baza danych, pliki i ustawienia", "Konfiguracja.Odczyt", "Konfiguracja.Edycja", Icons.Material.Filled.Settings),
+        new("Liczniki", "Administracja licznikami wody", "Liczniki.Odczyt", "Liczniki.Edycja", Icons.Material.Filled.Speed)
     };
 
     protected override async Task OnInitializedAsync()

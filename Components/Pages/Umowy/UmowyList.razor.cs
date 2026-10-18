@@ -18,6 +18,7 @@ namespace Mieszkaniec.Components.Pages.Umowy
         [Inject] protected IDialogService DialogService { get; set; } = default!;
         [Inject] protected INajemcaService NajemcaService { get; set; } = default!;
         [Inject] protected IJSRuntime JSRuntime { get; set; } = default!;
+        [Inject] protected ISnackbar Snackbar { get; set; } = default!;
 
         [Parameter]
         [SupplyParameterFromQuery]
@@ -99,9 +100,11 @@ namespace Mieszkaniec.Components.Pages.Umowy
             NavigationManager.NavigateTo("/umowy");
         }
 
+        protected bool CzyMoznaUsunacUmowe(UmowaNajmu umowa) => !umowa.CzyAktywna;
+
         protected async Task OpenDodajDialog()
         {
-            var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
+            var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
 
             // Jeśli użytkownik jest w widoku filtrowania najemcy i klika "Dodaj umowę",
             // możemy mu od razu domyślnie podpiąć tego najemcę w formularzu!
@@ -130,7 +133,7 @@ namespace Mieszkaniec.Components.Pages.Umowy
         {
             if (umowa == null) return;
 
-            var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
+            var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
 
             var klonUmowy = new UmowaNajmu
             {
@@ -171,6 +174,103 @@ namespace Mieszkaniec.Components.Pages.Umowy
             var parameters = new DialogParameters { { "Zalaczniki", zalaczniki } };
             var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, CloseButton = true };
             await DialogService.ShowAsync<ZalacznikiDialog>("", parameters, options);
+        }
+
+        protected async Task PokazLokaleDialog(UmowaNajmu umowa)
+        {
+            var parameters = new DialogParameters { ["Umowa"] = umowa };
+            var options = new DialogOptions
+            {
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+                CloseButton = true,
+                CloseOnEscapeKey = true
+            };
+
+            await DialogService.ShowAsync<LokaleUmowyPodgladDialog>(
+                $"Lokale przypisane do umowy {umowa.NumerUmowy}",
+                parameters,
+                options);
+        }
+
+        protected async Task PotwierdzUsuniecieUmowy(UmowaNajmu umowa)
+        {
+            if (umowa.CzyAktywna)
+            {
+                Snackbar.Add("Najpierw przenieś umowę do archiwum, aby ją usunąć.", Severity.Warning);
+                return;
+            }
+
+            var parameters = new DialogParameters
+            {
+                ["NumerUmowy"] = umowa.NumerUmowy,
+                ["NazwaNajemcy"] = umowa.Najemca?.NazwaFirmyOsoby ?? "nieznany najemca"
+            };
+            var options = new DialogOptions
+            {
+                MaxWidth = MaxWidth.Small,
+                FullWidth = true,
+                CloseButton = true,
+                CloseOnEscapeKey = true
+            };
+
+            var dialog = await DialogService.ShowAsync<UsunUmoweDialog>(
+                "Potwierdź usunięcie umowy",
+                parameters,
+                options);
+            var result = await dialog.Result;
+
+            if (result.Canceled || result.Data is not true)
+            {
+                return;
+            }
+
+            try
+            {
+                var usunieto = await UmowaService.UsunUmoweAsync(umowa.Id);
+                if (!usunieto)
+                {
+                    Snackbar.Add("Nie znaleziono umowy do usunięcia.", Severity.Warning);
+                    return;
+                }
+
+                UsunPlikiUmowy(umowa.Zalaczniki);
+                Snackbar.Add($"Umowa {umowa.NumerUmowy} została usunięta.", Severity.Success);
+                await OdswiezListe();
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Nie udało się usunąć umowy: {ex.Message}", Severity.Error);
+            }
+        }
+
+        private static void UsunPlikiUmowy(IEnumerable<ZalacznikUmowy>? zalaczniki)
+        {
+            if (zalaczniki == null)
+            {
+                return;
+            }
+
+            var katalogZalacznikow = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "Shared", "upload_umowy"));
+            foreach (var zalacznik in zalaczniki)
+            {
+                var sciezkaWzgledna = zalacznik.SciezkaPliku?.TrimStart('/');
+                if (string.IsNullOrWhiteSpace(sciezkaWzgledna))
+                {
+                    continue;
+                }
+
+                var pelnaSciezka = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), sciezkaWzgledna));
+                if (!pelnaSciezka.StartsWith(katalogZalacznikow + Path.DirectorySeparatorChar, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                if (File.Exists(pelnaSciezka))
+                {
+                    File.Delete(pelnaSciezka);
+                }
+            }
         }
 
         protected async Task PodgladPlikuPdf(string nazwaPliku)

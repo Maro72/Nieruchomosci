@@ -1,0 +1,120 @@
+@using Mieszkaniec.Model.Entities
+@using MudBlazor
+
+@* Wersja testowa dialogu budynku oparta wyłącznie na kontrolkach MudBlazor. *@
+<MudDialog Options="_dialogOptions">
+    <TitleContent>
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+            <MudAvatar Color="Color.Primary" Variant="Variant.Outlined">
+                <MudIcon Icon="@Icons.Material.Filled.Apartment" />
+            </MudAvatar>
+            <div>
+                <MudText Typo="Typo.h6">@(Model.Id == 0 ? "Nowa Nieruchomość" : "Edycja Nieruchomości")</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">Metryka techniczna i dane ewidencyjne budynku</MudText>
+            </div>
+        </MudStack>
+    </TitleContent>
+
+    <DialogContent>
+        <MudForm @ref="_form" Model="Model" @bind-IsValid="_isValid">
+            <MudGrid Spacing="2">
+                <MudItem xs="12" md="8">
+                    <MudTextField @bind-Value="Model.Nazwa" Label="Nazwa obiektu" Placeholder="np. Budynek A"
+                                  Variant="Variant.Outlined" Margin="Margin.Dense" Required="true"
+                                  RequiredError="Nazwa jest wymagana"
+                                  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Title" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField @bind-Value="Model.NumerEwidencyjny" Label="Nr ewidencyjny" Placeholder="np. 123/45"
+                                  Variant="Variant.Outlined" Margin="Margin.Dense" Required="true"
+                                  RequiredError="Numer ewidencyjny jest wymagany"
+                                  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Fingerprint" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="Model.Adres" Label="Adres" Placeholder="Pełny adres lokalizacji..."
+                                  Variant="Variant.Outlined" Margin="Margin.Dense"
+                                  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.LocationOn" />
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <MudNumericField @bind-Value="Model.RokBudowy" Label="Rok budowy" Min="1700" Max="2100"
+                                     HideSpinButtons="true" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                     Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Event" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudNumericField @bind-Value="Model.LiczbaKondygnacji" Label="Kondygnacje" Min="0" Max="100"
+                                     HideSpinButtons="true" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                     Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Layers" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudNumericField @bind-Value="Model.Wysokosc" Label="Wysokość (m)" Min="0m" Format="N2"
+                                     HideSpinButtons="true" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                     Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Height" />
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <MudNumericField @bind-Value="Model.Kubatura" Label="Kubatura (m³)" Min="0m" Format="N2"
+                                     HideSpinButtons="true" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                     Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.ViewInAr" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudNumericField @bind-Value="Model.PowUzytkowa" Label="Pow. użytkowa (m²)" Min="0m" Format="N2"
+                                     HideSpinButtons="true" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                     Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.SquareFoot" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudNumericField @bind-Value="Model.PowierzchniaZabudowy" Label="Pow. zabudowy (m²)" Min="0m" Format="N2"
+                                     HideSpinButtons="true" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                     Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.CropFree" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="Model.Wyposazenie" Label="Wyposażenie / instalacje"
+                                  Placeholder="Opis instalacji i wyposażenia obiektu..."
+                                  Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" AutoGrow="true" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="Model.Opis" Label="Dodatkowy opis"
+                                  Placeholder="Dodatkowe uwagi i informacje uzupełniające..."
+                                  Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" AutoGrow="true" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudSwitch @bind-Value="Model.CzyArchiwum" Color="Color.Primary" Label="Przenieś nieruchomość do archiwum" />
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.Close" OnClick="Cancel">Anuluj</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Save" OnClick="Submit">Zapisz</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public Obiekt Model { get; set; } = new();
+
+    private MudForm _form = default!;
+    private bool _isValid;
+
+    private readonly DialogOptions _dialogOptions = new()
+    {
+        MaxWidth = MaxWidth.Medium,
+        FullWidth = true,
+        CloseButton = true,
+        BackdropClick = false
+    };
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task Submit()
+    {
+        await _form.Validate();
+        if (_form.IsValid)
+        {
+            MudDialog.Close(DialogResult.Ok(Model));
+        }
+    }
+}

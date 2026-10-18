@@ -10,6 +10,7 @@ namespace Mieszkaniec.Services
         Task<List<UmowaNajmu>> PobierzUmowyNajemcyAsync(int najemcaId);
         Task<UmowaNajmu> PobierzUmowePoIdAsync(int id);
         Task<bool> ZapiszUmoweAsync(UmowaNajmu umowa);
+        Task<bool> UsunUmoweAsync(int umowaId);
 
         Task<bool> ArchiwizujUmoweAsync(int umowaId);
         Task<bool> PrzywrocUmoweZArchiwumAsync(int umowaId);

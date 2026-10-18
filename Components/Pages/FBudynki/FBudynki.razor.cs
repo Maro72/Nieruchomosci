@@ -109,7 +109,7 @@ namespace Mieszkaniec.Components.Pages.Obiekty
             var parameters = new DialogParameters { { "Model", new Obiekt() } };
             var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
 
-            var dialog = await DialogService.ShowAsync<FBudynkiDialog>("", parameters, options);
+            var dialog = await DialogService.ShowAsync<BudynkiDialog>("", parameters, options);
             var result = await dialog.Result;
 
             if (result != null && !result.Canceled)
@@ -143,7 +143,7 @@ namespace Mieszkaniec.Components.Pages.Obiekty
             var parameters = new DialogParameters { { "Model", kopiaObiektu } };
             var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
 
-            var dialog = await DialogService.ShowAsync<FBudynkiDialog>("", parameters, options);
+            var dialog = await DialogService.ShowAsync<BudynkiDialog>("", parameters, options);
             var result = await dialog.Result;
 
             if (result != null && !result.Canceled)

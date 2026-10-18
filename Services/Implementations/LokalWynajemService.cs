@@ -20,6 +20,9 @@ namespace Mieszkaniec.Services.Implementations
             return await context.LokaleWynajem
                 .Include(l => l.Obiekt)
                 .Include(l => l.Najemca)
+                .Include(l => l.HistoriaUmow)
+                    .ThenInclude(relacja => relacja.UmowaNajmu)
+                        .ThenInclude(umowa => umowa.Najemca)
                 .ToListAsync();
         }
 
@@ -29,6 +32,9 @@ namespace Mieszkaniec.Services.Implementations
             return await context.LokaleWynajem
                 .Include (l => l.Obiekt)
                 .Include(l => l.Najemca)
+                .Include(l => l.HistoriaUmow)
+                    .ThenInclude(relacja => relacja.UmowaNajmu)
+                        .ThenInclude(umowa => umowa.Najemca)
                 .Where(l => l.ObiektId == obiektId)
                 .ToListAsync();
         }

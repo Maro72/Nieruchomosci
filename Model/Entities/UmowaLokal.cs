@@ -10,6 +10,9 @@ namespace Mieszkaniec.Model.Entities
         public int LokalWynajemId { get; set; }
         public virtual LokalWynajem LokalWynajem { get; set; }
 
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal PowierzchniaWynajetaM2 { get; set; }
+
         // Wynegocjowana stawka tylko dla tej umowy
         public decimal WynegocjowanaCenaZaM2 { get; set; }
         public bool CzyRyczalt { get; set; }
@@ -17,6 +20,8 @@ namespace Mieszkaniec.Model.Entities
         // Automatyczne liczenie wartości dla tego konkretnego pokoju
         [NotMapped]
         public decimal WartoscCzynszuMiesiecznego =>
-            CzyRyczalt ? WynegocjowanaCenaZaM2 : (WynegocjowanaCenaZaM2 * (LokalWynajem?.PowierzchniaM2 ?? 0));
+            LokalWynajem?.CzyCzescWspolna == true
+                ? 0
+                : CzyRyczalt ? WynegocjowanaCenaZaM2 : (WynegocjowanaCenaZaM2 * PowierzchniaWynajetaM2);
     }
 }

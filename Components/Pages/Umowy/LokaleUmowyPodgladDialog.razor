@@ -1,0 +1,152 @@
+@using Mieszkaniec.Model.Entities
+@using MudBlazor
+@inherits LokaleUmowyPodgladDialogBase
+
+<MudDialog Class="rental-preview-dialog">
+    <DialogContent>
+        <div class="rental-preview-summary">
+            <div class="rental-preview-summary-item">
+                <MudIcon Icon="@Icons.Material.Filled.MeetingRoom" Color="Color.Primary" />
+                <div>
+                    <MudText Typo="Typo.caption" Class="rental-preview-label">Przypisane lokale</MudText>
+                    <MudText Typo="Typo.h6" Class="rental-preview-value">@LiczbaLokali</MudText>
+                </div>
+            </div>
+            <div class="rental-preview-summary-item">
+                <MudIcon Icon="@Icons.Material.Filled.SquareFoot" Color="Color.Primary" />
+                <div>
+                    <MudText Typo="Typo.caption" Class="rental-preview-label">Wynajęta powierzchnia</MudText>
+                    <MudText Typo="Typo.h6" Class="rental-preview-value">@($"{PowierzchniaLaczna:N2} m²")</MudText>
+                </div>
+            </div>
+            <div class="rental-preview-summary-item">
+                <MudIcon Icon="@Icons.Material.Filled.Payments" Color="Color.Success" />
+                <div>
+                    <MudText Typo="Typo.caption" Class="rental-preview-label">Czynsz miesięczny</MudText>
+                    <MudText Typo="Typo.h6" Class="rental-preview-value rental-preview-rent">@($"{CzynszLaczny:N2} zł")</MudText>
+                </div>
+            </div>
+        </div>
+
+        <div class="rental-preview-table-wrap">
+            <table class="table table-striped align-middle rental-preview-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Budynek</th>
+                        <th scope="col">Numer lokalu</th>
+                        <th scope="col">Typ</th>
+                        <th scope="col" class="text-end">Powierzchnia</th>
+                        <th scope="col" class="text-end">Stawka</th>
+                        <th scope="col" class="text-end">Czynsz (mies.)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var przypisanie in Umowa.WynajmowaneLokale ?? new List<UmowaLokal>())
+                    {
+                        <tr>
+                            <td>@(przypisanie.LokalWynajem?.Obiekt?.Nazwa ?? "Budynek nieznany")</td>
+                            <td class="fw-semibold">@(przypisanie.LokalWynajem?.NumerLokalu ?? $"ID: {przypisanie.LokalWynajemId}")</td>
+                            <td>@(przypisanie.LokalWynajem?.TypLokalu ?? "Lokal")</td>
+                            <td class="text-end text-nowrap">@($"{przypisanie.PowierzchniaWynajetaM2:N2} m²")</td>
+                            <td class="text-end text-nowrap">
+                                @($"{przypisanie.WynegocjowanaCenaZaM2:N2} zł{(przypisanie.CzyRyczalt ? " / mies." : " / m²")}")
+                            </td>
+                            <td class="text-end text-nowrap fw-semibold rental-preview-rent">
+                                @($"{przypisanie.WartoscCzynszuMiesiecznego:N2} zł")
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Zamknij">
+            Zamknij
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+<style>
+    .rental-preview-dialog .mud-dialog-content {
+        padding: 20px 24px;
+    }
+
+    .rental-preview-summary {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .rental-preview-summary-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+        padding: 12px;
+        border: 1px solid #e6eaf0;
+        border-radius: 10px;
+        background: #f8fafc;
+    }
+
+    .rental-preview-label {
+        color: #6b7280;
+        line-height: 1.3;
+    }
+
+    .rental-preview-value {
+        font-weight: 600;
+        overflow-wrap: anywhere;
+    }
+
+    .rental-preview-rent {
+        color: #2e7d32;
+    }
+
+    .rental-preview-table-wrap {
+        max-height: 48vh;
+        overflow: auto;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+    }
+
+    .rental-preview-table {
+        min-width: 760px;
+        margin-bottom: 0;
+    }
+
+    .rental-preview-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: #fff;
+        color: #25364a;
+        font-size: 0.88rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .rental-preview-table tbody td {
+        padding-top: 14px;
+        padding-bottom: 14px;
+    }
+
+    .rental-preview-rent {
+        color: #2e7d32;
+    }
+
+    @@media (max-width: 600px) {
+        .rental-preview-dialog .mud-dialog-content {
+            padding: 16px;
+        }
+
+        .rental-preview-summary {
+            grid-template-columns: 1fr;
+        }
+
+        .rental-preview-table {
+            min-width: 760px;
+        }
+    }
+</style>

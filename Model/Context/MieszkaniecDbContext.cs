@@ -89,6 +89,10 @@ namespace Mieszkaniec.Model.Context
         .HasKey(ul => new { ul.UmowaNajmuId, ul.LokalWynajemId });
 
             modelBuilder.Entity<UmowaLokal>()
+                .Property(ul => ul.PowierzchniaWynajetaM2)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<UmowaLokal>()
                 .HasOne(ul => ul.UmowaNajmu)
                 .WithMany(u => u.WynajmowaneLokale)
                 .HasForeignKey(ul => ul.UmowaNajmuId);

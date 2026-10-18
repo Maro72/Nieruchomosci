@@ -4,6 +4,7 @@
 <MudDialog Options="DialogOptions" Style="max-height: 70vh; overflow-y: auto; width: min(100vw - 12px, 1180px); min-width: min(100vw - 12px, 1180px); max-width: calc(100vw - 12px);">
     <DialogContent>
         <style>
+            /* Kompaktowy układ pozwala zmieścić tabelę pozycji bez nadmiernego przewijania. */
             .compact-form .mud-input-outlined {
                 border: none !important;
                 border-bottom: 1px solid rgba(0,0,0,0.18) !important;
@@ -100,6 +101,7 @@
             }
         </style>
         <MudForm @ref="form" Class="compact-form">
+            @* Podstawowe dane faktury i okres, którego dotyczy rozliczenie. *@
             <MudGrid>
                 <MudItem xs="12" md="6">
                     <MudTextField @bind-Value="Faktura.NumerFaktury" Label="Numer faktury" Required="true" />
@@ -120,6 +122,7 @@
 
             <MudDivider Class="my-2" />
 
+            @* Pozycje można edytować, dodawać i usuwać; zmiany aktualizują kwoty faktury. *@
             <MudText Typo="Typo.subtitle2" Class="mb-1">Wyszczególnienie</MudText>
             <div style="overflow-x: auto; max-width: 100%;">
                 <MudTable Items="Faktura.Wyszczegolnienie" Dense="true" Hover="true" Outlined="false" Breakpoint="Breakpoint.None" Style="min-width: 980px; width: 100%; white-space: nowrap; font-size: 0.75rem; border-collapse: collapse;">
@@ -164,6 +167,7 @@
 
             <MudDivider Class="my-1" />
 
+            @* Podsumowanie wartości netto i brutto całej faktury. *@
             <MudGrid>
                 <MudItem xs="12" md="6">
                     <MudNumericField @bind-Value="Faktura.WartoscNetto" Label="Wartość netto (PLN)" Format="N2" Required="true" />
@@ -175,8 +179,8 @@
         </MudForm>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel">Anuluj</MudButton>
-        <MudButton Color="Color.Primary" OnClick="Submit">Zapisz</MudButton>
+        <MudButton Variant="Variant.Filled" startIcon="@Icons.Material.Filled.Cancel" Color="Color.Error" OnClick="Cancel">Anuluj</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" startIcon="@Icons.Material.Filled.Save" OnClick="Submit">Zapisz</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -207,6 +211,7 @@
             Faktura.Wyszczegolnienie = new List<PozycjaFakturyWody>();
         }
 
+        // Dla nowej, pustej faktury podpowiedz domyślną pozycję za zużytą wodę.
         if (!Faktura.Wyszczegolnienie.Any() &&
             Faktura.WartoscNetto == 0m &&
             Faktura.WartoscBrutto == 0m)
@@ -240,6 +245,7 @@
     {
         if (Faktura.Wyszczegolnienie?.Any() == true)
         {
+            // Wartości faktury są wyliczane z jej pozycji, gdy istnieje co najmniej jedna.
             Faktura.AktualizujKwotyZPozycji();
         }
     }
@@ -252,10 +258,7 @@
 
     private async Task Submit()
     {
-        if (Faktura.Wyszczegolnienie?.Any() == true)
-        {
-            AktualizujKwotyFaktury();
-        }
+        // Dialog zwraca fakturę dopiero po zakończeniu walidacji formularza.
         await form.Validate();
         if (form.IsValid)
         {
@@ -265,4 +268,3 @@
 
     void Cancel() => MudDialog.Cancel();
 }
-

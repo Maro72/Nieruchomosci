@@ -31,6 +31,8 @@ namespace Mieszkaniec.Components.Pages.Umowy
         // Pola sterujące formularzem dodawania lokalu do umowy
         protected int WybranyLokalId { get; set; }
         protected decimal WybranaCena { get; set; }
+        protected decimal WybranaPowierzchniaM2 { get; set; }
+        protected decimal WybranaDostepnaPowierzchniaM2 { get; set; }
         protected bool NowyCzyRyczalt { get; set; }
 
         protected AneksUmowy NowyAneks { get; set; } = new AneksUmowy { DataZawarcia = DateTime.Today };
@@ -81,8 +83,15 @@ namespace Mieszkaniec.Components.Pages.Umowy
         // -------------------------------------------------------------
 
         protected IEnumerable<LokalWynajem> DostepneLokaleDoWyboru => ListaDostepnychLokali
-            .Where(lok => (Model.WynajmowaneLokale == null || !Model.WynajmowaneLokale.Any(rl => rl.LokalWynajemId == lok.Id))
-                          && (lok.Status == "Wolny" || lok.Status == "Zarezerwowany" || (Model.NajemcaId > 0 && lok.NajemcaId == Model.NajemcaId)));
+            .Where(lok => !lok.CzyCzescWspolna
+                          && (Model.WynajmowaneLokale == null || !Model.WynajmowaneLokale.Any(rl => rl.LokalWynajemId == lok.Id))
+                          && lok.PowierzchniaDostepnaM2 > 0
+                          && (lok.StatusAktualny != "Zarezerwowany" || (Model.NajemcaId > 0 && lok.NajemcaId == Model.NajemcaId)));
+
+        protected decimal PowierzchniaDostepnaDlaUmowy(LokalWynajem lokal) =>
+            Math.Max(0, lokal.PowierzchniaM2 - (lokal.HistoriaUmow?
+                .Where(relacja => relacja.UmowaNajmu?.CzyAktywna == true && relacja.UmowaNajmuId != Model.Id)
+                .Sum(relacja => relacja.PowierzchniaWynajetaM2) ?? 0));
 
         protected void OnNajemcaChanged(ChangeEventArgs e)
         {
@@ -111,13 +120,18 @@ namespace Mieszkaniec.Components.Pages.Umowy
 
             foreach (var lokal in lokaleNajemcy)
             {
-                if (!Model.WynajmowaneLokale.Any(wl => wl.LokalWynajemId == lokal.Id))
+                var dostepnaPowierzchnia = PowierzchniaDostepnaDlaUmowy(lokal);
+                if (!lokal.CzyCzescWspolna
+                    && dostepnaPowierzchnia > 0
+                    && lokal.StatusAktualny != "Zarezerwowany"
+                    && !Model.WynajmowaneLokale.Any(wl => wl.LokalWynajemId == lokal.Id))
                 {
                     Model.WynajmowaneLokale.Add(new UmowaLokal
                     {
                         UmowaNajmuId = Model.Id,
                         LokalWynajemId = lokal.Id,
                         LokalWynajem = lokal,
+                        PowierzchniaWynajetaM2 = dostepnaPowierzchnia,
                         WynegocjowanaCenaZaM2 = lokal.CenaZaM2,
                         CzyRyczalt = false
                     });
@@ -131,25 +145,32 @@ namespace Mieszkaniec.Components.Pages.Umowy
             }
         }
 
-        protected void OnLokalChanged(ChangeEventArgs e)
+        protected void OnLokalChanged(int? selectedId)
         {
-            if (int.TryParse(e.Value?.ToString(), out int id) && id > 0)
+            var id = selectedId.GetValueOrDefault();
+            if (id > 0)
             {
                 WybranyLokalId = id;
                 var lokal = ListaDostepnychLokali.FirstOrDefault(l => l.Id == id);
                 if (lokal != null)
                 {
                     WybranaCena = lokal.CenaZaM2; // Podpowiedź domyślnej ceny katalogowej
+                    WybranaDostepnaPowierzchniaM2 = PowierzchniaDostepnaDlaUmowy(lokal);
+                    WybranaPowierzchniaM2 = WybranaDostepnaPowierzchniaM2;
                 }
                 else
                 {
                     WybranaCena = 0;
+                    WybranaPowierzchniaM2 = 0;
+                    WybranaDostepnaPowierzchniaM2 = 0;
                 }
             }
             else
             {
                 WybranyLokalId = 0;
                 WybranaCena = 0;
+                WybranaPowierzchniaM2 = 0;
+                WybranaDostepnaPowierzchniaM2 = 0;
             }
             StateHasChanged();
         }
@@ -171,11 +192,19 @@ namespace Mieszkaniec.Components.Pages.Umowy
             var lokal = ListaDostepnychLokali.FirstOrDefault(l => l.Id == WybranyLokalId);
             if (lokal == null) return;
 
+            var dostepnaPowierzchnia = PowierzchniaDostepnaDlaUmowy(lokal);
+            if (WybranaPowierzchniaM2 <= 0 || WybranaPowierzchniaM2 > dostepnaPowierzchnia)
+            {
+                await JS.InvokeVoidAsync("alert", $"Podaj powierzchnię większą od 0 i nie większą niż dostępne {dostepnaPowierzchnia:N2} m².");
+                return;
+            }
+
             var nowaRelacja = new UmowaLokal
             {
                 UmowaNajmuId = Model.Id,
                 LokalWynajemId = WybranyLokalId,
                 LokalWynajem = lokal,
+                PowierzchniaWynajetaM2 = WybranaPowierzchniaM2,
                 WynegocjowanaCenaZaM2 = WybranaCena,
                 CzyRyczalt = NowyCzyRyczalt
             };
@@ -185,6 +214,7 @@ namespace Mieszkaniec.Components.Pages.Umowy
             // Reset pól po dodaniu
             WybranyLokalId = 0;
             WybranaCena = 0;
+            WybranaPowierzchniaM2 = 0;
             NowyCzyRyczalt = false;
 
             StateHasChanged();

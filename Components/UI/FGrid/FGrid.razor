@@ -52,7 +52,7 @@
                     }
                     @if (ShowCrudActions && OnDelete.HasDelegate)
                     {
-                        <button type="button" class="btn btn-sm btn-link text-danger fw-medium px-2 py-1.5 d-flex align-items-center gap-1 text-decoration-none small-font" disabled="@(SelectedItem == null)" @onclick="() => OnDelete.InvokeAsync(SelectedItem)">
+                        <button type="button" class="btn btn-sm btn-link text-danger fw-medium px-2 py-1.5 d-flex align-items-center gap-1 text-decoration-none small-font" disabled="@(SelectedItem == null || (CanDelete != null && !CanDelete(SelectedItem)))" @onclick="() => OnDelete.InvokeAsync(SelectedItem)">
                             <i class="bi bi-trash"></i> Usuń
                         </button>
                     }

@@ -52,7 +52,7 @@ public class UmowaNajmu
 
     [NotMapped]
     public decimal CalkowitaPowierzchniaM2 =>
-    WynajmowaneLokale?.Sum(wl => wl.LokalWynajem?.PowierzchniaM2 ?? 0) ?? 0; // Możesz tu tymczasowo zostawić 0 przed połączeniem z lokalami
+        WynajmowaneLokale?.Sum(wl => wl.LokalWynajem is { CzyCzescWspolna: false } ? wl.PowierzchniaWynajetaM2 : 0) ?? 0;
 
     [NotMapped]
     public decimal AktualnyCzynszMiesieczny

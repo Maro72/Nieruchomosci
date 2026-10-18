@@ -1,0 +1,108 @@
+@using Mieszkaniec.Model.Entities
+@using MudBlazor
+@inherits NajemcyLokaluDialogBase
+
+<MudDialog Class="rental-tenants-dialog">
+    <DialogContent>
+        <div class="rental-tenants-summary">
+            <MudIcon Icon="@Icons.Material.Filled.Business" Color="Color.Primary" />
+            <div>
+                <MudText Typo="Typo.subtitle1" Class="rental-tenants-location">
+                    @(Lokal.Obiekt?.Nazwa ?? "Budynek")
+                    <span class="text-muted">·</span>
+                    @Lokal.TypLokalu
+                    <span class="text-muted">·</span>
+                    lokal @Lokal.NumerLokalu
+                </MudText>
+                <MudText Typo="Typo.body2" Class="text-secondary">
+                    Wynajęte @($"{PowierzchniaWynajeta:N2} m² z {Lokal.PowierzchniaM2:N2} m²")
+                </MudText>
+            </div>
+        </div>
+
+        <div class="rental-tenants-table-wrap">
+            <table class="table table-striped align-middle rental-tenants-table">
+                <thead>
+                    <tr>
+                        <th>Najemca</th>
+                        <th>Umowa</th>
+                        <th class="text-end">Wynajęte</th>
+                        <th class="text-end">Stawka</th>
+                        <th class="text-end">Czynsz (mies.)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var przypisanie in AktywnePrzypisania)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@(przypisanie.UmowaNajmu?.Najemca?.NazwaFirmyOsoby ?? "Nieznany najemca")</td>
+                            <td>@(przypisanie.UmowaNajmu?.NumerUmowy ?? "-")</td>
+                            <td class="text-end text-nowrap">@($"{przypisanie.PowierzchniaWynajetaM2:N2} m²")</td>
+                            <td class="text-end text-nowrap">
+                                @($"{przypisanie.WynegocjowanaCenaZaM2:N2} zł{(przypisanie.CzyRyczalt ? " / mies." : " / m²")}")
+                            </td>
+                            <td class="text-end text-nowrap fw-semibold rental-tenant-rent">
+                                @($"{przypisanie.WartoscCzynszuMiesiecznego:N2} zł")
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Zamknij">Zamknij</MudButton>
+    </DialogActions>
+</MudDialog>
+
+<style>
+    .rental-tenants-dialog .mud-dialog-content {
+        padding: 20px 24px;
+    }
+
+    .rental-tenants-summary {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .rental-tenants-location {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 6px;
+        font-weight: 600;
+    }
+
+    .rental-tenants-table-wrap {
+        max-height: 48vh;
+        overflow: auto;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+    }
+
+    .rental-tenants-table {
+        min-width: 700px;
+        margin-bottom: 0;
+    }
+
+    .rental-tenants-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: #fff;
+        color: #25364a;
+        font-size: 0.85rem;
+        white-space: nowrap;
+    }
+
+    .rental-tenants-table tbody td {
+        padding-top: 12px;
+        padding-bottom: 12px;
+    }
+
+    .rental-tenant-rent {
+        color: #2e7d32;
+    }
+</style>

@@ -18,7 +18,7 @@
             </div>
             <div>
                 <h6 class="fw-bold mb-0 text-dark">@(Model?.Id == 0 ? "Dodawanie nowego lokalu" : "Edycja lokalu")</h6>
-                <small class="text-muted" style="font-size: 0.75rem;">Wprowadź lub zaktualizuj dane biura i magazynu</small>
+                <small class="text-muted" style="font-size: 0.75rem;">Wprowadź lub zaktualizuj dane lokalu, gruntu, biura lub magazynu</small>
             </div>
         </div>
     </TitleContent>
@@ -48,9 +48,13 @@
                         <label class="form-label small fw-bold text-secondary mb-1">Typ Lokalu</label>
                         <div class="input-group input-group-sm shadow-sm">
                             <span class="input-group-text bg-light text-muted"><i class="bi bi-box"></i></span>
-                            <select class="form-select" @bind="Model.TypLokalu" required>
+                            <select class="form-select" value="@Model.TypLokalu" @onchange="OnTypLokaluChanged" required>
                                 <option value="Magazyn/Hala">Magazyn/Hala</option>
                                 <option value="Biuro">Biuro</option>
+                                <option value="WC">WC (część wspólna)</option>
+                                <option value="Korytarz">Korytarz (część wspólna)</option>
+                                <option value="Węzeł CO">Węzeł CO (część wspólna)</option>
+                                <option value="Grunt">Grunt / działka</option>
                             </select>
                         </div>
                     </div>
@@ -73,12 +77,22 @@
                     </div>
 
                     <div class="col-md-4">
-                        <label class="form-label small fw-bold text-secondary mb-1">Cena za m²</label>
-                        <div class="input-group input-group-sm shadow-sm">
-                            <span class="input-group-text bg-light text-muted"><i class="bi bi-cash"></i></span>
-                            <input type="number" step="0.01" class="form-control" @bind="Model.CenaZaM2" required />
-                            <span class="input-group-text bg-light text-muted">PLN</span>
-                        </div>
+                        @if (Model.CzyCzescWspolna)
+                        {
+                            <label class="form-label small fw-bold text-secondary mb-1">Rozliczenie</label>
+                            <div class="p-2 border rounded bg-light text-secondary small" style="height: 31px;">
+                                Część wspólna — bez czynszu
+                            </div>
+                        }
+                        else
+                        {
+                            <label class="form-label small fw-bold text-secondary mb-1">Cena za m²</label>
+                            <div class="input-group input-group-sm shadow-sm">
+                                <span class="input-group-text bg-light text-muted"><i class="bi bi-cash"></i></span>
+                                <input type="number" step="0.01" class="form-control" @bind="Model.CenaZaM2" required />
+                                <span class="input-group-text bg-light text-muted">PLN</span>
+                            </div>
+                        }
                     </div>
 
                     <div class="col-md-6">
@@ -87,6 +101,7 @@
                             <span class="input-group-text bg-light text-muted"><i class="bi bi-clipboard-check"></i></span>
                             <select class="form-select" @onchange="OnStatusChanged" required>
                                 <option value="Wolny" selected="@(Model.Status == "Wolny")">Wolny</option>
+                                <option value="Częściowo wynajęty" selected="@(Model.Status == "Częściowo wynajęty")" disabled>Częściowo wynajęty (wyliczany)</option>
                                 <option value="Wynajęty" selected="@(Model.Status == "Wynajęty")">Wynajęty</option>
                                 <option value="Zarezerwowany" selected="@(Model.Status == "Zarezerwowany")">Zarezerwowany</option>
                             </select>

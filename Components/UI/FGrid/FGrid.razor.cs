@@ -30,6 +30,7 @@ namespace Mieszkaniec.Components.UI
         [Parameter] public EventCallback OnAdd { get; set; }
         [Parameter] public EventCallback<TItem> OnEdit { get; set; }
         [Parameter] public EventCallback<TItem> OnDelete { get; set; }
+        [Parameter] public Func<TItem, bool>? CanDelete { get; set; }
         [Parameter] public bool ShowCrudActions { get; set; } = true;
         [Parameter] public bool ShowToolbar { get; set; } = true;
         [Parameter] public bool ShowPrint { get; set; } = true;

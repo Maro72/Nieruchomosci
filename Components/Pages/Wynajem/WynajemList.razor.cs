@@ -53,6 +53,26 @@ namespace Mieszkaniec.Components.Pages.Wynajem
             }
         }
 
+        protected async Task PokazNajemcowDialog(LokalWynajem lokal)
+        {
+            var parameters = new DialogParameters
+            {
+                ["Lokal"] = lokal
+            };
+            var options = new DialogOptions
+            {
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+                CloseButton = true,
+                CloseOnEscapeKey = true
+            };
+
+            await DialogService.ShowAsync<NajemcyLokaluDialog>(
+                $"Najemcy lokalu {lokal.NumerLokalu}",
+                parameters,
+                options);
+        }
+
         private async Task ZaktualizujWidok()
         {
             List<LokalWynajem> pobraneLokale;
@@ -68,23 +88,27 @@ namespace Mieszkaniec.Components.Pages.Wynajem
             }
 
             // 2. NOWOŚĆ: Generowanie statystyk ZAWSZE na podstawie pobranych danych z bazy
+            var lokaleDoWynajmu = pobraneLokale.Where(x => !x.CzyCzescWspolna).ToList();
+            var lokaleDoStatystyk = lokaleDoWynajmu.Select(x => x.StatusAktualny).ToList();
             Statystyki = new WynajemStatystyki
             {
-                WszystkieLokale = pobraneLokale.Count,
-                Wolne = pobraneLokale.Count(x => x.Status == "Wolny"),
-                Wynajete = pobraneLokale.Count(x => x.Status == "Wynajęty"),
-                Zarezerwowane = pobraneLokale.Count(x => x.Status == "Zarezerwowany")
+                WszystkieLokale = lokaleDoWynajmu.Count,
+                Wolne = lokaleDoStatystyk.Count(status => status == "Wolny"),
+                Wynajete = lokaleDoStatystyk.Count(status => status is "Wynajęty" or "Częściowo wynajęty"),
+                Zarezerwowane = lokaleDoStatystyk.Count(status => status == "Zarezerwowany")
             };
 
             // 3. Obliczanie sum podsumowania
-            SumaPowierzchniWolnej = pobraneLokale.Where(x => x.Status == "Wolny").Sum(x => x.PowierzchniaM2);
-            SumaPowierzchniWynajetej = pobraneLokale.Where(x => x.Status == "Wynajęty").Sum(x => x.PowierzchniaM2);
-            SumaCzynszu = pobraneLokale.Where(x => x.Status == "Wynajęty").Sum(x => x.CenaWynajmu);
+            SumaPowierzchniWolnej = lokaleDoWynajmu
+                .Where(x => x.StatusAktualny is "Wolny" or "Częściowo wynajęty")
+                .Sum(x => x.PowierzchniaDostepnaM2);
+            SumaPowierzchniWynajetej = lokaleDoWynajmu.Sum(x => x.PowierzchniaWynajetaM2);
+            SumaCzynszu = lokaleDoWynajmu.Sum(x => x.CzynszWynajetyMiesiecznie);
 
             // 4. Aplikowanie filtra statusu tylko do widoku tabeli (statystyki zliczają wszystko z punktu 2)
             if (WybranyStatus != "Wszystkie")
             {
-                Lokale = pobraneLokale.Where(x => x.Status == WybranyStatus).ToList();
+                Lokale = pobraneLokale.Where(x => x.StatusAktualny == WybranyStatus).ToList();
             }
             else
             {
@@ -99,6 +123,7 @@ namespace Mieszkaniec.Components.Pages.Wynajem
             return status switch
             {
                 "Wolny" => Color.Success,
+                "Częściowo wynajęty" => Color.Warning,
                 "Wynajęty" => Color.Error,
                 "Zarezerwowany" => Color.Warning,
                 _ => Color.Default

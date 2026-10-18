@@ -164,7 +164,7 @@
                                                     </span>
                                                 }
                                                 <span class="fw-bold text-primary">@(rl.LokalWynajem?.NumerLokalu ?? "-")</span>
-                                                <small class="text-muted ms-1">@(rl.LokalWynajem?.TypLokalu) • @($"{rl.LokalWynajem?.PowierzchniaM2:N2} m²")</small>
+                                                <small class="text-muted ms-1">@(rl.LokalWynajem?.TypLokalu) • @($"{rl.PowierzchniaWynajetaM2:N2} m²")</small>
                                             </div>
                                             <div class="text-end">
                                                 <span class="fw-bold text-success" style="font-size: 0.85rem;">@($"{rl.WynegocjowanaCenaZaM2:N2} zł")</span>
@@ -199,7 +199,7 @@
                             <div class="col-4">
                                 <div class="rounded-2 py-2 px-1" style="background: rgba(255,255,255,0.12);">
                                     <div class="fw-bold" style="font-size: 1.1rem;">
-                                        @($"{(UmowyNajemcy?.Where(u => u.CzyAktywna).SelectMany(u => u.WynajmowaneLokale ?? new()).Sum(l => l.LokalWynajem?.PowierzchniaM2 ?? 0) ?? 0):N0}")
+                                        @($"{(UmowyNajemcy?.Where(u => u.CzyAktywna).SelectMany(u => u.WynajmowaneLokale ?? new()).Sum(l => l.LokalWynajem is { CzyCzescWspolna: false } ? l.PowierzchniaWynajetaM2 : 0) ?? 0):N0}")
                                     </div>
                                     <div style="font-size: 0.68rem; opacity: 0.8;">m² łącznie</div>
                                 </div>

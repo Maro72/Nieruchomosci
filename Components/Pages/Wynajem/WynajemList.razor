@@ -64,6 +64,7 @@
                 <MudSelect T="string" Label="Status" Value="@WybranyStatus" ValueChanged="OnStatusChanged" Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined" Style="width: 160px; background-color: #f8f9fa;">
                     <MudSelectItem Value="@("Wszystkie")">Wszystkie statusy</MudSelectItem>
                     <MudSelectItem Value="@("Wolny")">Wolny</MudSelectItem>
+                    <MudSelectItem Value="@("Częściowo wynajęty")">Część. wynajęty</MudSelectItem>
                     <MudSelectItem Value="@("Wynajęty")">Wynajęty</MudSelectItem>
                     <MudSelectItem Value="@("Zarezerwowany")">Zarezerwowany</MudSelectItem>
                 </MudSelect>
@@ -93,29 +94,79 @@
                 </CellTemplate>
             </MudBlazor.TemplateColumn>
 
-            <MudBlazor.PropertyColumn T="LokalWynajem" TProperty="string" Property="x => x.TypLokalu" Title="Typ" />
-            <MudBlazor.PropertyColumn T="LokalWynajem" TProperty="string" Property="x => x.NumerLokalu" Title="Numer" />
-            <MudBlazor.PropertyColumn T="LokalWynajem" TProperty="decimal" Property="x => x.PowierzchniaM2" Title="Pow. (m²)" Format="N2" />
+            <MudBlazor.TemplateColumn T="LokalWynajem" Title="Typ">
+                <CellTemplate Context="ctx">
+                    @ctx.Item.TypLokalu
+                    @if (ctx.Item.CzyCzescWspolna)
+                    {
+                        <span class="badge bg-light text-secondary border ms-1">część wspólna</span>
+                    }
+                </CellTemplate>
+            </MudBlazor.TemplateColumn>
+            <MudBlazor.PropertyColumn T="LokalWynajem" TProperty="string" Property="x => x.NumerLokalu" Title="Numer"
+                                      Width="70px"
+                                      HeaderStyle="width:70px; min-width:70px; max-width:70px; white-space:nowrap;"
+                                      CellStyle="width:70px; min-width:70px; max-width:70px; white-space:nowrap;" />
+            <MudBlazor.TemplateColumn T="LokalWynajem" Title="Powierzchnia wynajęta">
+                <CellTemplate Context="ctx">
+                    @($"{ctx.Item.PowierzchniaWynajetaM2:N2} m²")
+                </CellTemplate>
+            </MudBlazor.TemplateColumn>
+            <MudBlazor.TemplateColumn T="LokalWynajem" Title="Powierzchnia pozostała">
+                <CellTemplate Context="ctx">
+                    <span class="@(ctx.Item.PowierzchniaDostepnaM2 == 0 ? "text-danger fw-semibold" : null)">
+                        @($"{ctx.Item.PowierzchniaDostepnaM2:N2} m²")
+                    </span>
+                </CellTemplate>
+            </MudBlazor.TemplateColumn>
             <MudBlazor.PropertyColumn T="LokalWynajem" TProperty="decimal" Property="x => x.CenaZaM2" Title="Cena / m²" Format="C2" />
-            <MudBlazor.PropertyColumn T="LokalWynajem" TProperty="decimal" Property="x => x.CenaWynajmu" Title="Wartość najmu" Format="C2" />
+            <MudBlazor.TemplateColumn T="LokalWynajem" Title="Wartość najmu" CellStyle="white-space:nowrap; font-size:0.9rem;">
+                <CellTemplate Context="ctx">
+                    @ctx.Item.CzynszWynajetyMiesiecznie.ToString("C2")
+                </CellTemplate>
+            </MudBlazor.TemplateColumn>
 
             <MudBlazor.TemplateColumn T="LokalWynajem" Title="Status">
                 <CellTemplate Context="ctx">
-                    <MudChip T="string" Color="@WyznaczKolorStatusu(ctx.Item.Status)" Size="Size.Small">
-                        @ctx.Item.Status
+                    <MudChip T="string" Color="@WyznaczKolorStatusu(ctx.Item.StatusAktualny)" Size="Size.Small">
+                        @(ctx.Item.StatusAktualny == "Częściowo wynajęty" ? "Część. wynajęty" : ctx.Item.StatusAktualny)
+
                     </MudChip>
                 </CellTemplate>
             </MudBlazor.TemplateColumn>
 
             <MudBlazor.TemplateColumn T="LokalWynajem" Title="Najemca">
                 <CellTemplate Context="ctx">
-                    @if (ctx.Item.Status == "Wolny" || ctx.Item.Najemca == null)
+                    @{
+                        var aktywnePrzypisania = ctx.Item.HistoriaUmow
+                            .Where(relacja => relacja.UmowaNajmu?.CzyAktywna == true
+                                && !string.IsNullOrWhiteSpace(relacja.UmowaNajmu.Najemca?.NazwaFirmyOsoby))
+                            .ToList();
+                        var najemcy = aktywnePrzypisania
+                            .Select(relacja => relacja.UmowaNajmu!.Najemca!.NazwaFirmyOsoby)
+                            .Distinct(StringComparer.CurrentCultureIgnoreCase)
+                            .ToList();
+                    }
+                    @if (najemcy.Count == 0)
                     {
                         <span class="text-muted">- brak -</span>
                     }
+                    else if (najemcy.Count == 1)
+                    {
+                        <MudTooltip Text="@najemcy[0]">
+                            <span class="rental-tenant-name">@najemcy[0]</span>
+                        </MudTooltip>
+                    }
                     else
                     {
-                        @ctx.Item.Najemca.NazwaFirmyOsoby
+                        <MudButton Variant="Variant.Text"
+                                   Color="Color.Primary"
+                                   Size="Size.Small"
+                                   StartIcon="@Icons.Material.Filled.Groups"
+                                   Class="rental-tenant-preview-button"
+                                   OnClick="@(() => PokazNajemcowDialog(ctx.Item))">
+                            @najemcy.Count najemców
+                        </MudButton>
                     }
                 </CellTemplate>
             </MudBlazor.TemplateColumn>
@@ -156,6 +207,24 @@
         top: 0 !important;
         z-index: 2 !important;
         background-color: #ffffff !important;
+    }
+
+    .rental-tenant-name {
+        display: inline-block;
+        max-width: 190px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    .rental-tenant-preview-button {
+        max-width: 100%;
+        min-width: 0;
+        padding: 2px 6px;
+        font-size: 0.82rem;
+        text-transform: none;
+        white-space: nowrap;
     }
 
     @@media (max-height: 768px) {

@@ -140,6 +140,7 @@
                 </CellTemplate>
             </PropertyColumn>
 
+            @*
             <PropertyColumn T="PraceRemontowe" TProperty="decimal" Property="x => x.KosztCalkowityRobocizny" Title="Robocizna" Width="100px" HeaderClass="justify-end" CellClass="text-end fw-bold text-secondary">
                 <CellTemplate Context="wiersz">
                     @wiersz.Item.KosztCalkowityRobocizny.ToString("N2") zł
@@ -169,6 +170,8 @@
                     </span>
                 </CellTemplate>
             </PropertyColumn>
+            *@
+
             <PropertyColumn T="PraceRemontowe" TProperty="DateTime?" Property="x => x.DataZakonczeniaFaktyczna" Title="Faktyczny koniec" Width="130px" HeaderClass="justify-center" CellClass="justify-center text-center">
                 <CellTemplate Context="wiersz">
                     @(wiersz.Item.DataZakonczeniaFaktyczna?.ToString("yyyy-MM-dd") ?? "—")

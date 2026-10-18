@@ -773,6 +773,10 @@ namespace Mieszkaniec.Migrations
                     b.Property<bool>("CzyRyczalt")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<decimal>("PowierzchniaWynajetaM2")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18, 2)");
+
                     b.Property<decimal>("WynegocjowanaCenaZaM2")
                         .HasColumnType("decimal(65,30)");
 

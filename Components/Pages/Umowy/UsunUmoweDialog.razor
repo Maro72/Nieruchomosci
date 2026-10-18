@@ -1,0 +1,102 @@
+@using MudBlazor
+
+<MudDialog Class="delete-contract-dialog">
+    <DialogContent>
+        <div class="delete-contract-content">
+            <div class="delete-contract-icon">
+                <MudIcon Icon="@Icons.Material.Filled.DeleteForever" Size="Size.Large" />
+            </div>
+            <MudText Typo="Typo.h6" Class="delete-contract-title">Usunąć umowę?</MudText>
+            <MudText Typo="Typo.body2" Class="delete-contract-description">
+                Czy na pewno chcesz trwale usunąć umowę archiwalną <strong>@NumerUmowy</strong>
+                najemcy <strong>@NazwaNajemcy</strong>?
+            </MudText>
+            <div class="delete-contract-warning">
+                <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" />
+                <MudText Typo="Typo.caption">
+                    Umowę można usunąć dopiero po przeniesieniu jej do archiwum. Przypisane lokale, aneksy i załączniki również zostaną trwale usunięte. Tej operacji nie można cofnąć.
+                </MudText>
+            </div>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <div class="delete-contract-actions">
+            <MudButton Variant="Variant.Text" Color="Color.Default" OnClick="Anuluj">
+                Anuluj
+            </MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" OnClick="Potwierdz">
+                Usuń umowę
+            </MudButton>
+        </div>
+    </DialogActions>
+</MudDialog>
+
+<style>
+    .delete-contract-dialog .mud-dialog-content {
+        padding: 24px 28px 16px;
+    }
+
+    .delete-contract-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .delete-contract-icon {
+        display: grid;
+        width: 58px;
+        height: 58px;
+        place-items: center;
+        margin-bottom: 14px;
+        border-radius: 50%;
+        background: #fff1f0;
+        color: #d32f2f;
+    }
+
+    .delete-contract-title {
+        margin-bottom: 8px;
+        font-weight: 700;
+    }
+
+    .delete-contract-description {
+        color: #526071;
+        line-height: 1.6;
+    }
+
+    .delete-contract-warning {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        width: 100%;
+        margin-top: 18px;
+        padding: 12px;
+        border: 1px solid #f3d58a;
+        border-radius: 8px;
+        background: #fff9e8;
+        color: #765a13;
+        text-align: left;
+    }
+
+    .delete-contract-warning .mud-icon-root {
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+
+    .delete-contract-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        width: 100%;
+        padding: 4px 12px 12px;
+    }
+</style>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public string NumerUmowy { get; set; } = string.Empty;
+    [Parameter] public string NazwaNajemcy { get; set; } = string.Empty;
+
+    private void Anuluj() => MudDialog.Cancel();
+    private void Potwierdz() => MudDialog.Close(DialogResult.Ok(true));
+}

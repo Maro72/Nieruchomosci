@@ -30,6 +30,11 @@ namespace Mieszkaniec.Components.Pages.Wynajem
                 if (MudDialog == null) throw new Exception("MudDialog nie został wstrzyknięty.");
                 if (LokalService == null) throw new Exception("LokalService nie został wstrzyknięty.");
 
+                if (Model.CzyCzescWspolna)
+                {
+                    Model.CenaZaM2 = 0;
+                }
+
                 // KROK 1: Zapisujemy zmiany w bazie. Entity Framework potrzebuje TYLKO kluczy obcych (ObiektId, NajemcaId), 
                 // które model już posiada pobrane z kontrolek <select>. Nie ładujemy tu obiektów, żeby uniknąć konfliktów.
                 var sukces = await LokalService.ZapiszAsync(Model);
@@ -63,6 +68,15 @@ namespace Mieszkaniec.Components.Pages.Wynajem
             catch (Exception ex)
             {
                 await JS.InvokeVoidAsync("alert", $"Krytyczny błąd podczas anulowania:\n\n{ex.Message}");
+            }
+        }
+
+        private void OnTypLokaluChanged(ChangeEventArgs e)
+        {
+            Model.TypLokalu = e.Value?.ToString() ?? string.Empty;
+            if (Model.CzyCzescWspolna)
+            {
+                Model.CenaZaM2 = 0;
             }
         }
 

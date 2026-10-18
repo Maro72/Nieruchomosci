@@ -25,7 +25,9 @@
                    ShowToolbar="true"
                    ShowSearch="true"
                    OnAdd="OpenDodajDialog"
-                   OnEdit="OpenEdytujDialog">
+                   OnEdit="OpenEdytujDialog"
+                   OnDelete="PotwierdzUsuniecieUmowy"
+                   CanDelete="CzyMoznaUsunacUmowe">
                 <ToolbarLeftContent>
                     <div class="flex-shrink-0 pa-2 pb-0">
                         <div class="d-flex flex-wrap align-center gap-4 mb-2">
@@ -81,9 +83,14 @@
                 <GridColumns>
                     <MudBlazor.PropertyColumn T="UmowaNajmu" TProperty="string" Property="x => x.NumerUmowy" Title="Numer Umowy" />
 
-                    <MudBlazor.TemplateColumn T="UmowaNajmu" Title="Najemca">
+                    <MudBlazor.TemplateColumn T="UmowaNajmu" Title="Najemca" Width="240px">
                         <CellTemplate Context="ctx">
-                            @(ctx.Item?.Najemca?.NazwaFirmyOsoby ?? "-")
+                            @{
+                                var nazwaNajemcy = ctx.Item?.Najemca?.NazwaFirmyOsoby ?? "-";
+                            }
+                            <MudTooltip Text="@nazwaNajemcy">
+                                <span class="contract-tenant-name">@nazwaNajemcy</span>
+                            </MudTooltip>
                         </CellTemplate>
                     </MudBlazor.TemplateColumn>
 
@@ -156,12 +163,38 @@
 
                     <MudBlazor.TemplateColumn T="UmowaNajmu" Title="Status">
                         <CellTemplate Context="ctx">
-                            <MudChip T="string" Color="@(ctx.Item?.Status == "Wypowiedziana" ? Color.Warning : ((ctx.Item?.CzyAktywna ?? false) ? Color.Success : Color.Error))" Size="Size.Small">
-                                @(ctx.Item?.Status ?? ((ctx.Item?.CzyAktywna ?? false) ? "Aktywna" : "Archiwalna"))
+                            @{
+                                var statusWidoczny = ctx.Item.CzyAktywna
+                                    ? (ctx.Item.Status == "Wypowiedziana" ? "Wypowiedziana" : "Aktywna")
+                                    : "Archiwalna";
+                            }
+                            <MudChip T="string" Color="@(statusWidoczny == "Wypowiedziana" ? Color.Warning : statusWidoczny == "Aktywna" ? Color.Success : Color.Default)" Size="Size.Small">
+                                @statusWidoczny
                             </MudChip>
-                            @if (ctx.Item?.Status == "Wypowiedziana")
+                            @if (ctx.Item.CzyAktywna && statusWidoczny == "Wypowiedziana")
                             {
                                 <small class="text-muted d-block">@((ctx.Item.DniDoKonca >= 0) ? $"pozostało {ctx.Item.DniDoKonca} dni" : $"po terminie {Math.Abs(ctx.Item.DniDoKonca)} dni")</small>
+                            }
+                        </CellTemplate>
+                    </MudBlazor.TemplateColumn>
+
+                    <MudBlazor.TemplateColumn T="UmowaNajmu" Title="Lokale" Width="76px" HeaderClass="justify-center" CellClass="justify-center text-center">
+                        <CellTemplate Context="ctx">
+                            @if (ctx.Item.WynajmowaneLokale?.Count > 0)
+                            {
+                                <div @onclick:stopPropagation="true">
+                                    <MudTooltip Text="Pokaż lokale, stawki i czynsz">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Business"
+                                                       Color="Color.Primary"
+                                                       Size="Size.Small"
+                                                       AriaLabel="Pokaż lokale przypisane do umowy"
+                                                       OnClick="@(() => PokazLokaleDialog(ctx.Item))" />
+                                    </MudTooltip>
+                                </div>
+                            }
+                            else
+                            {
+                                <span class="text-muted small">-</span>
                             }
                         </CellTemplate>
                     </MudBlazor.TemplateColumn>
@@ -212,6 +245,15 @@
 
     .hover-primary:hover {
         color: #0d6efd !important;
+    }
+
+    .contract-tenant-name {
+        display: inline-block;
+        max-width: 210px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: middle;
+        white-space: nowrap;
     }
 
     @@media (max-height: 768px) {

@@ -334,7 +334,7 @@
         <tbody>
           <tr><td><strong>Nieruchomości</strong></td><td>Pulpit z najważniejszymi wskaźnikami oraz ewidencja budynków.</td></tr>
           <tr><td><strong>Obsługa techniczna</strong></td><td>Przeglądy techniczne, zgłoszenia usterek, prace remontowe i historia usterek.</td></tr>
-          <tr><td><strong>Najem i umowy</strong></td><td>Rejestr najemców, umowy najmu i pomieszczenia dostępne do wynajęcia.</td></tr>
+          <tr><td><strong>Najem i umowy</strong></td><td>Rejestr najemców, umowy najmu, pomieszczenia oraz rzuty budynków.</td></tr>
           <tr><td><strong>Liczniki → Woda</strong></td><td>Odczyty liczników, faktury, podsumowania i wykresy zużycia.</td></tr>
           <tr><td><strong>Administracja</strong></td><td>Użytkownicy, uprawnienia, historia logowań oraz ewidencja liczników — po nadaniu odpowiedniego dostępu.</td></tr>
           <tr><td><strong>Konfiguracja</strong></td><td>Definicje terminów oraz ustawienia bazy i plików. Zwykle obsługuje je administrator.</td></tr>
@@ -394,6 +394,14 @@
         </div>
       </div>
       <div class="note">Przy pomieszczeniach lista pokazuje m.in. powierzchnię wynajętą, pozostałą, stawkę i status. Usunięcie jest dostępne tylko dla wolnych, niezarezerwowanych lokali.</div>
+      <h3>Interaktywny rzut budynku L-75</h3>
+      <ol class="step-list">
+        <li>Otwórz <strong>Najem i umowy → Rzuty → L-75</strong>. Rzut łączy pola planu z lokalami w module Wynajem na podstawie numeru lokalu.</li>
+        <li>Użyj filtrów <strong>Wszystkie</strong>, <strong>Wynajęte</strong>, <strong>Wolne</strong> lub <strong>Rezerwacje</strong>, aby wyróżnić wybrane lokale. Lokale częściowo wynajęte są widoczne w filtrze wynajętych i wolnych.</li>
+        <li>Kolor czerwony oznacza powierzchnię wynajętą, szary — wolną, pomarańczowy — rezerwację, a fioletowy — część wspólną.</li>
+        <li>Najedź kursorem na pole, aby zobaczyć status, najemcę, powierzchnię, stawkę za m² i czynsz. Kliknij pole, aby otworzyć szczegóły. Dla części wspólnej opis pochodzi z typu pomieszczenia, np. WC, korytarz lub węzeł CO; widoczna jest jej powierzchnia, bez danych o czynszu.</li>
+      </ol>
+      <div class="note warning">W lokalu częściowo wynajętym udział kolorów czerwonego i szarego odpowiada proporcji wynajętego i wolnego metrażu. Jest to wizualizacja udziału powierzchni, a nie dokładna lokalizacja wynajętej części w pomieszczeniu. Jeżeli pojawi się komunikat o niedopasowanych numerach, sprawdź numer lokalu w Wynajmie i jego oznaczenie na rzucie.</div>
     </section>
 
     <section id="najem">

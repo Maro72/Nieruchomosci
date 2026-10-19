@@ -187,6 +187,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
     gap: 12px;
     margin-bottom: 10px;
 }
@@ -213,6 +214,36 @@
     color: #687078 !important;
     font-size: .7rem;
     font-weight: 650;
+}
+
+.l75-plan-heading .map-legend {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    color: #708096;
+    font-size: .72rem;
+}
+
+.map-legend i {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+}
+
+.map-legend .legend-rented {
+    margin-left: 4px;
+    background: #df7777;
+}
+
+.map-legend .legend-vacant {
+    margin-left: 8px;
+    background: #d8dadd;
+}
+
+.map-legend .legend-common {
+    margin-left: 8px;
+    background: #9384cf;
 }
 
 .l75-plan-scroll {
@@ -271,6 +302,16 @@
     stroke: #fff;
 }
 
+.map-area.status-partial {
+    fill: #d8dadd;
+    stroke: #fff;
+}
+
+.map-area.status-common {
+    fill: #9384cf;
+    stroke: #6c5ba8;
+}
+
 .map-area.status-reserved {
     fill: #f3ad59;
     stroke: #fff;
@@ -282,6 +323,10 @@
 }
 
 .map-area.status-rented.status-highlighted {
+    stroke: #a92e35;
+}
+
+.map-area.status-partial.status-highlighted {
     stroke: #a92e35;
 }
 

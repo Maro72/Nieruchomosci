@@ -17,7 +17,6 @@
                         </Authorized>
                     </AuthorizeView>
                     <MudNavLink Href="fbudynki" Icon="@Icons.Material.Filled.Apartment" Ripple="false">Budynki</MudNavLink>
-                    <MudNavLink Href="rzut-l75" Icon="@Icons.Material.Filled.Map" Ripple="false">Rzut L-75</MudNavLink>
                     </div>
                 </MudNavGroup>
             </Authorized>
@@ -69,6 +68,15 @@
                     <AuthorizeView Policy="Lokale.Odczyt" Context="lokaleCtx">
                         <Authorized>
                             <MudNavLink Href="wynajem" Icon="@Icons.Material.Filled.Receipt" Ripple="false">Pomieszczenia</MudNavLink>
+                        </Authorized>
+                    </AuthorizeView>
+                    <AuthorizeView Policy="Lokale.Odczyt" Context="rzutyCtx">
+                        <Authorized>
+                            <MudNavGroup Title="Rzuty" @bind-Expanded="_rzutyExpanded" Icon="@Icons.Material.Filled.Map">
+                                <div class="nav-guide-branch">
+                                    <MudNavLink Href="rzut-l75" Icon="@Icons.Material.Filled.Apartment" Ripple="false">L-75</MudNavLink>
+                                </div>
+                            </MudNavGroup>
                         </Authorized>
                     </AuthorizeView>
                     </div>
@@ -160,6 +168,7 @@
     private bool _licznikiExpanded;
     private bool _wodaExpanded;
     private bool _umowyExpanded;
+    private bool _rzutyExpanded;
     private bool _konfiguracjaExpanded;
     private bool _administracjaExpanded;
 
@@ -176,6 +185,7 @@
         _licznikiExpanded = false;
         _wodaExpanded = false;
         _umowyExpanded = false;
+        _rzutyExpanded = false;
         _konfiguracjaExpanded = false;
         _administracjaExpanded = false;
     }

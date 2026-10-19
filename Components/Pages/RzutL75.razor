@@ -1,6 +1,12 @@
 @page "/rzut-l75"
-@attribute [Authorize(Policy = "Budynki.Odczyt")]
+@attribute [Authorize(Policy = "Lokale.Odczyt")]
 @using MudBlazor
+@using System.Data.Common
+@using Mieszkaniec.Model.Entities
+@using Mieszkaniec.Services.Interfaces
+@inject ILokalWynajemService LokalService
+@inject IObiektService ObiektService
+@inject ILogger<RzutL75> Logger
 
 <PageTitle>Rzut budynku L-75</PageTitle>
 
@@ -8,11 +14,40 @@
     <header class="l75-header">
         <div class="l75-title-block">
             <div class="l75-eyebrow"><span>Nieruchomości</span><MudIcon Icon="@Icons.Material.Filled.ChevronRight" /><span>Budynki</span></div>
-            <h1>Rzut budynku <span>L-75</span></h1>
+            <h1>Rzut budynku <span>@(_selectedBuilding?.Nazwa ?? "L-75")</span></h1>
             <p>Wybierz lokal na planie, aby sprawdzić szczegóły najmu i powierzchnię.</p>
         </div>
-    
+        @if (_selectedBuilding is not null)
+        {
+            <div class="l75-demo-badge">
+                <MudIcon Icon="@Icons.Material.Filled.Domain" />
+                <span>@_selectedBuilding.Nazwa · dane z Wynajmu</span>
+            </div>
+        }
     </header>
+
+    @if (_isLoading)
+    {
+        <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+    }
+    else if (_loadError is not null)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined">@_loadError</MudAlert>
+    }
+    else
+    {
+    @if (_unmatchedMapNumbers.Count > 0)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mb-3">
+            Brak lokalu w Wynajmie dla numerów na rzucie: @string.Join(", ", _unmatchedMapNumbers).
+        </MudAlert>
+    }
+    @if (_unplacedRentalNumbers.Count > 0)
+    {
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-3">
+            Lokale z Wynajmu bez pola na tym rzucie: @string.Join(", ", _unplacedRentalNumbers).
+        </MudAlert>
+    }
 
     @* Liczniki statusów są jednocześnie przełącznikami podświetlania lokali na rzucie. *@
     <section class="l75-summary" aria-label="Wyróżnij lokale na rzucie">
@@ -21,22 +56,22 @@
             <button type="button" class="summary-filter filter-all @(_activeFilter == MapFilter.All ? "filter-active" : "")"
                     style="@GetFilterButtonStyle(MapFilter.All)"
                     aria-pressed="@(_activeFilter == MapFilter.All)" @onclick="() => SetFilter(MapFilter.All)">
-                <span>Wszystkie</span><strong>@_units.Count</strong>
+                <span>Wszystkie</span><strong>@_units.Count(unit => unit.IsMapped)</strong>
             </button>
             <button type="button" class="summary-filter filter-rented @(_activeFilter == MapFilter.Rented ? "filter-active" : "")"
                     style="@GetFilterButtonStyle(MapFilter.Rented)"
                     aria-pressed="@(_activeFilter == MapFilter.Rented)" @onclick="() => SetFilter(MapFilter.Rented)">
-                <i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#df7777;"></i><span>Wynajęte</span><strong>@_units.Count(unit => unit.IsRented)</strong>
+                <i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#df7777;"></i><span>Wynajęte</span><strong>@_units.Count(unit => unit.IsMapped && unit.IsRented)</strong>
             </button>
             <button type="button" class="summary-filter filter-vacant @(_activeFilter == MapFilter.Vacant ? "filter-active" : "")"
                     style="@GetFilterButtonStyle(MapFilter.Vacant)"
                     aria-pressed="@(_activeFilter == MapFilter.Vacant)" @onclick="() => SetFilter(MapFilter.Vacant)">
-                <i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#b5bbc1;"></i><span>Wolne</span><strong>@_units.Count(unit => !unit.IsRented && !unit.IsReserved)</strong>
+                <i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#b5bbc1;"></i><span>Wolne</span><strong>@_units.Count(unit => unit.IsMapped && unit.HasAvailableArea && !unit.IsReserved)</strong>
             </button>
             <button type="button" class="summary-filter filter-reserved @(_activeFilter == MapFilter.Reserved ? "filter-active" : "")"
                     style="@GetFilterButtonStyle(MapFilter.Reserved)"
                     aria-pressed="@(_activeFilter == MapFilter.Reserved)" @onclick="() => SetFilter(MapFilter.Reserved)">
-                <i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#f3ad59;"></i><span>Rezerwacje</span><strong>@_units.Count(unit => unit.IsReserved)</strong>
+                <i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#f3ad59;"></i><span>Rezerwacje</span><strong>@_units.Count(unit => unit.IsMapped && unit.IsReserved)</strong>
             </button>
         </div>
     </section>
@@ -45,10 +80,13 @@
         <MudCard Class="l75-plan-card" Elevation="1" Outlined="true"
                  Style="width: min(100%, 900px); margin: 20px auto 0;">
             <MudCardContent Class="pa-3">
-            
+            <div class="l75-plan-heading">
+                <span class="map-count">@_units.Count(unit => unit.IsMapped) dopasowanych pól</span>
+                <span class="map-legend"><i class="legend-rented"></i> wynajęte <i class="legend-vacant"></i> wolne <i class="legend-common"></i> część wspólna</span>
+            </div>
             <div class="l75-plan-scroll" style="overflow: hidden;">
                 <div class="l75-plan" style="width: min(100%, 760px); margin: 0 auto; aspect-ratio: 1221 / 768;">
-                    @* Współrzędne pól są zapisane w skali viewBox i stanowią przykładowy układ rzutu. *@
+                    @* Geometria jest stała; status i szczegóły są powiązane z Wynajmem po numerze lokalu. *@
                     <svg viewBox="0 0 1221 768" role="group" aria-label="Klikalne pola budynku L-75"
                          style="display: block; width: 100%; height: auto;">
                         <polygon points="4,24 1197,24 1203,750 3,750"
@@ -60,12 +98,13 @@
                             <g class="map-unit @GetStatusClass(unit)">
                                 <polygon points="@unit.Points"
                                          class="map-area @GetStatusClass(unit) @GetFilterClass(unit) @(SelectedUnit?.Id == unit.Id ? "map-selected" : "")"
-                                         fill="@GetFillColor(unit)"
+                                         fill="@GetBaseFillColor(unit)"
                                          stroke="@GetStrokeColor(unit)"
                                          stroke-width="1.5"
                                          style="@GetFilterInlineStyle(unit)"
-                                         tabindex="0"
-                                         role="button"
+                                         tabindex="@(unit.IsMapped ? 0 : -1)"
+                                         role="@(unit.IsMapped ? "button" : "img")"
+                                         aria-disabled="@(!unit.IsMapped)"
                                          aria-label="@GetTooltip(unit)"
                                          aria-pressed="@(SelectedUnit?.Id == unit.Id)"
                                          @onclick="() => SelectUnit(unit)"
@@ -73,6 +112,30 @@
                                          @onkeydown="args => HandleUnitKeyDown(args, unit)">
                                     <title>@GetTooltip(unit)</title>
                                 </polygon>
+                                @if (unit.IsPartiallyRented)
+                                {
+                                    var split = GetRentedSplit(unit);
+                                    var clipId = $"unit-clip-{unit.Id}";
+                                    <defs>
+                                        <clipPath id="@clipId" clipPathUnits="userSpaceOnUse">
+                                            <polygon points="@unit.Points" />
+                                        </clipPath>
+                                    </defs>
+                                    <rect x="@split.X.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture)"
+                                          y="@split.Y.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture)"
+                                          width="@split.Width.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture)"
+                                          height="@split.Height.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture)"
+                                          fill="#df7777"
+                                          clip-path="@($"url(#{clipId})")"
+                                          style="@GetFilterInlineStyle(unit)"
+                                          pointer-events="none" />
+                                    <polygon points="@unit.Points"
+                                             fill="none"
+                                             stroke="@GetStrokeColor(unit)"
+                                             stroke-width="1.5"
+                                             style="@GetFilterInlineStyle(unit)"
+                                             pointer-events="none" />
+                                }
                                 <text class="map-label @GetFilterClass(unit)"
                                       x="@labelPosition.X"
                                       y="@labelPosition.Y"
@@ -112,7 +175,7 @@
                         <MudIcon Icon="@Icons.Material.Filled.Warehouse" Style="font-size:24px" />
                     </div>
                     <div class="detail-card-heading" style="display:flex;flex:1;min-width:0;flex-direction:column;gap:4px">
-                        <span style="color:#8290a1;font-size:11px;font-weight:800;letter-spacing:.12em">SZCZEGÓŁY LOKALU</span>
+                        <span style="color:#8290a1;font-size:11px;font-weight:800;letter-spacing:.12em">@(SelectedUnit.IsCommonArea ? "SZCZEGÓŁY POMIESZCZENIA" : "SZCZEGÓŁY LOKALU")</span>
                         <strong style="overflow:hidden;color:#1d2e46;font-size:21px;font-weight:750;line-height:1.2;text-overflow:ellipsis;white-space:nowrap">@SelectedUnit.Name</strong>
                     </div>
                     <button type="button" class="detail-close" style="display:grid;place-items:center;width:36px;height:36px;border:1px solid #e2e8ef;border-radius:10px;background:#fff;color:#66768b;cursor:pointer" aria-label="Zamknij szczegóły pola" @onclick="ClearSelection">
@@ -126,99 +189,212 @@
                         @GetStatusLabel(SelectedUnit)
                     </div>
                     <div class="detail-field" style="display:flex;flex-direction:column;gap:6px;padding:0 0 17px;border-bottom:1px solid #edf0f4">
-                        <span style="color:#8491a2;font-size:12px;font-weight:600">NAJEMCA</span>
-                        <strong style="color:#263d5f;font-size:16px;font-weight:700">@(SelectedUnit.IsRented ? SelectedUnit.Tenant : SelectedUnit.IsReserved ? "Rezerwacja w toku" : "Brak — lokal wolny")</strong>
+                        <span style="color:#8491a2;font-size:12px;font-weight:600">@(SelectedUnit.IsCommonArea ? "RODZAJ" : "NAJEMCA")</span>
+                        <strong style="color:#263d5f;font-size:16px;font-weight:700">@(SelectedUnit.IsCommonArea ? SelectedUnit.Rental!.TypLokalu : SelectedUnit.IsRented ? SelectedUnit.Tenant : SelectedUnit.IsReserved ? "Rezerwacja w toku" : "Brak — lokal wolny")</strong>
                     </div>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px">
+                    <div style="@($"display:grid;grid-template-columns:{(SelectedUnit.IsCommonArea ? "1fr" : "1fr 1fr")};gap:12px;margin-top:16px")">
                         <div style="padding:14px;border:1px solid #e8edf2;border-radius:12px;background:#f8fafc">
                             <span style="display:block;margin-bottom:6px;color:#8491a2;font-size:12px;font-weight:600">POWIERZCHNIA</span>
-                            <strong style="color:#263d5f;font-size:18px;font-weight:750">@SelectedUnit.Area.ToString("N0") <small style="font-size:12px">m²</small></strong>
+                            <strong style="color:#263d5f;font-size:18px;font-weight:750">@SelectedUnit.Area.ToString("N2") <small style="font-size:12px">m²</small></strong>
                         </div>
-                        <div style="padding:14px;border:1px solid #e8edf2;border-radius:12px;background:#f8fafc">
-                            <span style="display:block;margin-bottom:6px;color:#8491a2;font-size:12px;font-weight:600">STAWKA</span>
-                            <strong style="color:#263d5f;font-size:16px;font-weight:750">@SelectedUnit.Rate.ToString("N2") <small style="font-size:12px">zł/m²</small></strong>
+                        @if (!SelectedUnit.IsCommonArea)
+                        {
+                            <div style="padding:14px;border:1px solid #e8edf2;border-radius:12px;background:#f8fafc">
+                                <span style="display:block;margin-bottom:6px;color:#8491a2;font-size:12px;font-weight:600">STAWKA</span>
+                                <strong style="color:#263d5f;font-size:16px;font-weight:750">@SelectedUnit.Rate.ToString("N2") <small style="font-size:12px">zł/m²</small></strong>
+                            </div>
+                        }
+                    </div>
+                    @if (!SelectedUnit.IsCommonArea)
+                    {
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+                            <div style="padding:14px;border:1px solid #f0d1d1;border-radius:12px;background:#fff7f7">
+                                <span style="display:block;margin-bottom:6px;color:#9b6666;font-size:12px;font-weight:600">POWIERZCHNIA WYNAJĘTA</span>
+                                <strong style="color:#a33e43;font-size:16px;font-weight:750">@SelectedUnit.RentedArea.ToString("N2") <small style="font-size:12px">m²</small></strong>
+                            </div>
+                            <div style="padding:14px;border:1px solid #dfe3e6;border-radius:12px;background:#f6f7f8">
+                                <span style="display:block;margin-bottom:6px;color:#73808a;font-size:12px;font-weight:600">POWIERZCHNIA WOLNA</span>
+                                <strong style="color:#535e68;font-size:16px;font-weight:750">@SelectedUnit.AvailableArea.ToString("N2") <small style="font-size:12px">m²</small></strong>
+                            </div>
                         </div>
-                    </div>
-                    <div class="detail-rent" style="display:flex;flex-direction:column;gap:7px;margin-top:16px;padding:18px;border:1px solid #dbe7f4;border-radius:13px;background:linear-gradient(135deg,#f1f6fc,#eaf2fb)">
-                        <span style="color:#6e8096;font-size:12px;font-weight:650">@(SelectedUnit.IsRented ? "CZYNSZ MIESIĘCZNY" : "SZACOWANY CZYNSZ MIESIĘCZNY")</span>
-                        <strong style="color:#244f83;font-size:26px;font-weight:800;letter-spacing:-.03em">@SelectedUnit.MonthlyRent.ToString("N2") <small style="font-size:13px;font-weight:600;letter-spacing:0">zł / mies.</small></strong>
-                    </div>
-                    <p class="l75-disclaimer" style="margin:16px 0 0;color:#8995a4;font-size:11px;line-height:1.5">Dane demonstracyjne — nie pochodzą z bazy umów.</p>
+                    }
+                    @if (!SelectedUnit.IsCommonArea)
+                    {
+                        <div class="detail-rent" style="display:flex;flex-direction:column;gap:7px;margin-top:16px;padding:18px;border:1px solid #dbe7f4;border-radius:13px;background:linear-gradient(135deg,#f1f6fc,#eaf2fb)">
+                            <span style="color:#6e8096;font-size:12px;font-weight:650">@(SelectedUnit.IsRented ? "CZYNSZ MIESIĘCZNY" : "SZACOWANY CZYNSZ MIESIĘCZNY")</span>
+                            <strong style="color:#244f83;font-size:26px;font-weight:800;letter-spacing:-.03em">@SelectedUnit.MonthlyRent.ToString("N2") <small style="font-size:13px;font-weight:600;letter-spacing:0">zł / mies.</small></strong>
+                        </div>
+                    }
+                    <p class="l75-disclaimer" style="margin:16px 0 0;color:#8995a4;font-size:11px;line-height:1.5">Dane lokalu i najmu pochodzą z Wynajmu dla budynku @_selectedBuilding?.Nazwa.</p>
                 </div>
                 </aside>
             </div>
         }
     </section>
+    }
 </div>
 
 @code {
     private Unit? SelectedUnit;
     private MapFilter _activeFilter = MapFilter.All;
+    private Obiekt? _selectedBuilding;
+    private List<Unit> _units = [];
+    private List<string> _unmatchedMapNumbers = [];
+    private List<string> _unplacedRentalNumbers = [];
+    private string? _loadError;
+    private bool _isLoading = true;
 
-    // Dane służą wyłącznie do prezentacji rzutu i nie są pobierane z bazy.
-    private readonly List<Unit> _units =
+    // Geometria pozostaje przypisana do numerów lokali; dane o statusie pochodzą z Wynajmu.
+    private readonly List<MapArea> _mapAreas =
     [
-        // Kolejność współrzędnych w każdym wielokącie: x,y; punkty podano w układzie SVG.
-        new("1", "Pole 1", "Biuro Północ", 126m, 28m, true, "4,24 146,24 146,101 4,101"),
-        new("2", "Pole 2", "—", 118m, 27m, false, "149,24 275,24 275,101 149,101"),
-        new("3", "Pole 3", "Magazyn Delta", 512m, 24m, true, "4,115 273,115 273,688 138,688 138,746 3,746"),
-        new("4", "Pole 4", "—", 72m, 26m, false, "140,692 273,692 273,746 140,746"),
-        new("5", "Pole 5", "LogiMax", 294m, 25m, true, "324,110 598,110 598,247 324,247"),
-        new("6", "Pole 6", "—", 236m, 25m, false, "324,272 599,272 599,381 324,381"),
-        new("7", "Pole 7", "Serwis-Tech", 236m, 24m, true, "324,384 600,384 600,491 324,491"),
-        new("8", "Pole 8", "—", 236m, 26m, false, "324,494 602,494 602,605 324,605"),
-        new("9", "Pole 9", "Baltic Trade", 92m, 27m, true, "324,632 433,632 433,746 324,746"),
-        new("10", "Pole 10", "—", 146m, 27m, false, "436,632 603,632 603,746 436,746"),
-        new("11", "Pole 11", "Transport Plus", 222m, 24m, true, "600,110 870,110 870,162 600,162"),
-        new("12", "Pole 12", "—", 219m, 26m, false, "600,165 870,165 870,247 600,247"),
-        new("13", "Pole 13", "Elektro-Mix", 123m, 29m, true, "602,272 742,272 742,381 602,381"),
-        new("14", "Pole 14", "—", 98m, 28m, false, "745,272 870,272 870,381 745,381"),
-        new("15", "Pole 15", "Pak-System", 220m, 25m, true, "603,384 870,384 870,491 603,491"),
-        new("16", "Pole 16", "—", 232m, 26m, false, "605,494 870,494 870,605 605,605", true),
-        new("17", "Pole 17", "Archiwum Północ", 228m, 23m, true, "606,632 870,632 870,746 606,746"),
-        new("18", "Pole 18", "Centrum Logistyczne", 862m, 22m, true, "904,24 1197,24 1200,371 904,371"),
-        new("19", "Pole 19", "—", 432m, 23m, false, "904,377 1200,377 1203,746 1062,746 1062,688 904,688 904,746"),
-        new("20", "Pole 20", "Kurier Gdańsk", 117m, 28m, true, "904,688 1062,688 1062,746 904,746"),
-        new("01", "Lokal 01", "—", 18m, 38m, false, "325,24 360,24 360,74 325,74"),
-        new("02", "Lokal 02", "Studio Forma", 17m, 39m, true, "363,24 393,24 393,74 363,74"),
-        new("03", "Lokal 03", "—", 22m, 38m, false, "396,24 431,24 431,74 396,74"),
-        new("04", "Lokal 04", "Krawiectwo Ada", 30m, 37m, true, "434,24 471,24 471,74 434,74"),
-        new("05", "Lokal 05", "—", 35m, 38m, false, "474,24 511,24 511,74 474,74"),
-        new("06", "Lokal 06", "Punkt Serwisowy", 32m, 38m, true, "514,24 541,24 541,74 514,74"),
-        new("07", "Lokal 07", "—", 27m, 39m, false, "544,24 569,24 569,74 544,74"),
-        new("08", "Lokal 08", "Kiosk L-75", 24m, 38m, true, "572,24 597,24 597,74 572,74"),
-        new("09", "Lokal 09", "—", 26m, 39m, false, "600,24 625,24 625,74 600,74"),
-        new("010", "Lokal 010", "—", 32m, 38m, false, "628,24 700,24 700,74 628,74", true),
-        new("011", "Lokal 011", "—", 164m, 31m, false, "703,24 870,24 870,74 703,74")
+        new("1", "4,24 146,24 146,101 4,101"),
+        new("2", "149,24 275,24 275,101 149,101"),
+        new("3", "4,115 273,115 273,688 138,688 138,746 3,746"),
+        new("4", "140,692 273,692 273,746 140,746"),
+        new("5", "324,110 598,110 598,247 324,247"),
+        new("6", "324,272 599,272 599,381 324,381"),
+        new("7", "324,384 600,384 600,491 324,491"),
+        new("8", "324,494 602,494 602,605 324,605"),
+        new("9", "324,632 433,632 433,746 324,746"),
+        new("10", "436,632 603,632 603,746 436,746"),
+        new("11", "600,110 870,110 870,162 600,162"),
+        new("12", "600,165 870,165 870,247 600,247"),
+        new("13", "602,272 742,272 742,381 602,381"),
+        new("14", "745,272 870,272 870,381 745,381"),
+        new("15", "603,384 870,384 870,491 603,491"),
+        new("16", "605,494 870,494 870,605 605,605"),
+        new("17", "606,632 870,632 870,746 606,746"),
+        new("18", "904,24 1197,24 1200,371 904,371"),
+        new("19", "904,377 1200,377 1203,746 1062,746 1062,688 904,688 904,746"),
+        new("20", "904,688 1062,688 1062,746 904,746"),
+        new("01", "325,24 360,24 360,74 325,74"),
+        new("02", "363,24 393,24 393,74 363,74"),
+        new("03", "396,24 431,24 431,74 396,74"),
+        new("04", "434,24 471,24 471,74 434,74"),
+        new("05", "474,24 511,24 511,74 474,74"),
+        new("06", "514,24 541,24 541,74 514,74"),
+        new("07", "544,24 569,24 569,74 544,74"),
+        new("08", "572,24 597,24 597,74 572,74"),
+        new("09", "600,24 625,24 625,74 600,74"),
+        new("010", "628,24 700,24 700,74 628,74"),
+        new("011", "703,24 870,24 870,74 703,74")
     ];
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await LoadFloorPlanDataAsync();
+        }
+        catch (DbException exception)
+        {
+            Logger.LogError(exception, "Nie udało się pobrać danych Wynajmu dla rzutu L-75.");
+            _loadError = "Nie udało się pobrać danych budynku i lokali z bazy. Spróbuj ponownie później.";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task LoadFloorPlanDataAsync()
+    {
+        var buildings = await ObiektService.GetAllActiveAsync();
+        var matchingBuildings = buildings
+            .Where(building => IsL75Building(building))
+            .ToList();
+
+        if (matchingBuildings.Count != 1)
+        {
+            _loadError = matchingBuildings.Count == 0
+                ? "Nie znaleziono aktywnego budynku L-75. Sprawdź nazwę lub numer ewidencyjny budynku."
+                : $"Znaleziono kilka aktywnych budynków pasujących do L-75: {string.Join(", ", matchingBuildings.Select(building => $"{building.Nazwa} (ID {building.Id})"))}.";
+            return;
+        }
+
+        _selectedBuilding = matchingBuildings[0];
+        var rentals = await LokalService.PobierzDlaObiektuAsync(_selectedBuilding.Id);
+        var duplicateNumbers = rentals
+            .GroupBy(rental => NormalizeNumber(rental.NumerLokalu), StringComparer.OrdinalIgnoreCase)
+            .Where(group => group.Count() > 1)
+            .Select(group => group.First().NumerLokalu)
+            .ToList();
+
+        if (duplicateNumbers.Count > 0)
+        {
+            _loadError = $"Nie można jednoznacznie dopasować lokali o powtarzających się numerach: {string.Join(", ", duplicateNumbers)}.";
+            return;
+        }
+
+        var rentalsByNumber = rentals
+            .ToDictionary(rental => NormalizeNumber(rental.NumerLokalu), StringComparer.OrdinalIgnoreCase);
+
+        _units = _mapAreas
+            .Select(area => rentalsByNumber.TryGetValue(NormalizeNumber(area.Number), out var rental)
+                ? new Unit(area.Number, area.Points, rental)
+                : new Unit(area.Number, area.Points, null))
+            .ToList();
+
+        var mappedNumbers = _mapAreas
+            .Select(area => NormalizeNumber(area.Number))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        _unmatchedMapNumbers = _units
+            .Where(unit => !unit.IsMapped)
+            .Select(unit => unit.Id)
+            .ToList();
+        _unplacedRentalNumbers = rentals
+            .Where(rental => !mappedNumbers.Contains(NormalizeNumber(rental.NumerLokalu)))
+            .Select(rental => rental.NumerLokalu)
+            .OrderBy(number => number)
+            .ToList();
+
+    }
+
+    private static bool IsL75Building(Obiekt building) =>
+        NormalizeNumber(building.Nazwa).Contains("L75", StringComparison.OrdinalIgnoreCase) ||
+        NormalizeNumber(building.NumerEwidencyjny).Contains("L75", StringComparison.OrdinalIgnoreCase);
+
+    private static string NormalizeNumber(string? number) =>
+        string.Concat((number ?? string.Empty).Where(char.IsLetterOrDigit)).ToUpperInvariant();
 
     private static string GetTooltip(Unit unit)
     {
-        // Wolne i zarezerwowane lokale pokazują szacowany czynsz zamiast aktualnego czynszu.
         var status = GetStatusLabel(unit);
+        if (!unit.IsMapped)
+        {
+            return $"Lokal {unit.Id} · brak dopasowanego rekordu w Wynajmie dla budynku L-75.";
+        }
+
+        if (unit.IsCommonArea)
+        {
+            return $"{unit.Rental!.TypLokalu} · część wspólna\nPowierzchnia: {unit.Area:N2} m²";
+        }
+
         var tenant = unit.IsRented ? unit.Tenant : unit.IsReserved ? "Rezerwacja w toku" : "Brak najemcy";
         var rent = unit.IsRented ? "Czynsz" : "Szacowany czynsz przy wynajmie";
-        return $"{unit.Name} · {status} · {tenant}\nPowierzchnia: {unit.Area:N0} m²\nStawka: {unit.Rate:N2} zł/m²/mies.\n{rent}: {unit.MonthlyRent:N2} zł/mies.";
+        return $"{unit.Name} · {status} · {tenant}\nPowierzchnia całkowita: {unit.Area:N2} m²\nWynajęta: {unit.RentedArea:N2} m² · wolna: {unit.AvailableArea:N2} m²\nStawka: {unit.Rate:N2} zł/m²/mies.\n{rent}: {unit.MonthlyRent:N2} zł/mies.";
     }
 
-    // Status rezerwacji ma pierwszeństwo przed pozostałymi wartościami statusu.
     private static string GetStatusClass(Unit unit) =>
-        unit.IsReserved ? "status-reserved" : unit.IsRented ? "status-rented" : "status-vacant";
+        !unit.IsMapped ? "status-unmapped" : unit.IsCommonArea ? "status-common" : unit.IsReserved ? "status-reserved" : unit.IsPartiallyRented ? "status-partial" : unit.IsRented ? "status-rented" : "status-vacant";
 
     private static string GetStatusLabel(Unit unit) =>
-        unit.IsReserved ? "Rezerwacja" : unit.IsRented ? "Wynajęte" : "Wolne";
+        !unit.IsMapped ? "Brak danych" : unit.IsCommonArea ? unit.Rental!.TypLokalu : unit.IsReserved ? "Rezerwacja" : unit.IsPartiallyRented ? "Częściowo wynajęte" : unit.IsRented ? "Wynajęte" : "Wolne";
 
     private static string GetStatusColor(Unit unit) =>
-        unit.IsReserved ? "#b86a13" : unit.IsRented ? "#b83e45" : "#636b73";
+        !unit.IsMapped ? "#7b8794" : unit.IsCommonArea ? "#5b4a9c" : unit.IsReserved ? "#b86a13" : unit.IsRented ? "#b83e45" : "#636b73";
 
     private static string GetStatusTint(Unit unit) =>
-        unit.IsReserved ? "#fff0dd" : unit.IsRented ? "#fde9e9" : "#eceff2";
+        !unit.IsMapped ? "#eef1f4" : unit.IsCommonArea ? "#eeeafb" : unit.IsReserved ? "#fff0dd" : unit.IsRented ? "#fde9e9" : "#eceff2";
 
     private static string GetFillColor(Unit unit) =>
-        unit.IsReserved ? "#f3ad59" : unit.IsRented ? "#df7777" : "#d8dadd";
+        !unit.IsMapped ? "#eef1f4" : unit.IsCommonArea ? "#9384cf" : unit.IsReserved ? "#f3ad59" : unit.IsRented ? "#df7777" : "#d8dadd";
+
+    private static string GetBaseFillColor(Unit unit) =>
+        unit.IsPartiallyRented ? "#d8dadd" : GetFillColor(unit);
 
     private static string GetStrokeColor(Unit unit) =>
-        unit.IsReserved ? "#d17b1f" : unit.IsRented ? "#be4848" : "#ffffff";
+        !unit.IsMapped ? "#cbd2d9" : unit.IsCommonArea ? "#6c5ba8" : unit.IsReserved ? "#d17b1f" : unit.IsRented ? "#be4848" : "#ffffff";
 
     private void SetFilter(MapFilter filter) => _activeFilter = filter;
 
@@ -239,7 +415,7 @@
     private string GetFilterClass(Unit unit) =>
         _activeFilter == MapFilter.All
             ? ""
-            : IsInActiveFilter(unit) ? "status-highlighted" : "status-muted";
+            : !unit.IsMapped ? "status-muted" : IsInActiveFilter(unit) ? "status-highlighted" : "status-muted";
 
     private string GetFilterInlineStyle(Unit unit)
     {
@@ -248,7 +424,7 @@
             return string.Empty;
         }
 
-        if (!IsInActiveFilter(unit))
+        if (!unit.IsMapped || !IsInActiveFilter(unit))
         {
             return "opacity:.14;";
         }
@@ -265,19 +441,25 @@
     }
 
     private string GetLabelFilterInlineStyle(Unit unit) =>
-        _activeFilter == MapFilter.All || IsInActiveFilter(unit) ? "" : "opacity:.14;";
+        _activeFilter == MapFilter.All || (unit.IsMapped && IsInActiveFilter(unit)) ? "" : "opacity:.14;";
 
     private bool IsInActiveFilter(Unit unit) =>
-        _activeFilter switch
+        unit.IsMapped && _activeFilter switch
         {
-            MapFilter.Rented => unit.IsRented,
-            MapFilter.Vacant => !unit.IsRented && !unit.IsReserved,
+            MapFilter.Rented => !unit.IsCommonArea && unit.IsRented,
+            MapFilter.Vacant => !unit.IsCommonArea && unit.HasAvailableArea && !unit.IsReserved,
             MapFilter.Reserved => unit.IsReserved,
             _ => true
         };
 
     // Te metody obsługują otwieranie karty przez kliknięcie lub klawiaturę oraz jej zamknięcie.
-    private void SelectUnit(Unit unit) => SelectedUnit = unit;
+    private void SelectUnit(Unit unit)
+    {
+        if (unit.IsMapped)
+        {
+            SelectedUnit = unit;
+        }
+    }
     private void ClearSelection() => SelectedUnit = null;
 
     private void HandleUnitKeyDown(KeyboardEventArgs args, Unit unit)
@@ -290,11 +472,7 @@
 
     private static (string X, string Y) GetLabelPosition(string points)
     {
-        var vertices = points.Split(' ', StringSplitOptions.RemoveEmptyEntries)
-            .Select(point => point.Split(','))
-            .Select(point => (X: double.Parse(point[0], System.Globalization.CultureInfo.InvariantCulture),
-                              Y: double.Parse(point[1], System.Globalization.CultureInfo.InvariantCulture)))
-            .ToArray();
+        var vertices = ParsePoints(points);
 
         // Środek ciężkości wielokąta umieszcza etykietę także w nieregularnych lokalach.
         var areaTwice = 0d;
@@ -324,18 +502,139 @@
             (ySum / (3 * areaTwice)).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture));
     }
 
-    private sealed record Unit(
-        string Id,
-        string Name,
-        string Tenant,
-        decimal Area,
-        decimal Rate,
-        bool IsRented,
-        string Points,
-        bool IsReserved = false)
+    private static PolygonSplit GetRentedSplit(Unit unit)
     {
-        public decimal MonthlyRent => Area * Rate;
+        var vertices = ParsePoints(unit.Points);
+        var minX = vertices.Min(point => point.X);
+        var maxX = vertices.Max(point => point.X);
+        var minY = vertices.Min(point => point.Y);
+        var maxY = vertices.Max(point => point.Y);
+        var targetArea = PolygonArea(vertices) * (double)(unit.RentedArea / unit.Area);
+        var low = minX;
+        var high = maxX;
+
+        for (var iteration = 0; iteration < 48; iteration++)
+        {
+            var middle = (low + high) / 2;
+            if (AreaLeftOfX(vertices, middle) < targetArea)
+            {
+                low = middle;
+            }
+            else
+            {
+                high = middle;
+            }
+        }
+
+        var splitX = (low + high) / 2;
+        return new PolygonSplit(minX, minY, splitX - minX, maxY - minY);
     }
+
+    private static (double X, double Y)[] ParsePoints(string points) =>
+        points.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Select(point => point.Split(','))
+            .Select(point => (
+                X: double.Parse(point[0], System.Globalization.CultureInfo.InvariantCulture),
+                Y: double.Parse(point[1], System.Globalization.CultureInfo.InvariantCulture)))
+            .ToArray();
+
+    private static double AreaLeftOfX((double X, double Y)[] vertices, double x)
+    {
+        var clipped = new List<(double X, double Y)>();
+        var previous = vertices[^1];
+        var previousInside = previous.X <= x;
+
+        foreach (var current in vertices)
+        {
+            var currentInside = current.X <= x;
+            if (currentInside != previousInside)
+            {
+                var ratio = (x - previous.X) / (current.X - previous.X);
+                clipped.Add((x, previous.Y + ratio * (current.Y - previous.Y)));
+            }
+
+            if (currentInside)
+            {
+                clipped.Add(current);
+            }
+
+            previous = current;
+            previousInside = currentInside;
+        }
+
+        return PolygonArea(clipped);
+    }
+
+    private static double PolygonArea(IReadOnlyList<(double X, double Y)> vertices)
+    {
+        if (vertices.Count < 3)
+        {
+            return 0;
+        }
+
+        var areaTwice = 0d;
+        for (var index = 0; index < vertices.Count; index++)
+        {
+            var current = vertices[index];
+            var next = vertices[(index + 1) % vertices.Count];
+            areaTwice += current.X * next.Y - next.X * current.Y;
+        }
+
+        return Math.Abs(areaTwice) / 2;
+    }
+
+    private sealed record Unit(string Id, string Points, LokalWynajem? Rental)
+    {
+        public bool IsMapped => Rental is not null;
+        public bool IsCommonArea => Rental?.CzyCzescWspolna == true;
+        public string Name => Rental?.NumerLokalu ?? Id;
+        public string Tenant
+        {
+            get
+            {
+                var activeTenants = Rental?.HistoriaUmow
+                    .Where(relation => relation.UmowaNajmu?.CzyAktywna == true)
+                    .Select(relation => relation.UmowaNajmu?.Najemca?.NazwaFirmyOsoby)
+                    .Where(name => !string.IsNullOrWhiteSpace(name))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                return activeTenants is { Count: > 0 }
+                    ? string.Join(", ", activeTenants)
+                    : Rental?.Najemca?.NazwaFirmyOsoby ?? "Brak najemcy";
+            }
+        }
+        public decimal Area => Rental?.PowierzchniaM2 ?? 0;
+        public decimal RentedArea => Math.Clamp(Rental?.PowierzchniaWynajetaM2 ?? 0, 0, Area);
+        public decimal AvailableArea => IsCommonArea || IsReserved ? 0 : Math.Max(0, Area - RentedArea);
+        public bool IsPartiallyRented => RentedArea > 0 && HasAvailableArea;
+        public bool HasAvailableArea => AvailableArea > 0;
+        public decimal Rate
+        {
+            get
+            {
+                if (Rental is null)
+                {
+                    return 0;
+                }
+
+                return RentedArea > 0
+                    ? Rental.CzynszWynajetyMiesiecznie / RentedArea
+                    : Rental.CenaZaM2;
+            }
+        }
+        public decimal MonthlyRent => Rental is null
+            ? 0
+            : IsRented
+                ? Rental.CzynszWynajetyMiesiecznie
+                : Rental.PowierzchniaDostepnaM2 * Rental.CenaZaM2;
+        public bool IsReserved => !IsCommonArea && Rental?.StatusAktualny == "Zarezerwowany";
+        public bool IsRented => !IsCommonArea && (RentedArea > 0 || Rental?.StatusAktualny == "Wynajęty");
+    }
+
+    private sealed record PolygonSplit(double X, double Y, double Width, double Height);
+
+    private sealed record MapArea(string Number, string Points);
 
     private enum MapFilter
     {

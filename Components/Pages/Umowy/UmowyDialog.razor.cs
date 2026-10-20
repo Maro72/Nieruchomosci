@@ -30,10 +30,18 @@ namespace Mieszkaniec.Components.Pages.Umowy
 
         // Pola sterujące formularzem dodawania lokalu do umowy
         protected int WybranyLokalId { get; set; }
-        protected decimal WybranaCena { get; set; }
         protected decimal WybranaPowierzchniaM2 { get; set; }
         protected decimal WybranaDostepnaPowierzchniaM2 { get; set; }
-        protected bool NowyCzyRyczalt { get; set; }
+        protected TrybWprowadzaniaCzynszu TrybCzynszu { get; set; } = TrybWprowadzaniaCzynszu.StawkaZaM2;
+        protected decimal WybranaWartosc { get; set; }
+        protected decimal WyliczonaStawka =>
+            TrybCzynszu == TrybWprowadzaniaCzynszu.StawkaZaM2
+                ? WybranaWartosc
+                : WybranaPowierzchniaM2 > 0 ? WybranaWartosc / WybranaPowierzchniaM2 : 0;
+        protected decimal WyliczonaKwota =>
+            TrybCzynszu == TrybWprowadzaniaCzynszu.StawkaZaM2
+                ? WybranaPowierzchniaM2 * WybranaWartosc
+                : WybranaWartosc;
 
         protected AneksUmowy NowyAneks { get; set; } = new AneksUmowy { DataZawarcia = DateTime.Today };
 
@@ -158,13 +166,15 @@ namespace Mieszkaniec.Components.Pages.Umowy
                 var lokal = ListaDostepnychLokali.FirstOrDefault(l => l.Id == id);
                 if (lokal != null)
                 {
-                    WybranaCena = lokal.CenaZaM2; // Podpowiedź domyślnej ceny katalogowej
+                    WybranaWartosc = TrybCzynszu == TrybWprowadzaniaCzynszu.StawkaZaM2
+                        ? lokal.CenaZaM2
+                        : lokal.CenaZaM2 * PowierzchniaDostepnaDlaUmowy(lokal);
                     WybranaDostepnaPowierzchniaM2 = PowierzchniaDostepnaDlaUmowy(lokal);
                     WybranaPowierzchniaM2 = WybranaDostepnaPowierzchniaM2;
                 }
                 else
                 {
-                    WybranaCena = 0;
+                    WybranaWartosc = 0;
                     WybranaPowierzchniaM2 = 0;
                     WybranaDostepnaPowierzchniaM2 = 0;
                 }
@@ -172,12 +182,22 @@ namespace Mieszkaniec.Components.Pages.Umowy
             else
             {
                 WybranyLokalId = 0;
-                WybranaCena = 0;
+                WybranaWartosc = 0;
                 WybranaPowierzchniaM2 = 0;
                 WybranaDostepnaPowierzchniaM2 = 0;
             }
             StateHasChanged();
         }
+
+        protected void ZmienTrybCzynszu(TrybWprowadzaniaCzynszu tryb)
+        {
+            var kwota = WyliczonaKwota;
+            var stawka = WyliczonaStawka;
+            TrybCzynszu = tryb;
+            WybranaWartosc = tryb == TrybWprowadzaniaCzynszu.StawkaZaM2 ? stawka : kwota;
+        }
+
+        protected void ZmienWartosc(decimal wartosc) => WybranaWartosc = Math.Max(0, wartosc);
 
         protected async Task DodajLokalDoUmowy()
         {
@@ -209,17 +229,16 @@ namespace Mieszkaniec.Components.Pages.Umowy
                 LokalWynajemId = WybranyLokalId,
                 LokalWynajem = lokal,
                 PowierzchniaWynajetaM2 = WybranaPowierzchniaM2,
-                WynegocjowanaCenaZaM2 = WybranaCena,
-                CzyRyczalt = NowyCzyRyczalt
+                WynegocjowanaCenaZaM2 = WyliczonaStawka,
+                CzyRyczalt = false
             };
 
             Model.WynajmowaneLokale.Add(nowaRelacja);
 
             // Reset pól po dodaniu
             WybranyLokalId = 0;
-            WybranaCena = 0;
+            WybranaWartosc = 0;
             WybranaPowierzchniaM2 = 0;
-            NowyCzyRyczalt = false;
 
             StateHasChanged();
         }
@@ -476,5 +495,11 @@ namespace Mieszkaniec.Components.Pages.Umowy
         }
 
         protected void Cancel() => MudDialog?.Cancel();
+
+        protected enum TrybWprowadzaniaCzynszu
+        {
+            StawkaZaM2,
+            KwotaMiesieczna
+        }
     }
 }

@@ -1,5 +1,7 @@
 @page "/rzut-l75"
+@page "/rzut-h74"
 @attribute [Authorize(Policy = "Lokale.Odczyt")]
+@implements IDisposable
 @using MudBlazor
 @using System.Data.Common
 @using Mieszkaniec.Model.Entities
@@ -7,21 +9,22 @@
 @inject ILokalWynajemService LokalService
 @inject IObiektService ObiektService
 @inject ILogger<RzutL75> Logger
+@inject NavigationManager NavigationManager
 
-<PageTitle>Rzut budynku L-75</PageTitle>
+<PageTitle>Rzut budynku @BuildingTitle</PageTitle>
 
 <div class="l75-page">
     <header class="l75-header">
         <div class="l75-title-block">
             <div class="l75-eyebrow"><span>Nieruchomości</span><MudIcon Icon="@Icons.Material.Filled.ChevronRight" /><span>Budynki</span></div>
-            <h1>Rzut budynku <span>@(_selectedBuilding?.Nazwa ?? "L-75")</span></h1>
+            <h1>Rzut budynku <span>@BuildingTitle</span></h1>
             <p>Wybierz lokal na planie, aby sprawdzić szczegóły najmu i powierzchnię.</p>
         </div>
         @if (_selectedBuilding is not null)
         {
             <div class="l75-demo-badge">
                 <MudIcon Icon="@Icons.Material.Filled.Domain" />
-                <span>@_selectedBuilding.Nazwa · dane z Wynajmu</span>
+                <span>@(_isH74 ? "H-74/1 i H-74/2" : _selectedBuilding.Nazwa) · dane z Wynajmu</span>
             </div>
         }
     </header>
@@ -80,18 +83,19 @@
         <MudCard Class="l75-plan-card" Elevation="1" Outlined="true"
                  Style="width: min(100%, 900px); margin: 20px auto 0;">
             <MudCardContent Class="pa-3">
-            <div class="l75-plan-heading">
-                <span class="map-count">@_units.Count(unit => unit.IsMapped) dopasowanych pól</span>
-                <span class="map-legend"><i class="legend-rented"></i> wynajęte <i class="legend-vacant"></i> wolne <i class="legend-common"></i> część wspólna</span>
-            </div>
             <div class="l75-plan-scroll" style="overflow: hidden;">
-                <div class="l75-plan" style="width: min(100%, 760px); margin: 0 auto; aspect-ratio: 1221 / 768;">
+                <div class="l75-plan" style="@($"width: min(100%, 900px); margin: 0 auto; aspect-ratio: {(_isH74 ? "1635 / 768" : "1221 / 768")};")">
                     @* Geometria jest stała; status i szczegóły są powiązane z Wynajmem po numerze lokalu. *@
-                    <svg viewBox="0 0 1221 768" role="group" aria-label="Klikalne pola budynku L-75"
+                    <svg viewBox="@(_isH74 ? "0 0 1635 768" : "0 0 1221 768")" role="group" aria-label="Klikalne pola budynku @BuildingTitle"
                          style="display: block; width: 100%; height: auto;">
-                        <polygon points="4,24 1197,24 1203,750 3,750"
+                        <polygon points="@(_isH74 ? "26,44 1585,44 1585,746 26,746" : "4,24 1197,24 1203,750 3,750")"
                                  fill="#fff"
                                  stroke="none" />
+                        @if (_isH74)
+                        {
+                            @((MarkupString)"<text x=\"28\" y=\"36\" font-size=\"18\" font-weight=\"700\">Rzut budynku H-74/1</text>")
+                            @((MarkupString)"<text x=\"820\" y=\"36\" font-size=\"18\" font-weight=\"700\">Rzut budynku H-74/2</text>")
+                        }
                         @foreach (var unit in _units)
                         {
                             var labelPosition = GetLabelPosition(unit.Points);
@@ -115,7 +119,7 @@
                                 @if (unit.IsPartiallyRented)
                                 {
                                     var split = GetRentedSplit(unit);
-                                    var clipId = $"unit-clip-{unit.Id}";
+                                    var clipId = $"unit-clip-{NormalizeNumber(unit.Id)}";
                                     <defs>
                                         <clipPath id="@clipId" clipPathUnits="userSpaceOnUse">
                                             <polygon points="@unit.Points" />
@@ -143,14 +147,24 @@
                                       text-anchor="middle"
                                       dominant-baseline="central"
                                       style="@GetLabelFilterInlineStyle(unit)"
-                                      pointer-events="none">@unit.Id</text>
+                                      pointer-events="none">@unit.Label</text>
                             </g>
                         }
-                        <polygon points="4,24 1197,24 1203,750 3,750"
+                        @if (_isH74)
+                        {
+                            <rect x="989" y="98" width="427" height="26"
+                                  fill="@(_hasH74Part2Corridor ? "#9384cf" : "#fff")"
+                                  pointer-events="none" />
+                            <rect x="1244" y="45" width="44" height="53" fill="#fff" pointer-events="none" />
+                            <path d="M817 44 V746 M26 149 H160 M26 330 H160 M26 407 H160 M26 537 H160 M26 615 H160 M160 44 V746 M203 149 H631 M203 253 H631 M203 330 H631 M203 435 H631 M203 537 H631 M203 746 H631 M203 149 V746 M418 149 V176 M503 149 V330 M503 539 V746 M631 149 V746 M676 44 V746 M676 537 H817 M820 44 V746 M1201 124 V746 M1201 537 H1585" fill="none" stroke="#707478" stroke-width="1.5" pointer-events="none" />
+                            <path d="M1244 44 V98 M1288 44 V98" fill="none" stroke="#707478" stroke-width="1.5" pointer-events="none" />
+                            <path d="M989 98 H1416 V124 H989 Z" fill="none" stroke="#707478" stroke-width="1.5" pointer-events="none" />
+                        }
+                        <polygon points="@(_isH74 ? "26,44 1585,44 1585,746 26,746" : "4,24 1197,24 1203,750 3,750")"
                                  class="map-building-outline"
                                  fill="none"
                                  stroke="#707478"
-                                 stroke-width="6"
+                                 stroke-width="@(_isH74 ? "10" : "6")"
                                  pointer-events="none" />
                     </svg>
                 </div>
@@ -176,7 +190,7 @@
                     </div>
                     <div class="detail-card-heading" style="display:flex;flex:1;min-width:0;flex-direction:column;gap:4px">
                         <span style="color:#8290a1;font-size:11px;font-weight:800;letter-spacing:.12em">@(SelectedUnit.IsCommonArea ? "SZCZEGÓŁY POMIESZCZENIA" : "SZCZEGÓŁY LOKALU")</span>
-                        <strong style="overflow:hidden;color:#1d2e46;font-size:21px;font-weight:750;line-height:1.2;text-overflow:ellipsis;white-space:nowrap">@SelectedUnit.Name</strong>
+                        <strong style="overflow:hidden;color:#1d2e46;font-size:21px;font-weight:750;line-height:1.2;text-overflow:ellipsis;white-space:nowrap">@GetUnitDisplayName(SelectedUnit)</strong>
                     </div>
                     <button type="button" class="detail-close" style="display:grid;place-items:center;width:36px;height:36px;border:1px solid #e2e8ef;border-radius:10px;background:#fff;color:#66768b;cursor:pointer" aria-label="Zamknij szczegóły pola" @onclick="ClearSelection">
                         <MudIcon Icon="@Icons.Material.Filled.Close" Style="font-size:20px" />
@@ -190,7 +204,7 @@
                     </div>
                     <div class="detail-field" style="display:flex;flex-direction:column;gap:6px;padding:0 0 17px;border-bottom:1px solid #edf0f4">
                         <span style="color:#8491a2;font-size:12px;font-weight:600">@(SelectedUnit.IsCommonArea ? "RODZAJ" : "NAJEMCA")</span>
-                        <strong style="color:#263d5f;font-size:16px;font-weight:700">@(SelectedUnit.IsCommonArea ? SelectedUnit.Rental!.TypLokalu : SelectedUnit.IsRented ? SelectedUnit.Tenant : SelectedUnit.IsReserved ? "Rezerwacja w toku" : "Brak — lokal wolny")</strong>
+                        <strong style="color:#263d5f;font-size:16px;font-weight:700;white-space:pre-line">@(SelectedUnit.IsCommonArea ? SelectedUnit.Rental!.TypLokalu : SelectedUnit.IsRented ? SelectedUnit.Tenant : SelectedUnit.IsReserved ? "Rezerwacja w toku" : "Brak — lokal wolny")</strong>
                     </div>
                     <div style="@($"display:grid;grid-template-columns:{(SelectedUnit.IsCommonArea ? "1fr" : "1fr 1fr")};gap:12px;margin-top:16px")">
                         <div style="padding:14px;border:1px solid #e8edf2;border-radius:12px;background:#f8fafc">
@@ -225,7 +239,7 @@
                             <strong style="color:#244f83;font-size:26px;font-weight:800;letter-spacing:-.03em">@SelectedUnit.MonthlyRent.ToString("N2") <small style="font-size:13px;font-weight:600;letter-spacing:0">zł / mies.</small></strong>
                         </div>
                     }
-                    <p class="l75-disclaimer" style="margin:16px 0 0;color:#8995a4;font-size:11px;line-height:1.5">Dane lokalu i najmu pochodzą z Wynajmu dla budynku @_selectedBuilding?.Nazwa.</p>
+                    <p class="l75-disclaimer" style="margin:16px 0 0;color:#8995a4;font-size:11px;line-height:1.5">Dane lokalu i najmu pochodzą z Wynajmu dla budynku @(_isH74 ? SelectedUnit.BuildingName : _selectedBuilding?.Nazwa).</p>
                 </div>
                 </aside>
             </div>
@@ -238,11 +252,16 @@
     private Unit? SelectedUnit;
     private MapFilter _activeFilter = MapFilter.All;
     private Obiekt? _selectedBuilding;
+    private bool _isH74;
+    private bool? _loadedPlanIsH74;
+    private bool _isDisposed;
+    private bool _hasH74Part2Corridor;
     private List<Unit> _units = [];
     private List<string> _unmatchedMapNumbers = [];
     private List<string> _unplacedRentalNumbers = [];
     private string? _loadError;
     private bool _isLoading = true;
+    private string BuildingTitle => _isH74 ? "H-74" : _selectedBuilding?.Nazwa ?? "L-75";
 
     // Geometria pozostaje przypisana do numerów lokali; dane o statusie pochodzą z Wynajmu.
     private readonly List<MapArea> _mapAreas =
@@ -280,15 +299,92 @@
         new("011", "703,24 870,24 870,74 703,74")
     ];
 
+    private readonly List<MapArea> _h74MapAreas =
+    [
+        new("14", "27,45 160,45 160,149 27,149", "1"),
+        new("15", "27,150 160,150 160,330 27,330", "1"),
+        new("16", "27,331 160,331 160,407 27,407", "1"),
+        new("16a", "27,408 160,408 160,537 27,537", "1"),
+        new("17", "27,538 160,538 160,615 27,615", "1"),
+        new("17a", "27,616 160,616 160,745 27,745", "1"),
+        new("1", "677,45 817,45 817,537 677,537", "1"),
+        new("2", "677,539 817,539 817,745 677,745", "1"),
+        new("12", "204,150 418,150 418,176 503,176 503,252 204,252", "1"),
+        new("9", "504,150 630,150 630,200 504,200", "1"),
+        new("10", "504,202 630,202 630,252 504,252", "1"),
+        new("13", "204,254 503,254 503,329 204,329", "1"),
+        new("11", "504,254 630,254 630,329 504,329", "1"),
+        new("7", "204,332 417,332 417,434 204,434", "1"),
+        new("6", "420,332 630,332 630,434 420,434", "1"),
+        new("8", "204,437 417,437 417,537 204,537", "1"),
+        new("5", "420,437 630,437 630,537 420,537", "1"),
+        new("4", "204,539 502,539 502,745 204,745", "1"),
+        new("3", "504,539 630,539 630,745 504,745", "1"),
+        new("1", "820,44 989,44 989,124 1201,124 1201,745 820,745", "2"),
+        new("3", "1201,539 1585,539 1585,745 1201,745", "2"),
+        new("2", "1201,45 1585,45 1585,537 1201,537 1201,124 1416,124 1416,98 1201,98", "2"),
+        new("01", "204,44 289,44 289,97 204,97", "1"),
+        new("02", "291,44 332,44 332,97 291,97", "1"),
+        new("03", "334,44 376,44 376,97 334,97", "1"),
+        new("04", "378,44 419,44 419,97 378,97", "1"),
+        new("05", "421,44 464,44 464,97 421,97", "1"),
+        new("06", "466,44 550,44 550,97 466,97", "1"),
+        new("07", "552,44 594,44 594,97 552,97", "1"),
+        new("08", "596,44 630,44 630,97 596,97", "1"),
+        new("01", "989,44 1031,44 1031,97 989,97", "2"),
+        new("02", "1033,44 1115,44 1115,97 1033,97", "2"),
+        new("03", "1117,44 1158,44 1158,97 1117,97", "2"),
+        new("04", "1160,44 1202,44 1202,97 1160,97", "2"),
+        new("05", "1204,44 1244,44 1244,97 1204,97", "2"),
+        new("06", "1288,44 1331,44 1331,97 1288,97", "2"),
+        new("07", "1333,44 1375,44 1375,97 1333,97", "2"),
+        new("08", "1377,44 1416,44 1416,97 1377,97", "2")
+    ];
+
     protected override async Task OnInitializedAsync()
     {
+        NavigationManager.LocationChanged += HandleLocationChanged;
+        await LoadPlanForCurrentRouteAsync();
+    }
+
+    private void HandleLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs args)
+    {
+        _ = InvokeAsync(async () =>
+        {
+            await LoadPlanForCurrentRouteAsync();
+            if (!_isDisposed)
+            {
+                StateHasChanged();
+            }
+        });
+    }
+
+    private async Task LoadPlanForCurrentRouteAsync()
+    {
+        var requestedPlanIsH74 = NavigationManager.ToBaseRelativePath(NavigationManager.Uri)
+            .StartsWith("rzut-h74", StringComparison.OrdinalIgnoreCase);
+        if (_loadedPlanIsH74 == requestedPlanIsH74)
+        {
+            return;
+        }
+
+        _isH74 = requestedPlanIsH74;
+        _loadedPlanIsH74 = requestedPlanIsH74;
+        _isLoading = true;
+        _loadError = null;
+        _selectedBuilding = null;
+        SelectedUnit = null;
+        _units = [];
+        _unmatchedMapNumbers = [];
+        _unplacedRentalNumbers = [];
+
         try
         {
             await LoadFloorPlanDataAsync();
         }
         catch (DbException exception)
         {
-            Logger.LogError(exception, "Nie udało się pobrać danych Wynajmu dla rzutu L-75.");
+            Logger.LogError(exception, "Nie udało się pobrać danych Wynajmu dla rzutu {Building}.", BuildingTitle);
             _loadError = "Nie udało się pobrać danych budynku i lokali z bazy. Spróbuj ponownie później.";
         }
         finally
@@ -297,54 +393,76 @@
         }
     }
 
+    public void Dispose()
+    {
+        _isDisposed = true;
+        NavigationManager.LocationChanged -= HandleLocationChanged;
+    }
+
     private async Task LoadFloorPlanDataAsync()
     {
+        _hasH74Part2Corridor = false;
         var buildings = await ObiektService.GetAllActiveAsync();
         var matchingBuildings = buildings
-            .Where(building => IsL75Building(building))
+            .Where(building => _isH74 ? IsH74Building(building) : IsL75Building(building))
             .ToList();
+        var expectedBuildingParts = _isH74 ? new[] { "1", "2" } : [""];
+        var buildingsByPart = matchingBuildings
+            .Select(building => (Building: building, Part: _isH74 ? GetH74Part(building) : ""))
+            .Where(item => item.Part is not null)
+            .GroupBy(item => item.Part!, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.Select(item => item.Building).ToList(), StringComparer.Ordinal);
 
-        if (matchingBuildings.Count != 1)
+        if (expectedBuildingParts.Any(part => !buildingsByPart.TryGetValue(part, out var matches) || matches.Count != 1))
         {
-            _loadError = matchingBuildings.Count == 0
-                ? "Nie znaleziono aktywnego budynku L-75. Sprawdź nazwę lub numer ewidencyjny budynku."
-                : $"Znaleziono kilka aktywnych budynków pasujących do L-75: {string.Join(", ", matchingBuildings.Select(building => $"{building.Nazwa} (ID {building.Id})"))}.";
+            _loadError = _isH74
+                ? $"Nie znaleziono dokładnie jednego aktywnego budynku dla każdej części H-74/1 i H-74/2. Dopasowania: {string.Join(", ", matchingBuildings.Select(building => $"{building.Nazwa} ({building.NumerEwidencyjny})"))}."
+                : matchingBuildings.Count == 0
+                    ? "Nie znaleziono aktywnego budynku L-75. Sprawdź nazwę lub numer ewidencyjny budynku."
+                    : $"Znaleziono kilka aktywnych budynków pasujących do L-75: {string.Join(", ", matchingBuildings.Select(building => $"{building.Nazwa} (ID {building.Id})"))}.";
             return;
         }
 
-        _selectedBuilding = matchingBuildings[0];
-        var rentals = await LokalService.PobierzDlaObiektuAsync(_selectedBuilding.Id);
-        var duplicateNumbers = rentals
-            .GroupBy(rental => NormalizeNumber(rental.NumerLokalu), StringComparer.OrdinalIgnoreCase)
-            .Where(group => group.Count() > 1)
-            .Select(group => group.First().NumerLokalu)
-            .ToList();
+        var selectedBuildings = expectedBuildingParts.Select(part => buildingsByPart[part][0]).ToList();
+        _selectedBuilding = selectedBuildings[0];
+        var rentalsByMapKey = new Dictionary<(string Part, string Number), LokalWynajem>();
+        var allRentals = new List<(string Part, LokalWynajem Rental)>();
 
-        if (duplicateNumbers.Count > 0)
+        foreach (var (building, part) in selectedBuildings.Select((building, index) => (building, expectedBuildingParts[index])))
         {
-            _loadError = $"Nie można jednoznacznie dopasować lokali o powtarzających się numerach: {string.Join(", ", duplicateNumbers)}.";
-            return;
+            var rentals = await LokalService.PobierzDlaObiektuAsync(building.Id);
+            _hasH74Part2Corridor |= _isH74 && part == "2" &&
+                rentals.Any(rental => rental.CzyCzescWspolna && rental.TypLokalu == "Korytarz");
+            foreach (var rental in rentals)
+            {
+                allRentals.Add((part, rental));
+            }
+            foreach (var group in rentals.GroupBy(rental => NormalizeMapNumber(rental.NumerLokalu, part, _isH74), StringComparer.OrdinalIgnoreCase))
+            {
+                var matchingUnits = group.Where(rental => !rental.CzyCzescWspolna).ToList();
+                var rentalToMap = matchingUnits.FirstOrDefault() ?? group.First();
+                rentalsByMapKey.Add((part, NormalizeMapNumber(rentalToMap.NumerLokalu, part, _isH74)), rentalToMap);
+            }
         }
 
-        var rentalsByNumber = rentals
-            .ToDictionary(rental => NormalizeNumber(rental.NumerLokalu), StringComparer.OrdinalIgnoreCase);
-
-        _units = _mapAreas
-            .Select(area => rentalsByNumber.TryGetValue(NormalizeNumber(area.Number), out var rental)
-                ? new Unit(area.Number, area.Points, rental)
-                : new Unit(area.Number, area.Points, null))
+        var mapAreas = _isH74 ? _h74MapAreas : _mapAreas;
+        _units = mapAreas
+            .Select(area => rentalsByMapKey.TryGetValue((area.BuildingPart, NormalizeMapNumber(area.Number, area.BuildingPart, _isH74)), out var rental)
+                ? new Unit(GetMapAreaId(area), area.Number, area.BuildingPart, area.Points, rental)
+                : new Unit(GetMapAreaId(area), area.Number, area.BuildingPart, area.Points, null))
             .ToList();
 
-        var mappedNumbers = _mapAreas
-            .Select(area => NormalizeNumber(area.Number))
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var mappedNumbers = mapAreas
+            .Select(area => (area.BuildingPart, NormalizeMapNumber(area.Number, area.BuildingPart, _isH74)))
+            .ToHashSet();
         _unmatchedMapNumbers = _units
             .Where(unit => !unit.IsMapped)
-            .Select(unit => unit.Id)
+            .Select(unit => _isH74 ? $"{unit.BuildingName} · {unit.Label}" : unit.Id)
             .ToList();
-        _unplacedRentalNumbers = rentals
-            .Where(rental => !mappedNumbers.Contains(NormalizeNumber(rental.NumerLokalu)))
-            .Select(rental => rental.NumerLokalu)
+        _unplacedRentalNumbers = allRentals
+            .Where(item => !(_isH74 && item.Part == "2" && item.Rental.CzyCzescWspolna && item.Rental.TypLokalu == "Korytarz"))
+            .Where(item => !mappedNumbers.Contains((item.Part, NormalizeMapNumber(item.Rental.NumerLokalu, item.Part, _isH74))))
+            .Select(item => _isH74 ? $"H-74/{item.Part} · {item.Rental.NumerLokalu}" : item.Rental.NumerLokalu)
             .OrderBy(number => number)
             .ToList();
 
@@ -354,26 +472,77 @@
         NormalizeNumber(building.Nazwa).Contains("L75", StringComparison.OrdinalIgnoreCase) ||
         NormalizeNumber(building.NumerEwidencyjny).Contains("L75", StringComparison.OrdinalIgnoreCase);
 
+    private static bool IsH74Building(Obiekt building) => GetH74Part(building) is not null;
+
+    private static string? GetH74Part(Obiekt building)
+    {
+        var normalizedName = NormalizeNumber(building.Nazwa);
+        var normalizedRegistryNumber = NormalizeNumber(building.NumerEwidencyjny);
+        if (normalizedName.EndsWith("H741", StringComparison.OrdinalIgnoreCase) ||
+            normalizedRegistryNumber.EndsWith("H741", StringComparison.OrdinalIgnoreCase))
+        {
+            return "1";
+        }
+
+        if (normalizedName.EndsWith("H742", StringComparison.OrdinalIgnoreCase) ||
+            normalizedRegistryNumber.EndsWith("H742", StringComparison.OrdinalIgnoreCase))
+        {
+            return "2";
+        }
+
+        return null;
+    }
+
     private static string NormalizeNumber(string? number) =>
         string.Concat((number ?? string.Empty).Where(char.IsLetterOrDigit)).ToUpperInvariant();
+
+    private static string NormalizeMapNumber(string? number, string buildingPart, bool isH74)
+    {
+        if (!isH74)
+        {
+            return NormalizeNumber(number);
+        }
+
+        var value = number?.Trim() ?? string.Empty;
+        var suffixSeparator = value.LastIndexOf('/');
+        if (suffixSeparator >= 0)
+        {
+            var suffix = value[(suffixSeparator + 1)..].Trim();
+            if (suffix is "1" or "2")
+            {
+                var roomNumber = value[..suffixSeparator];
+                return suffix == buildingPart
+                    ? NormalizeNumber(roomNumber)
+                    : $"PART{suffix}_{NormalizeNumber(roomNumber)}";
+            }
+        }
+
+        return NormalizeNumber(value);
+    }
+
+    private string GetMapAreaId(MapArea area) =>
+        _isH74 ? $"H-74/{area.BuildingPart}/{area.Number}" : area.Number;
 
     private static string GetTooltip(Unit unit)
     {
         var status = GetStatusLabel(unit);
         if (!unit.IsMapped)
         {
-            return $"Lokal {unit.Id} · brak dopasowanego rekordu w Wynajmie dla budynku L-75.";
+            return $"Lokal {unit.Name} · brak dopasowanego rekordu w Wynajmie{(unit.BuildingName.Length > 0 ? $" dla budynku {unit.BuildingName}" : " dla budynku L-75")}.";
         }
 
         if (unit.IsCommonArea)
         {
-            return $"{unit.Rental!.TypLokalu} · część wspólna\nPowierzchnia: {unit.Area:N2} m²";
+            return $"{unit.BuildingName} {unit.Name} · {unit.Rental!.TypLokalu} · część wspólna\nPowierzchnia: {unit.Area:N2} m²";
         }
 
         var tenant = unit.IsRented ? unit.Tenant : unit.IsReserved ? "Rezerwacja w toku" : "Brak najemcy";
         var rent = unit.IsRented ? "Czynsz" : "Szacowany czynsz przy wynajmie";
-        return $"{unit.Name} · {status} · {tenant}\nPowierzchnia całkowita: {unit.Area:N2} m²\nWynajęta: {unit.RentedArea:N2} m² · wolna: {unit.AvailableArea:N2} m²\nStawka: {unit.Rate:N2} zł/m²/mies.\n{rent}: {unit.MonthlyRent:N2} zł/mies.";
+        return $"{unit.BuildingName} {unit.Name} · {status} · {tenant}\nPowierzchnia całkowita: {unit.Area:N2} m²\nWynajęta: {unit.RentedArea:N2} m² · wolna: {unit.AvailableArea:N2} m²\nStawka: {unit.Rate:N2} zł/m²/mies.\n{rent}: {unit.MonthlyRent:N2} zł/mies.";
     }
+
+    private static string GetUnitDisplayName(Unit unit) =>
+        unit.BuildingName.Length == 0 ? unit.Name : $"{unit.BuildingName} · lokal {unit.Name}";
 
     private static string GetStatusClass(Unit unit) =>
         !unit.IsMapped ? "status-unmapped" : unit.IsCommonArea ? "status-common" : unit.IsReserved ? "status-reserved" : unit.IsPartiallyRented ? "status-partial" : unit.IsRented ? "status-rented" : "status-vacant";
@@ -510,13 +679,13 @@
         var minY = vertices.Min(point => point.Y);
         var maxY = vertices.Max(point => point.Y);
         var targetArea = PolygonArea(vertices) * (double)(unit.RentedArea / unit.Area);
-        var low = minX;
-        var high = maxX;
+        var low = minY;
+        var high = maxY;
 
         for (var iteration = 0; iteration < 48; iteration++)
         {
             var middle = (low + high) / 2;
-            if (AreaLeftOfX(vertices, middle) < targetArea)
+            if (AreaAboveY(vertices, middle) < targetArea)
             {
                 low = middle;
             }
@@ -526,8 +695,8 @@
             }
         }
 
-        var splitX = (low + high) / 2;
-        return new PolygonSplit(minX, minY, splitX - minX, maxY - minY);
+        var splitY = (low + high) / 2;
+        return new PolygonSplit(minX, minY, maxX - minX, splitY - minY);
     }
 
     private static (double X, double Y)[] ParsePoints(string points) =>
@@ -538,19 +707,19 @@
                 Y: double.Parse(point[1], System.Globalization.CultureInfo.InvariantCulture)))
             .ToArray();
 
-    private static double AreaLeftOfX((double X, double Y)[] vertices, double x)
+    private static double AreaAboveY((double X, double Y)[] vertices, double y)
     {
         var clipped = new List<(double X, double Y)>();
         var previous = vertices[^1];
-        var previousInside = previous.X <= x;
+        var previousInside = previous.Y <= y;
 
         foreach (var current in vertices)
         {
-            var currentInside = current.X <= x;
+            var currentInside = current.Y <= y;
             if (currentInside != previousInside)
             {
-                var ratio = (x - previous.X) / (current.X - previous.X);
-                clipped.Add((x, previous.Y + ratio * (current.Y - previous.Y)));
+                var ratio = (y - previous.Y) / (current.Y - previous.Y);
+                clipped.Add((previous.X + ratio * (current.X - previous.X), y));
             }
 
             if (currentInside)
@@ -583,11 +752,12 @@
         return Math.Abs(areaTwice) / 2;
     }
 
-    private sealed record Unit(string Id, string Points, LokalWynajem? Rental)
+    private sealed record Unit(string Id, string Label, string BuildingPart, string Points, LokalWynajem? Rental)
     {
         public bool IsMapped => Rental is not null;
         public bool IsCommonArea => Rental?.CzyCzescWspolna == true;
-        public string Name => Rental?.NumerLokalu ?? Id;
+        public string Name => Rental?.NumerLokalu ?? Label;
+        public string BuildingName => BuildingPart.Length == 0 ? "" : $"H-74/{BuildingPart}";
         public string Tenant
         {
             get
@@ -600,7 +770,7 @@
                     .ToList();
 
                 return activeTenants is { Count: > 0 }
-                    ? string.Join(", ", activeTenants)
+                    ? string.Join(Environment.NewLine, activeTenants)
                     : Rental?.Najemca?.NazwaFirmyOsoby ?? "Brak najemcy";
             }
         }
@@ -634,7 +804,7 @@
 
     private sealed record PolygonSplit(double X, double Y, double Width, double Height);
 
-    private sealed record MapArea(string Number, string Points);
+    private sealed record MapArea(string Number, string Points, string BuildingPart = "");
 
     private enum MapFilter
     {

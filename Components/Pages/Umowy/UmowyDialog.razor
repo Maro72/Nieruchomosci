@@ -142,17 +142,31 @@
                                         </MudItem>
 
                                         <MudItem xs="6" sm="4" md="2">
-                                            <MudNumericField T="decimal" @bind-Value="WybranaCena"
-                                                             Label="Stawka (zł)" Variant="Variant.Outlined"
-                                                             Margin="Margin.Dense" FullWidth="true"
-                                                             Min="0m" Format="N2" HideSpinButtons="true" />
+                                            <MudSelect T="TrybWprowadzaniaCzynszu"
+                                                       Value="@TrybCzynszu"
+                                                       ValueChanged="ZmienTrybCzynszu"
+                                                       Label="Wprowadzam" Variant="Variant.Outlined"
+                                                       Margin="Margin.Dense" Dense="true" FullWidth="true">
+                                                <MudSelectItem T="TrybWprowadzaniaCzynszu" Value="@TrybWprowadzaniaCzynszu.StawkaZaM2">Stawkę / m²</MudSelectItem>
+                                                <MudSelectItem T="TrybWprowadzaniaCzynszu" Value="@TrybWprowadzaniaCzynszu.KwotaMiesieczna">Kwotę / mies.</MudSelectItem>
+                                            </MudSelect>
                                         </MudItem>
 
-                                        <MudItem xs="6" sm="2" md="2" Class="assignment-checkbox">
-                                            <MudCheckBox T="bool" @bind-Value="NowyCzyRyczalt"
-                                                         Color="Color.Primary" Dense="true">
-                                                Ryczałt
-                                            </MudCheckBox>
+                                        <MudItem xs="6" sm="4" md="2">
+                                            <MudNumericField T="decimal"
+                                                             Value="@WybranaWartosc"
+                                                             ValueChanged="ZmienWartosc"
+                                                             Label="Wartość (zł)" Variant="Variant.Outlined"
+                                                             Margin="Margin.Dense" FullWidth="true"
+                                                             Min="0m" Format="N2" HideSpinButtons="true" />
+                                            @if (WybranaPowierzchniaM2 > 0)
+                                            {
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="assignment-hint">
+                                                    @(TrybCzynszu == TrybWprowadzaniaCzynszu.StawkaZaM2
+                                                        ? $"Kwota: {WyliczonaKwota:N2} zł/mies."
+                                                        : $"Stawka: {WyliczonaStawka:N2} zł/m²")
+                                                </MudText>
+                                            }
                                         </MudItem>
 
                                         <MudItem xs="6" sm="2" md="2">
@@ -180,7 +194,7 @@
                                                     <th>Numer Lokalu</th>
                                                     <th>Typ</th>
                                                     <th>Wynajęte (m²)</th>
-                                                    <th>Stawka</th>
+                                                    <th>Stawka (zł/m²)</th>
                                                     <th>Rozliczenie</th>
                                                     <th>Suma (mies.)</th>
                                                     <th class="assigned-actions-column" aria-label="Akcje"></th>
@@ -199,7 +213,7 @@
                                                                    class="form-control-plaintext assigned-area-input"
                                                                    @bind="rel.PowierzchniaWynajetaM2" />
                                                         </td>
-                                                        <td class="fw-bold text-success">@($"{rel.WynegocjowanaCenaZaM2:N2} zł")</td>
+                                                        <td class="fw-bold text-success">@($"{rel.WynegocjowanaCenaZaM2:N2} zł/m²")</td>
                                                         <td>
                                                             <span class="badge @(rel.CzyRyczalt ? "bg-info text-dark" : "bg-secondary text-white")">
                                                                 @(rel.CzyRyczalt ? "Ryczałt" : "Za m²")

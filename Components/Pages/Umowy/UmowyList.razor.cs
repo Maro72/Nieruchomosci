@@ -36,6 +36,8 @@ namespace Mieszkaniec.Components.Pages.Umowy
         protected int NieaktywneUmowy { get; set; }
 
         protected int WygasajaceUmowy { get; set; }
+        protected decimal PrzewidywanyCzynszMiesieczny =>
+            Umowy?.Where(umowa => umowa.CzyAktywna).Sum(umowa => umowa.AktualnyCzynszMiesieczny) ?? 0;
         protected bool CzyPotwierdzicUsuniecie { get; set; }
         protected string TrescPotwierdzeniaUsuniecia { get; set; } = string.Empty;
         private UmowaNajmu? _umowaDoUsuniecia;

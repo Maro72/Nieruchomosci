@@ -54,7 +54,7 @@ else
         <div>
             <MudText Typo="Typo.caption" Color="Color.Secondary" Class="fw-bold text-uppercase">Wskaźnik Najmu</MudText>
             <MudText Typo="Typo.h4" Class="fw-bold my-1">@ProcentWynajetych%</MudText>
-            <MudText Typo="Typo.caption" Color="Color.Secondary">@WynajeteLokale / @WszystkieLokale lokali wynajęte</MudText>
+            <MudText Typo="Typo.caption" Color="Color.Secondary">@WynajeteLokale/@WszystkieLokale lokali wynajętych</MudText>
         </div>
         <MudAvatar Color="Color.Success" Variant="Variant.Filled" Size="Size.Large">
             <MudIcon Icon="@Icons.Material.Filled.MeetingRoom" />
@@ -360,12 +360,13 @@ Zarządzaj Budynkami
 
             // 2. Lokale i obłożenie
             var lokale = await LokalService.PobierzWszystkieAsync();
-            if (lokale != null && lokale.Any())
+            var lokaleDoWynajmu = lokale?.Where(lokal => !lokal.CzyCzescWspolna).ToList() ?? new List<LokalWynajem>();
+            if (lokaleDoWynajmu.Any())
             {
-                WszystkieLokale = lokale.Count;
-                WynajeteLokale = lokale.Count(l => string.Equals(l.Status, "Wynajęty", StringComparison.OrdinalIgnoreCase));
-                WolneLokale = lokale.Count(l => string.Equals(l.Status, "Wolny", StringComparison.OrdinalIgnoreCase));
-                ZarezerwowaneLokale = lokale.Count(l => string.Equals(l.Status, "Zarezerwowany", StringComparison.OrdinalIgnoreCase));
+                WszystkieLokale = lokaleDoWynajmu.Count;
+                WynajeteLokale = lokaleDoWynajmu.Count(l => string.Equals(l.Status, "Wynajęty", StringComparison.OrdinalIgnoreCase));
+                WolneLokale = lokaleDoWynajmu.Count(l => string.Equals(l.Status, "Wolny", StringComparison.OrdinalIgnoreCase));
+                ZarezerwowaneLokale = lokaleDoWynajmu.Count(l => string.Equals(l.Status, "Zarezerwowany", StringComparison.OrdinalIgnoreCase));
             }
             else
             {

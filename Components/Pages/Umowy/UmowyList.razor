@@ -82,7 +82,7 @@
                     </div>
                 </ToolbarLeftContent>
                 <GridColumns>
-                    <MudBlazor.PropertyColumn T="UmowaNajmu" TProperty="string" Property="x => x.NumerUmowy" Title="Numer Umowy" />
+                    <MudBlazor.PropertyColumn T="UmowaNajmu" TProperty="string" Property="x => x.NumerUmowy" Title="Numer" />
 
                     <MudBlazor.TemplateColumn T="UmowaNajmu" Title="Najemca" Width="240px">
                         <CellTemplate Context="ctx">
@@ -140,7 +140,7 @@
                     </MudBlazor.PropertyColumn>
 
                     @* KOLUMNA AKTUALNY CZYNZ MIESIĘCZNY *@
-                    <MudBlazor.PropertyColumn T="UmowaNajmu" TProperty="decimal" Property="x => x.AktualnyCzynszMiesieczny" Title="Czynsz (msc)">
+                    <MudBlazor.PropertyColumn T="UmowaNajmu" TProperty="decimal" Property="x => x.AktualnyCzynszMiesieczny" Title="Czynsz">
                         <CellTemplate Context="ctx">
                             @if (ctx.Item.AktualnyCzynszMiesieczny > 0)
                             {
@@ -226,6 +226,11 @@
 
                 </GridColumns>
             </FGrid>
+
+            <MudPaper Class="pa-3 mt-3 d-flex flex-wrap align-center justify-space-between gap-2" Elevation="1">
+                <MudText Typo="Typo.body1" Class="fw-bold">Przewidywany czynsz miesięczny z aktywnych umów</MudText>
+                <MudText Typo="Typo.h6" Color="Color.Success" Class="fw-bold">@($"{PrzewidywanyCzynszMiesieczny:N2} zł")</MudText>
+            </MudPaper>
         </div>
     }
 </div>

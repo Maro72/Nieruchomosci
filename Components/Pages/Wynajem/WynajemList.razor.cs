@@ -116,7 +116,9 @@ namespace Mieszkaniec.Components.Pages.Wynajem
             // 4. Aplikowanie filtra statusu tylko do widoku tabeli (statystyki zliczają wszystko z punktu 2)
             if (WybranyStatus != "Wszystkie")
             {
-                Lokale = pobraneLokale.Where(x => x.StatusAktualny == WybranyStatus).ToList();
+                Lokale = pobraneLokale
+                    .Where(x => !x.CzyCzescWspolna && x.StatusAktualny == WybranyStatus)
+                    .ToList();
             }
             else
             {

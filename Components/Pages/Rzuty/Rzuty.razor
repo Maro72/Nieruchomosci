@@ -1,15 +1,11 @@
-@page "/rzut-l75"
-@page "/rzut-h74"
-@attribute [Authorize(Policy = "Lokale.Odczyt")]
-@implements IDisposable
+@using Microsoft.AspNetCore.Components
 @using MudBlazor
 @using System.Data.Common
 @using Mieszkaniec.Model.Entities
 @using Mieszkaniec.Services.Interfaces
 @inject ILokalWynajemService LokalService
 @inject IObiektService ObiektService
-@inject ILogger<RzutL75> Logger
-@inject NavigationManager NavigationManager
+@inject ILogger<Rzuty> Logger
 
 <PageTitle>Rzut budynku @BuildingTitle</PageTitle>
 
@@ -253,8 +249,7 @@
     private MapFilter _activeFilter = MapFilter.All;
     private Obiekt? _selectedBuilding;
     private bool _isH74;
-    private bool? _loadedPlanIsH74;
-    private bool _isDisposed;
+    [Parameter] public bool H74 { get; set; }
     private bool _hasH74Part2Corridor;
     private List<Unit> _units = [];
     private List<string> _unmatchedMapNumbers = [];
@@ -343,40 +338,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        NavigationManager.LocationChanged += HandleLocationChanged;
-        await LoadPlanForCurrentRouteAsync();
-    }
-
-    private void HandleLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs args)
-    {
-        _ = InvokeAsync(async () =>
-        {
-            await LoadPlanForCurrentRouteAsync();
-            if (!_isDisposed)
-            {
-                StateHasChanged();
-            }
-        });
-    }
-
-    private async Task LoadPlanForCurrentRouteAsync()
-    {
-        var requestedPlanIsH74 = NavigationManager.ToBaseRelativePath(NavigationManager.Uri)
-            .StartsWith("rzut-h74", StringComparison.OrdinalIgnoreCase);
-        if (_loadedPlanIsH74 == requestedPlanIsH74)
-        {
-            return;
-        }
-
-        _isH74 = requestedPlanIsH74;
-        _loadedPlanIsH74 = requestedPlanIsH74;
+        _isH74 = H74;
         _isLoading = true;
-        _loadError = null;
-        _selectedBuilding = null;
-        SelectedUnit = null;
-        _units = [];
-        _unmatchedMapNumbers = [];
-        _unplacedRentalNumbers = [];
 
         try
         {
@@ -391,12 +354,6 @@
         {
             _isLoading = false;
         }
-    }
-
-    public void Dispose()
-    {
-        _isDisposed = true;
-        NavigationManager.LocationChanged -= HandleLocationChanged;
     }
 
     private async Task LoadFloorPlanDataAsync()

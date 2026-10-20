@@ -19,10 +19,24 @@ namespace Mieszkaniec.Components.Pages.Uzytkownicy
         [Parameter] public List<Uprawnienie> WszystkieUprawnienia { get; set; } = new();
 
         protected string NoweHaslo { get; set; } = string.Empty;
+        protected IReadOnlyList<Uprawnienie> UprawnieniaWidoczne => WszystkieUprawnienia
+            .Where(uprawnienie => !AliasUprawnien.ContainsKey(uprawnienie.NazwaSystemowa))
+            .ToList();
 
         // Używamy IReadOnlyCollection, co idealnie pasuje do wymogów komponentu MudSelect w widoku
         protected IReadOnlyCollection<Rola> WybraneRole { get; set; } = new HashSet<Rola>();
         protected IReadOnlyCollection<Uprawnienie> WybraneUprawnienia { get; set; } = new HashSet<Uprawnienie>();
+
+        private static readonly IReadOnlyDictionary<string, string[]> AliasUprawnien =
+            new Dictionary<string, string[]>(System.StringComparer.OrdinalIgnoreCase)
+            {
+                ["Lokale.Zarzadzanie"] = ["Lokale.Odczyt", "Lokale.Edycja"],
+                ["Przeglady.Zarzadzanie"] = ["Przeglady.Odczyt", "Przeglady.Edycja"],
+                ["Remonty.Zarzadzanie"] = ["Remonty.Odczyt", "Remonty.Edycja"],
+                ["Najemcy.Zarzadzanie"] = ["Najemcy.Odczyt", "Najemcy.Edycja"],
+                ["Uzytkownicy.Zarzadzanie"] = ["Uzytkownicy.Odczyt", "Uzytkownicy.Edycja"],
+                ["Uprawnienia.Nadawanie"] = ["Uprawnienia.Odczyt", "Uprawnienia.Edycja"]
+            };
 
         protected override void OnInitialized()
         {
@@ -33,11 +47,26 @@ namespace Mieszkaniec.Components.Pages.Uzytkownicy
 
             if (CzyJestAdminem())
             {
-                WybraneUprawnienia = WszystkieUprawnienia.ToHashSet();
+                WybraneUprawnienia = UprawnieniaWidoczne.ToHashSet();
             }
             else if (Model.Uprawnienia != null)
             {
-                WybraneUprawnienia = WszystkieUprawnienia.Where(u => Model.Uprawnienia.Any(mu => mu.Id == u.Id)).ToHashSet();
+                var nazwyUprawnien = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+                foreach (var uprawnienie in Model.Uprawnienia)
+                {
+                    if (AliasUprawnien.TryGetValue(uprawnienie.NazwaSystemowa, out var aliasy))
+                    {
+                        nazwyUprawnien.UnionWith(aliasy);
+                    }
+                    else
+                    {
+                        nazwyUprawnien.Add(uprawnienie.NazwaSystemowa);
+                    }
+                }
+
+                WybraneUprawnienia = UprawnieniaWidoczne
+                    .Where(uprawnienie => nazwyUprawnien.Contains(uprawnienie.NazwaSystemowa))
+                    .ToHashSet();
             }
         }
 
@@ -64,7 +93,7 @@ namespace Mieszkaniec.Components.Pages.Uzytkownicy
 
             if (CzyJestAdminem())
             {
-                WybraneUprawnienia = WszystkieUprawnienia.ToHashSet();
+                WybraneUprawnienia = UprawnieniaWidoczne.ToHashSet();
             }
         }
 
@@ -99,7 +128,7 @@ namespace Mieszkaniec.Components.Pages.Uzytkownicy
                 Model.HasloHash = BCrypt.Net.BCrypt.HashPassword(NoweHaslo);
             }
 
-            var uprawnieniaDoZapisu = CzyJestAdminem() ? WszystkieUprawnienia.ToHashSet() : WybraneUprawnienia;
+            var uprawnieniaDoZapisu = CzyJestAdminem() ? UprawnieniaWidoczne.ToHashSet() : WybraneUprawnienia;
 
             await UzytkownikService.ZapiszUzytkownikaAsync(Model, WybraneRole, uprawnieniaDoZapisu);
 

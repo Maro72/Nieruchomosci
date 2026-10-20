@@ -97,15 +97,24 @@
 
                     <div class="col-md-6">
                         <label class="form-label small fw-bold text-secondary mb-1">Status operacyjny</label>
-                        <div class="input-group input-group-sm shadow-sm">
-                            <span class="input-group-text bg-light text-muted"><i class="bi bi-clipboard-check"></i></span>
-                            <select class="form-select" @onchange="OnStatusChanged" required>
-                                <option value="Wolny" selected="@(Model.Status == "Wolny")">Wolny</option>
-                                <option value="Częściowo wynajęty" selected="@(Model.Status == "Częściowo wynajęty")" disabled>Częściowo wynajęty (wyliczany)</option>
-                                <option value="Wynajęty" selected="@(Model.Status == "Wynajęty")">Wynajęty</option>
-                                <option value="Zarezerwowany" selected="@(Model.Status == "Zarezerwowany")">Zarezerwowany</option>
-                            </select>
-                        </div>
+                        @if (Model.CzyCzescWspolna)
+                        {
+                            <div class="p-2 border rounded bg-light text-secondary small" style="height: 31px;">
+                                -------
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="input-group input-group-sm shadow-sm">
+                                <span class="input-group-text bg-light text-muted"><i class="bi bi-clipboard-check"></i></span>
+                                <select class="form-select" @onchange="OnStatusChanged" required>
+                                    <option value="Wolny" selected="@(Model.Status == "Wolny")">Wolny</option>
+                                    <option value="Częściowo wynajęty" selected="@(Model.Status == "Częściowo wynajęty")" disabled>Częściowo wynajęty (wyliczany)</option>
+                                    <option value="Wynajęty" selected="@(Model.Status == "Wynajęty")">Wynajęty</option>
+                                    <option value="Zarezerwowany" selected="@(Model.Status == "Zarezerwowany")">Zarezerwowany</option>
+                                </select>
+                            </div>
+                        }
                     </div>
 
                     <div class="col-md-6">

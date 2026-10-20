@@ -54,7 +54,7 @@
                         <MudPaper Outlined="true" Class="pa-3 border" Style="border-radius: 8px; border-color: #e2e8f0; background-color: #f8fafc;">
                             <MudText Typo="Typo.subtitle2" Class="fw-bold mb-2 text-secondary">DOSTĘP DO STRON</MudText>
                             <div class="d-flex flex-column gap-1">
-                                @foreach (var upr in WszystkieUprawnienia)
+                                @foreach (var upr in UprawnieniaWidoczne)
                                 {
                                     var u = upr;
                                     <MudCheckBox T="bool"

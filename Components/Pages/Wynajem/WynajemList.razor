@@ -135,10 +135,16 @@
 
             <MudBlazor.TemplateColumn T="LokalWynajem" Title="Status">
                 <CellTemplate Context="ctx">
-                    <MudChip T="string" Color="@WyznaczKolorStatusu(ctx.Item.StatusAktualny)" Size="Size.Small">
-                        @(ctx.Item.StatusAktualny == "Częściowo wynajęty" ? "Część. wynajęty" : ctx.Item.StatusAktualny)
-
-                    </MudChip>
+                    @if (ctx.Item.CzyCzescWspolna)
+                    {
+                        <span>-------</span>
+                    }
+                    else
+                    {
+                        <MudChip T="string" Color="@WyznaczKolorStatusu(ctx.Item.StatusAktualny)" Size="Size.Small">
+                            @(ctx.Item.StatusAktualny == "Częściowo wynajęty" ? "Część. wynajęty" : ctx.Item.StatusAktualny)
+                        </MudChip>
+                    }
                 </CellTemplate>
             </MudBlazor.TemplateColumn>
 

@@ -28,7 +28,7 @@
                     <div class="nav-guide-branch">
                     <AuthorizeView Policy="Przeglady.Odczyt" Context="przegladyCtx">
                         <Authorized>
-                            <MudNavLink Href="fprzeglady" Icon="@Icons.Material.Filled.EventNote" Ripple="false">Przeglądy</MudNavLink>
+                            <MudNavLink OnClick="OtworzPrzegladyZMenu" Icon="@Icons.Material.Filled.EventNote" Ripple="false">Przeglądy</MudNavLink>
                         </Authorized>
                     </AuthorizeView>
                     <AuthorizeView Policy="Awarie.Odczyt" Context="awarieCtx">
@@ -172,6 +172,56 @@
     private bool _rzutyExpanded;
     private bool _konfiguracjaExpanded;
     private bool _administracjaExpanded;
+    private bool _otwieraniePrzegladow;
+
+    private async Task OtworzPrzegladyZMenu()
+    {
+        if (_otwieraniePrzegladow)
+        {
+            return;
+        }
+
+        _otwieraniePrzegladow = true;
+        try
+        {
+            var przeterminowane = (await PrzegladService.GetAllWithDetailsAsync())
+                .Where(przeglad => przeglad.Status != "Wykonany"
+                    && przeglad.DataNastepnego.Date < DateTime.Today)
+                .OrderBy(przeglad => przeglad.DataNastepnego)
+                .ToList();
+
+            if (przeterminowane.Count > 0)
+            {
+                var parameters = new DialogParameters
+                {
+                    [nameof(PrzegladyPrzeterminowaneDialog.Przeglady)] = przeterminowane
+                };
+                var options = new DialogOptions
+                {
+                    CloseButton = true,
+                    MaxWidth = MaxWidth.Medium,
+                    FullWidth = true
+                };
+
+                var dialog = await DialogService.ShowAsync<PrzegladyPrzeterminowaneDialog>(
+                    "Przeglądy po terminie",
+                    parameters,
+                    options);
+                await dialog.Result;
+            }
+        }
+        catch (Exception exception)
+        {
+            Logger.LogError(exception, "Nie udało się sprawdzić przeglądów przeterminowanych.");
+            Snackbar.Add("Nie udało się sprawdzić przeglądów przeterminowanych.", Severity.Error);
+        }
+        finally
+        {
+            _otwieraniePrzegladow = false;
+        }
+
+        Navigation.NavigateTo("/fprzeglady");
+    }
 
     protected override void OnParametersSet()
     {

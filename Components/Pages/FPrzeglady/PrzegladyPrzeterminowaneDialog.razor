@@ -1,0 +1,52 @@
+@using Mieszkaniec.Model.Entities
+@using MudBlazor
+
+<MudDialog Class="overdue-reviews-dialog">
+    <TitleContent>
+        <div class="d-flex align-items-center gap-2">
+            <MudIcon Icon="@Icons.Material.Filled.WarningAmber" Color="Color.Error" />
+            <MudText Typo="Typo.h6" Class="fw-bold">Przeglądy po terminie</MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+            Liczba zaległych przeglądów: <strong>@Przeglady.Count</strong>
+        </MudText>
+
+        <div style="max-height: 55vh; overflow-y: auto;">
+            <MudTable Items="@Przeglady" Dense="true" Hover="true" Striped="true">
+                <HeaderContent>
+                    <MudTh>Budynek</MudTh>
+                    <MudTh>Rodzaj przeglądu</MudTh>
+                    <MudTh>Termin</MudTh>
+                    <MudTh>Opóźnienie</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Budynek">@context.Obiekt?.Nazwa</MudTd>
+                    <MudTd DataLabel="Rodzaj przeglądu">@context.TerminDefinicja?.NazwaTypu</MudTd>
+                    <MudTd DataLabel="Termin">@context.DataNastepnego.ToString("dd.MM.yyyy")</MudTd>
+                    <MudTd DataLabel="Opóźnienie">
+                        <MudChip T="string" Size="Size.Small" Color="Color.Error">
+                            @((DateTime.Today - context.DataNastepnego.Date).Days) dni
+                        </MudChip>
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="PrzejdzDoHarmonogramu">
+            Przejdź do harmonogramu
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter]
+    public List<Przeglad> Przeglady { get; set; } = [];
+
+    private void PrzejdzDoHarmonogramu() => MudDialog.Close();
+}

@@ -85,13 +85,13 @@
             </Authorized>
         </AuthorizeView>
 
-        <AuthorizeView Policy="Techniczny.Odczyt">
+        <AuthorizeView Policy="Liczniki.Odczyt">
             <Authorized>
                 <MudNavGroup Title="Liczniki" @bind-Expanded="_licznikiExpanded" Icon="@Icons.Material.Filled.ReceiptLong">
                     <div class="nav-guide-branch">
                     <MudNavGroup Title="Woda" @bind-Expanded="_wodaExpanded" Icon="@Icons.Material.Filled.WaterDrop">
                         <div class="nav-guide-branch">
-                        <AuthorizeView Policy="Techniczny.Odczyt" Context="wodaCtx">
+                        <AuthorizeView Policy="Liczniki.Odczyt" Context="wodaCtx">
                             <Authorized>
                                 <MudNavLink Href="woda" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.WaterDrop" Ripple="false" Class="water-reading-nav-link">Odczyty</MudNavLink>
                                 <MudNavLink Href="woda/zuzycia" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.BarChart" Ripple="false">Zużycia</MudNavLink>
@@ -99,7 +99,16 @@
                         </AuthorizeView>
                         </div>
                     </MudNavGroup>
-                    @*<MudNavLink Href="cieplo" Icon="@Icons.Material.Filled.LocalFireDepartment" Ripple="false">Ciepło</MudNavLink>*@
+                    <MudNavGroup Title="Ciepło" @bind-Expanded="_cieploExpanded" Icon="@Icons.Material.Filled.LocalFireDepartment">
+                        <div class="nav-guide-branch">
+                            <AuthorizeView Policy="Liczniki.Odczyt" Context="cieploCtx">
+                                <Authorized>
+                                    <MudNavLink Href="cieplo" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Whatshot" Ripple="false">Odczyty</MudNavLink>
+                                    <MudNavLink Href="cieplo/zuzycia" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.BarChart" Ripple="false">Zużycia</MudNavLink>
+                                </Authorized>
+                            </AuthorizeView>
+                        </div>
+                    </MudNavGroup>
                     </div>
                 </MudNavGroup>
             </Authorized>
@@ -168,6 +177,7 @@
     private bool _obslugaExpanded;
     private bool _licznikiExpanded;
     private bool _wodaExpanded;
+    private bool _cieploExpanded;
     private bool _umowyExpanded;
     private bool _rzutyExpanded;
     private bool _konfiguracjaExpanded;
@@ -235,6 +245,7 @@
         _obslugaExpanded = false;
         _licznikiExpanded = false;
         _wodaExpanded = false;
+        _cieploExpanded = false;
         _umowyExpanded = false;
         _rzutyExpanded = false;
         _konfiguracjaExpanded = false;

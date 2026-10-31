@@ -1,0 +1,414 @@
+@page "/cieplo/zuzycia"
+@attribute [Authorize(Policy = "Liczniki.Odczyt")]
+@using Mieszkaniec.Model.Entities
+@using Mieszkaniec.Services.Interfaces
+@using MudBlazor
+@inject ICieploService CieploService
+
+<PageTitle>Zużycie ciepła według budynków</PageTitle>
+
+<div class="heat-usage-page">
+    <MudPaper Elevation="2" Class="heat-usage-sticky-panel mb-3">
+        <div class="heat-usage-heading">
+            <MudText Typo="Typo.h5" Class="fw-bold">Zużycie ciepła</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                Miesięczne zużycie oraz ilość do fakturowania według budynków i liczników.
+            </MudText>
+        </div>
+        <div class="heat-usage-filters">
+            <MudSelect T="int" Value="RokWidoku" ValueChanged="ZmienRok"
+                       Label="Rok" Variant="Variant.Outlined" Margin="Margin.Dense"
+                       Class="heat-year-select">
+                @foreach (var rok in DostepneLata)
+                {
+                    <MudSelectItem T="int" Value="@rok">@rok</MudSelectItem>
+                }
+            </MudSelect>
+            <MudSelect T="int?" Value="_wybranyObiektId" ValueChanged="ZmienObiekt"
+                       Label="Budynek" Variant="Variant.Outlined" Margin="Margin.Dense"
+                       Class="heat-building-select">
+                <MudSelectItem T="int?" Value="@((int?)null)">Wszystkie budynki</MudSelectItem>
+                @foreach (var obiekt in WszystkieObiekty)
+                {
+                    <MudSelectItem T="int?" Value="@((int?)(obiekt.Id ?? -1))">@obiekt.Nazwa</MudSelectItem>
+                }
+            </MudSelect>
+        </div>
+    </MudPaper>
+
+    @if (_ladowanie)
+    {
+        <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+    }
+    else if (ObiektyZOdczytami.Count == 0)
+    {
+        <MudPaper Class="pa-6 text-center" Elevation="1">
+            <MudIcon Icon="@Icons.Material.Filled.Whatshot" Color="Color.Info" Size="Size.Large" />
+            <MudText Typo="Typo.h6" Class="mt-2">Brak odczytów w wybranym roku</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                Po zapisaniu miesięcznych odczytów ciepła pojawią się tu wykresy dla budynków.
+            </MudText>
+        </MudPaper>
+    }
+    else
+    {
+        <MudPaper Elevation="1" Class="heat-usage-card">
+            <div class="heat-usage-card-heading">
+                <MudText Typo="Typo.h6">Ilość do fakturowania miesięcznie — @OpisFiltraObiektu, @RokWidoku</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                    Miesięczna ilość do fakturowania w GJ dla wybranych budynków.
+                </MudText>
+            </div>
+
+            <div class="heat-usage-scroll">
+                <div class="heat-usage-table">
+                    <div class="heat-usage-row heat-usage-header">
+                        <div class="heat-meter-label">Budynek</div>
+                        @foreach (var miesiac in Miesiace)
+                        {
+                            <div class="heat-month-label">@NazwaMiesiacaSkrocona(miesiac)</div>
+                        }
+                        <div class="heat-month-label">Razem</div>
+                    </div>
+                    @foreach (var obiekt in ObiektyZOdczytami)
+                    {
+                        <div class="heat-usage-row" @key="obiekt.Id">
+                            <div class="heat-meter-label">
+                                <strong title="@obiekt.Nazwa">@obiekt.Nazwa</strong>
+                                @if (obiekt.Id is not null)
+                                {
+                                    <span>@obiekt.Liczniki.Count liczników</span>
+                                }
+                            </div>
+                            @foreach (var miesiac in Miesiace)
+                            {
+                                var ilosc = IloscDoFakturowania(obiekt, miesiac);
+                                <div class="heat-usage-cell" title="@($"{obiekt.Nazwa} · {NazwaMiesiaca(miesiac)} · {ilosc:N3} GJ")">@ilosc.ToString("N3")</div>
+                            }
+                            <div class="heat-usage-total">@SumaRoczna(obiekt).ToString("N3")</div>
+                        </div>
+                    }
+                    <div class="heat-usage-row heat-usage-footer">
+                        <div class="heat-meter-label"><strong>Razem w miesiącu</strong></div>
+                        @foreach (var miesiac in Miesiace)
+                        {
+                            <div class="heat-usage-total">@SumaMiesieczna(miesiac).ToString("N3")</div>
+                        }
+                        <div class="heat-usage-total heat-grand-total">@SumaRocznaWszystkich.ToString("N3")</div>
+                    </div>
+                </div>
+            </div>
+        </MudPaper>
+
+        @if (ObiektWybrany is not null)
+        {
+            <MudPaper Elevation="1" Class="heat-usage-card heat-usage-line-card">
+                <div class="heat-usage-card-heading">
+                    <MudText Typo="Typo.h6">Zużycie — @ObiektWybrany.Nazwa, @RokWidoku</MudText>
+                    <MudText Typo="Typo.body2">@ObiektWybrany.Liczniki.Count liczników</MudText>
+                </div>
+                <div class="heat-usage-scroll">
+                    <div class="heat-building-chart" role="img"
+                         aria-label="@($"Miesięczna ilość do fakturowania w GJ w budynku {ObiektWybrany.Nazwa} w roku {RokWidoku}")">
+                        @foreach (var miesiac in Miesiace)
+                        {
+                            var ilosc = IloscDoFakturowania(ObiektWybrany, miesiac);
+                            var wysokosc = WysokoscSlupka(ObiektWybrany, miesiac);
+                            <div class="heat-building-column">
+                                <div class="heat-building-plot">
+                                    <span class="heat-building-value">@ilosc.ToString("N3")</span>
+                                    <div class="heat-building-bar" style="@($"height:{wysokosc}%")"
+                                         title="@($"{NazwaMiesiaca(miesiac)}: {ilosc:N3} GJ")"></div>
+                                </div>
+                                <span class="heat-building-month">@NazwaMiesiacaSkrocona(miesiac)</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </MudPaper>
+        }
+
+        <MudPaper Elevation="1" Class="heat-usage-card heat-usage-line-card">
+            <div class="heat-usage-card-heading">
+                <MudText Typo="Typo.h6">Porównanie budynków — @RokWidoku</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                    Słupki pokazują miesięczną ilość do fakturowania w GJ.
+                </MudText>
+            </div>
+            <div class="heat-compare-scroll">
+                <div class="heat-compare-table">
+                    @foreach (var obiekt in ObiektyZOdczytami)
+                    {
+                        <div class="heat-compare-row" @key="obiekt.Id">
+                            <div class="heat-compare-name" title="@obiekt.Nazwa">@obiekt.Nazwa</div>
+                            @foreach (var miesiac in Miesiace)
+                            {
+                                var ilosc = IloscDoFakturowania(obiekt, miesiac);
+                                <div class="heat-compare-cell" title="@($"{obiekt.Nazwa} · {NazwaMiesiaca(miesiac)} · {ilosc:N3} GJ")">
+                                    @if (ilosc > 0)
+                                    {
+                                        <span>@ilosc.ToString("N3")</span>
+                                        <div class="heat-compare-track">
+                                            <div class="heat-compare-bar" style="@($"width:{SzerokoscPaska(ilosc)}%")"></div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="heat-zero">—</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                    <div class="heat-compare-row heat-compare-axis">
+                        <div class="heat-compare-name">Miesiąc</div>
+                        @foreach (var miesiac in Miesiace)
+                        {
+                            <div class="heat-axis-month">@NazwaMiesiacaSkrocona(miesiac)</div>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="heat-compare-scale">
+                <span>0</span>
+                <div class="heat-compare-track"><div class="heat-compare-bar heat-compare-max"></div></div>
+                <span>@MaksymalneZuzycie.ToString("N3") GJ</span>
+            </div>
+        </MudPaper>
+
+        <MudPaper Elevation="1" Class="heat-usage-card heat-usage-line-card">
+            <div class="heat-usage-card-heading">
+                <MudText Typo="Typo.h6">Zużycie ciepła — wykres słupkowy</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                    Miesięczna ilość do fakturowania w GJ — @OpisFiltraObiektu, @RokWidoku.
+                </MudText>
+            </div>
+            <div class="heat-labeled-chart-scroll">
+                <div class="heat-labeled-chart" role="img"
+                     aria-label="@($"Miesięczna ilość do fakturowania w GJ dla {OpisFiltraObiektu} w roku {RokWidoku}")">
+                    @foreach (var miesiac in Miesiace)
+                    {
+                        var ilosc = SumaMiesieczna(miesiac);
+                        var wysokosc = WysokoscSlupkaZbiorczego(ilosc);
+                        <div class="heat-labeled-column">
+                            <div class="heat-labeled-plot">
+                                <span class="heat-labeled-value" style="@($"bottom:calc({wysokosc}% + 5px)")">@ilosc.ToString("N3")</span>
+                                <div class="heat-labeled-bar" style="@($"height:{wysokosc}%")"
+                                     title="@($"{NazwaMiesiaca(miesiac)}: {ilosc:N3} GJ")"></div>
+                            </div>
+                            <span class="heat-labeled-month">@NazwaMiesiacaSkrocona(miesiac)</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </MudPaper>
+    }
+</div>
+
+@code {
+    private static readonly int[] Miesiace = Enumerable.Range(1, 12).ToArray();
+    private static readonly string[] NazwyMiesiecy =
+    [
+        "Sty", "Lut", "Mar", "Kwi", "Maj", "Cze",
+        "Lip", "Sie", "Wrz", "Paź", "Lis", "Gru"
+    ];
+    private static readonly string[] PelneNazwyMiesiecy =
+    [
+        "Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec",
+        "Lipiec", "Sierpień", "Wrzesień", "Październik", "Listopad", "Grudzień"
+    ];
+    private List<OdczytCiepla> _odczyty = [];
+    private bool _ladowanie = true;
+    private int RokWidoku = DateTime.Now.Year;
+    private int? _wybranyObiektId;
+
+    private sealed record ZuzycieObiektu(int? Id, string Nazwa, List<OdczytCiepla> Liczniki);
+
+    private List<int> DostepneLata => _odczyty
+        .Select(x => x.Rok)
+        .Append(DateTime.Now.Year)
+        .Distinct()
+        .OrderByDescending(x => x)
+        .ToList();
+
+    private List<ZuzycieObiektu> WszystkieObiekty => _odczyty
+        .GroupBy(x => x.ObiektId)
+        .Select(grupa => new ZuzycieObiektu(
+            grupa.Key,
+            grupa.First().Obiekt?.Nazwa ?? "Nieprzypisane liczniki",
+            grupa.OrderBy(x => x.NumerLicznika).ToList()))
+        .OrderBy(x => x.Id is null ? 1 : 0)
+        .ThenBy(x => x.Nazwa)
+        .ToList();
+
+    private List<ZuzycieObiektu> ObiektyZOdczytami => WszystkieObiekty
+        .Where(x => (_wybranyObiektId is null || (x.Id ?? -1) == _wybranyObiektId)
+                    && x.Liczniki.Any(odczyt => odczyt.Rok == RokWidoku))
+        .ToList();
+
+    private ZuzycieObiektu? ObiektWybrany => ObiektyZOdczytami
+        .FirstOrDefault(x => (x.Id ?? -1) == _wybranyObiektId);
+
+    private string OpisFiltraObiektu => _wybranyObiektId is null
+        ? "wszystkie budynki"
+        : WszystkieObiekty.FirstOrDefault(x => (x.Id ?? -1) == _wybranyObiektId)?.Nazwa ?? "wybrany budynek";
+
+    private decimal SumaRocznaWszystkich => ObiektyZOdczytami.Sum(SumaRoczna);
+
+    protected override async Task OnInitializedAsync()
+    {
+        _odczyty = await CieploService.PobierzOdczytyAsync();
+        _ladowanie = false;
+        if (!DostepneLata.Contains(RokWidoku))
+        {
+            RokWidoku = DostepneLata.First();
+        }
+    }
+
+    private Task ZmienRok(int rok)
+    {
+        RokWidoku = rok;
+        return Task.CompletedTask;
+    }
+
+    private Task ZmienObiekt(int? obiektId)
+    {
+        _wybranyObiektId = obiektId;
+        return Task.CompletedTask;
+    }
+
+    private static IEnumerable<OdczytCiepla> OdczytyUnikalne(ZuzycieObiektu obiekt) =>
+        obiekt.Liczniki.DistinctBy(x => x.Id);
+
+    private decimal IloscDoFakturowania(ZuzycieObiektu obiekt, int miesiac) =>
+        OdczytyUnikalne(obiekt)
+            .Where(x => x.Rok == RokWidoku && x.Miesiac == miesiac)
+            .Sum(x => x.IloscDoZafakturowania);
+
+    private decimal SumaRoczna(ZuzycieObiektu obiekt) =>
+        OdczytyUnikalne(obiekt)
+            .Where(x => x.Rok == RokWidoku)
+            .Sum(x => x.IloscDoZafakturowania);
+
+    private decimal SumaMiesieczna(int miesiac) =>
+        ObiektyZOdczytami.Sum(x => IloscDoFakturowania(x, miesiac));
+
+    private decimal MaksymalneZuzycie => ObiektyZOdczytami
+        .SelectMany(obiekt => Miesiace.Select(miesiac => IloscDoFakturowania(obiekt, miesiac)))
+        .DefaultIfEmpty(0m)
+        .Max();
+
+    private int SzerokoscPaska(decimal zuzycie) => MaksymalneZuzycie == 0
+        ? 0
+        : Math.Max(2, (int)Math.Round((double)(zuzycie * 100m / MaksymalneZuzycie)));
+
+    private int WysokoscSlupka(ZuzycieObiektu obiekt, int miesiac)
+    {
+        var maksimum = Miesiace
+            .Select(x => IloscDoFakturowania(obiekt, x))
+            .DefaultIfEmpty(0m)
+            .Max();
+        var zuzycie = IloscDoFakturowania(obiekt, miesiac);
+        return maksimum == 0 || zuzycie == 0
+            ? 0
+            : Math.Max(2, (int)Math.Round((double)(zuzycie * 78m / maksimum)));
+    }
+
+    private int WysokoscSlupkaZbiorczego(decimal zuzycie) => MaksymalneZuzycie == 0 || zuzycie == 0
+        ? 0
+        : Math.Max(2, (int)Math.Round((double)(zuzycie * 78m / MaksymalneZuzycie)));
+
+    private static string NazwaMiesiaca(int miesiac) => PelneNazwyMiesiecy[miesiac - 1];
+    private static string NazwaMiesiacaSkrocona(int miesiac) => NazwyMiesiecy[miesiac - 1];
+}
+
+<style>
+    .heat-usage-page { padding: 1.25rem; }
+    .heat-usage-sticky-panel {
+        position: sticky; top: 48px; z-index: 5; display: flex; flex-wrap: wrap;
+        align-items: center; justify-content: space-between; gap: .8rem 1.5rem;
+        padding: .85rem 1rem; background: var(--mud-palette-surface);
+    }
+    .heat-usage-heading { display: flex; min-width: 280px; flex-direction: column; gap: .1rem; }
+    .heat-usage-heading .mud-typography-body2 { font-size: .8rem; }
+    .heat-usage-filters { display: flex; flex: 0 0 auto; flex-wrap: wrap; align-items: center; gap: .5rem; }
+    .heat-year-select { width: 105px; }
+    .heat-building-select { width: 220px; }
+    .heat-usage-card { padding: 1.25rem; border-radius: 12px; }
+    .heat-usage-card-heading { display: flex; flex-direction: column; gap: .25rem; margin-bottom: 1rem; }
+    .heat-usage-scroll, .heat-compare-scroll { overflow-x: auto; }
+    .heat-usage-table { min-width: 1120px; }
+    .heat-usage-row, .heat-compare-row {
+        display: grid; grid-template-columns: minmax(180px, 1.35fr) repeat(12, minmax(58px, 1fr)) minmax(86px, .8fr);
+        align-items: center;
+    }
+    .heat-usage-header { min-height: 42px; border-bottom: 1px solid var(--mud-palette-divider); }
+    .heat-month-label, .heat-axis-month {
+        padding: .5rem .25rem; color: var(--mud-palette-text-secondary); font-size: .75rem; font-weight: 700; text-align: center;
+    }
+    .heat-meter-label {
+        display: flex; min-width: 0; flex-direction: column; padding: .55rem .65rem .55rem .25rem; overflow: hidden;
+    }
+    .heat-meter-label strong {
+        overflow: hidden; color: var(--mud-palette-text-primary); font-size: .82rem; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .heat-meter-label span {
+        overflow: hidden; color: var(--mud-palette-text-secondary); font-size: .7rem; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .heat-usage-row:not(.heat-usage-header):not(.heat-usage-footer) { min-height: 48px; border-bottom: 1px solid var(--mud-palette-divider); }
+    .heat-usage-cell, .heat-usage-total {
+        min-width: 0; padding: .45rem .2rem; color: var(--mud-palette-text-primary); font-size: .76rem;
+        font-variant-numeric: tabular-nums; text-align: center;
+    }
+    .heat-usage-total { font-weight: 700; white-space: nowrap; }
+    .heat-usage-footer { min-height: 46px; background: var(--mud-palette-background-grey); }
+    .heat-grand-total { color: var(--mud-palette-primary); }
+    .heat-usage-line-card { margin-top: 1rem; }
+    .heat-building-chart { display: grid; grid-template-columns: repeat(12, minmax(44px, 1fr)); gap: .5rem; min-width: 640px; height: 340px; padding: .5rem .25rem 0; }
+    .heat-building-column { display: grid; grid-template-rows: minmax(0, 1fr) 26px; min-width: 0; text-align: center; }
+    .heat-building-plot {
+        position: relative; display: flex; align-items: flex-end; justify-content: center;
+        border-bottom: 1px solid var(--mud-palette-divider);
+        background: linear-gradient(to top, var(--mud-palette-divider) 1px, transparent 1px) 0 0 / 100% 25%;
+    }
+    .heat-building-value { position: absolute; top: 0; width: 100%; color: var(--mud-palette-text-primary); font-size: .65rem; font-variant-numeric: tabular-nums; }
+    .heat-building-bar { width: min(62%, 34px); border-radius: 5px 5px 0 0; background: linear-gradient(180deg, #ffb74d, #ef6c00); }
+    .heat-building-month { padding-top: .4rem; color: var(--mud-palette-text-secondary); font-size: .7rem; font-weight: 700; }
+    .heat-labeled-chart-scroll { overflow-x: auto; }
+    .heat-labeled-chart {
+        display: grid; grid-template-columns: repeat(12, minmax(48px, 1fr)); gap: .55rem;
+        min-width: 680px; height: 340px; padding: 1.8rem .25rem 0;
+    }
+    .heat-labeled-column { display: grid; grid-template-rows: minmax(0, 1fr) 26px; min-width: 0; text-align: center; }
+    .heat-labeled-plot {
+        position: relative; display: flex; align-items: flex-end; justify-content: center;
+        border-bottom: 1px solid var(--mud-palette-divider);
+        background: linear-gradient(to top, var(--mud-palette-divider) 1px, transparent 1px) 0 0 / 100% 25%;
+    }
+    .heat-labeled-value {
+        position: absolute; z-index: 1; left: 50%; padding: 2px 6px; border-radius: 6px;
+        background: #ef6c00; color: #fff; font-size: .72rem; font-weight: 700;
+        font-variant-numeric: tabular-nums; transform: translateX(-50%); white-space: nowrap;
+    }
+    .heat-labeled-bar { width: min(62%, 34px); border-radius: 5px 5px 0 0; background: #ef6c00; }
+    .heat-labeled-month { padding-top: .4rem; color: var(--mud-palette-text-secondary); font-size: .7rem; font-weight: 700; }
+    .heat-compare-table { min-width: 1120px; }
+    .heat-compare-row { grid-template-columns: minmax(180px, 1.35fr) repeat(12, minmax(58px, 1fr)); min-height: 48px; border-bottom: 1px solid var(--mud-palette-divider); }
+    .heat-compare-name { min-width: 0; padding: .55rem .65rem .55rem .25rem; overflow: hidden; color: var(--mud-palette-text-primary); font-size: .78rem; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+    .heat-compare-cell { display: flex; min-width: 0; align-items: center; gap: .25rem; padding: .4rem .2rem; color: var(--mud-palette-text-primary); font-size: .62rem; font-variant-numeric: tabular-nums; }
+    .heat-compare-track { flex: 1; min-width: 8px; height: 12px; overflow: hidden; border-radius: 8px; background: var(--mud-palette-background-grey); }
+    .heat-compare-bar { height: 100%; min-width: 2px; border-radius: inherit; background: linear-gradient(90deg, #ffb74d, #ef6c00); }
+    .heat-zero { width: 100%; color: var(--mud-palette-text-disabled); text-align: center; }
+    .heat-compare-axis { background: var(--mud-palette-background-grey); }
+    .heat-compare-scale { display: flex; align-items: center; justify-content: flex-end; gap: .5rem; padding-top: .75rem; color: var(--mud-palette-text-secondary); font-size: .7rem; }
+    .heat-compare-scale .heat-compare-track { flex: 0 0 100px; }
+    .heat-compare-max { width: 100%; }
+    @@media (max-width: 600px) {
+        .heat-usage-page { padding: .5rem; }
+        .heat-usage-card { padding: .75rem; }
+        .heat-usage-sticky-panel { top: 48px; gap: .5rem; padding: .65rem .75rem; }
+        .heat-usage-heading, .heat-usage-filters { min-width: 0; width: 100%; }
+        .heat-year-select { width: 90px; }
+        .heat-building-select { width: 190px; }
+    }
+</style>

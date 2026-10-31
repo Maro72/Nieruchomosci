@@ -67,6 +67,8 @@
     <PackageReference Include="BootstrapBlazor" Version="10.6.0" />
     <PackageReference Include="Docnet.Core" Version="2.6.0" />
     <PackageReference Include="EPPlus" Version="8.6.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.16" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.16" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.16">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -79,7 +81,7 @@
     <PackageReference Include="PdfPig" Version="0.1.16" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0" />
     <PackageReference Include="System.Drawing.Common" Version="8.0.18" />
-    <PackageReference Include="Tesseract" Version="5.2.0" />
+    <PackageReference Include="Tesseract.CrossPlatform" Version="5.5.2.200" />
   </ItemGroup>
 
   <ItemGroup>

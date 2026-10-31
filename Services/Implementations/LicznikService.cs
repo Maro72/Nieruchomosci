@@ -401,10 +401,13 @@ public sealed class LicznikService : ILicznikService
         return string.Join(Environment.NewLine, dokument.GetPages().Select(x => x.Text));
     }
 
-    private static string RozpoznajTekstOcr(byte[] dane)
+    internal static string RozpoznajTekstOcr(byte[] dane)
+        => RozpoznajTekstOcr(dane, PageSegMode.Auto);
+
+    internal static string RozpoznajTekstOcr(byte[] dane, PageSegMode tryb)
     {
         var katalogDanych = Path.Combine(AppContext.BaseDirectory, "tessdata");
-        using var silnik = new TesseractEngine(katalogDanych, "pol", EngineMode.Default);
+        using var silnik = new TesseractEngine(katalogDanych, "pol", EngineMode.LstmOnly);
         var wynik = new System.Text.StringBuilder();
 
         using var czytnik = DocLib.Instance.GetDocReader(dane, new PageDimensions(2.5));
@@ -413,7 +416,7 @@ public sealed class LicznikService : ILicznikService
             using var strona = czytnik.GetPageReader(i);
             var bmp = ZbudujBmp(strona.GetImage(), strona.GetPageWidth(), strona.GetPageHeight());
             using var obraz = Pix.LoadFromMemory(bmp);
-            using var rozpoznana = silnik.Process(obraz, PageSegMode.Auto);
+            using var rozpoznana = silnik.Process(obraz, tryb);
             wynik.AppendLine(rozpoznana.GetText());
         }
 

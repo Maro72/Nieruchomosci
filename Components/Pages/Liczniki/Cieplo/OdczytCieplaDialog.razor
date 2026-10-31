@@ -1,0 +1,93 @@
+@using Mieszkaniec.Model.Entities
+@using MudBlazor
+
+<MudDialog Options="DialogOptions">
+    <TitleContent>
+        <div class="d-flex align-center gap-3">
+            <MudAvatar Color="Color.Primary" Variant="Variant.Filled" Size="Size.Medium">
+                <MudIcon Icon="@Icons.Material.Filled.LocalFireDepartment" />
+            </MudAvatar>
+            <div>
+                <MudText Typo="Typo.h6">@(Odczyt.Id == 0 ? "Nowy odczyt licznika ciepła" : "Edycja odczytu licznika ciepła")</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">Wartości w GJ</MudText>
+            </div>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudForm @ref="form">
+            <MudGrid Spacing="2">
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="Odczyt.NumerLicznika" Label="Numer licznika" Variant="Variant.Outlined" Margin="Margin.Dense" Required="true" RequiredError="Podaj numer licznika" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudSelect T="int?" @bind-Value="Odczyt.ObiektId" Label="Budynek" Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true">
+                        @foreach (var obiekt in Obiekty)
+                        {
+                            <MudSelectItem T="int?" Value="@obiekt.Id">@obiekt.Nazwa</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudNumericField @bind-Value="Odczyt.Rok" Label="Rok" Variant="Variant.Outlined" Margin="Margin.Dense" HideSpinButtons="true" Required="true" />
+                </MudItem>
+                <MudItem xs="6">
+                    <MudNumericField @bind-Value="Odczyt.Miesiac" Label="Miesiąc" Variant="Variant.Outlined" Margin="Margin.Dense" Min="1" Max="12" Required="true" />
+                </MudItem>
+                <MudItem xs="6">
+                    <MudNumericField @bind-Value="Odczyt.StanPoczatkowy" @bind-Value:after="Przelicz" Label="Stan początkowy" Variant="Variant.Outlined" Margin="Margin.Dense" HideSpinButtons="true" Format="N3" />
+                </MudItem>
+                <MudItem xs="6">
+                    <MudNumericField @bind-Value="Odczyt.StanKoncowy" @bind-Value:after="Przelicz" Label="Stan końcowy" Variant="Variant.Outlined" Margin="Margin.Dense" HideSpinButtons="true" Format="N3" />
+                </MudItem>
+                <MudItem xs="4">
+                    <MudNumericField @bind-Value="Odczyt.ZuzycieGJ" @bind-Value:after="Przelicz" Label="Zużycie" Variant="Variant.Outlined" Margin="Margin.Dense" HideSpinButtons="true" Format="N3" />
+                </MudItem>
+                <MudItem xs="4">
+                    <MudNumericField @bind-Value="Odczyt.Korekta" @bind-Value:after="Przelicz" Label="Korekta" Variant="Variant.Outlined" Margin="Margin.Dense" HideSpinButtons="true" Format="N3" />
+                </MudItem>
+                <MudItem xs="4">
+                    <MudNumericField @bind-Value="Odczyt.IloscDoZafakturowania" Label="Do zafakturowania" Variant="Variant.Outlined" Margin="Margin.Dense" HideSpinButtons="true" Format="N3" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="Odczyt.Uwagi" Label="Uwagi" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" />
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" StartIcon="@Icons.Material.Filled.Close">Anuluj</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" OnClick="Submit">Zapisz</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public OdczytCiepla Odczyt { get; set; } = new() { Rok = DateTime.Now.Year, Miesiac = DateTime.Now.Month };
+    [Parameter] public IEnumerable<Obiekt> Obiekty { get; set; } = Array.Empty<Obiekt>();
+
+    private readonly DialogOptions DialogOptions = new() { MaxWidth = MaxWidth.Small, FullWidth = true, CloseButton = true };
+
+    private MudForm form = default!;
+
+    private void Przelicz()
+    {
+        if (Odczyt.StanKoncowy >= Odczyt.StanPoczatkowy)
+        {
+            Odczyt.ZuzycieGJ = Odczyt.StanKoncowy - Odczyt.StanPoczatkowy;
+        }
+
+        Odczyt.IloscDoZafakturowania = Odczyt.ZuzycieGJ + (Odczyt.Korekta ?? 0);
+    }
+
+    private async Task Submit()
+    {
+        await form.Validate();
+        if (form.IsValid)
+        {
+            MudDialog.Close(DialogResult.Ok(Odczyt));
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

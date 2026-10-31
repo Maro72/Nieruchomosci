@@ -34,6 +34,9 @@ namespace Mieszkaniec.Model.Context
         public DbSet<Licznik> Liczniki { get; set; }
         public DbSet<OdczytWody> OdczytyWody { get; set; }
         public DbSet<FakturaWody> FakturyWody { get; set; }
+        public DbSet<FakturaCiepla> FakturyCiepla { get; set; }
+        public DbSet<PozycjaFakturyCiepla> PozycjeFakturCiepla { get; set; }
+        public DbSet<OdczytCiepla> OdczytyCiepla { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -116,6 +119,7 @@ namespace Mieszkaniec.Model.Context
                 .HasMany(u => u.Uprawnienia)
                 .WithMany(upr => upr.Uzytkownicy)
                 .UsingEntity(j => j.ToTable("UzytkownikUprawnienie")); // Tabela łącząca Użytkownika ze Stronami
+
 
             // Dane startowe kategorii usterek i ich priorytetów.
             modelBuilder.Entity<RodzajUsterki>().HasData(

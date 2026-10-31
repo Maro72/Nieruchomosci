@@ -61,6 +61,109 @@ namespace Mieszkaniec.Migrations
                     b.ToTable("AneksyUmow");
                 });
 
+            modelBuilder.Entity("Mieszkaniec.Model.Entities.FakturaCiepla", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AdresNabywcy")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<string>("AdresSprzedawcy")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<DateTime>("DataDo")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("DataDodania")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("DataOd")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("DataWystawienia")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("DodatkoweInformacje")
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)");
+
+                    b.Property<bool>("DotyczyGv")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("DotyczyJst")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<int>("Miesiac")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Nabywca")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("NipNabywcy")
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<string>("NipSprzedawcy")
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<string>("NumerFaktury")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("NumerKlienta")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<string>("NumerKsef")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("PrefiksVatSprzedawcy")
+                        .HasMaxLength(5)
+                        .HasColumnType("varchar(5)");
+
+                    b.Property<string>("RodzajFaktury")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<int>("Rok")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Sprzedawca")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("Waluta")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("varchar(3)");
+
+                    b.Property<decimal>("WartoscBrutto")
+                        .HasColumnType("decimal(12,2)");
+
+                    b.Property<decimal>("WartoscNetto")
+                        .HasColumnType("decimal(12,2)");
+
+                    b.Property<decimal>("WartoscVat")
+                        .HasColumnType("decimal(12,2)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("faktury_ciepla");
+                });
+
             modelBuilder.Entity("Mieszkaniec.Model.Entities.FakturaWody", b =>
                 {
                     b.Property<int>("Id")
@@ -353,6 +456,57 @@ namespace Mieszkaniec.Migrations
                     b.ToTable("obiekty");
                 });
 
+            modelBuilder.Entity("Mieszkaniec.Model.Entities.OdczytCiepla", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("DataOdczytu")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<decimal>("IloscDoZafakturowania")
+                        .HasColumnType("decimal(12,3)");
+
+                    b.Property<decimal?>("Korekta")
+                        .HasColumnType("decimal(12,3)");
+
+                    b.Property<int>("Miesiac")
+                        .HasColumnType("int");
+
+                    b.Property<string>("NumerLicznika")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<int?>("ObiektId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Rok")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("StanKoncowy")
+                        .HasColumnType("decimal(12,3)");
+
+                    b.Property<decimal>("StanPoczatkowy")
+                        .HasColumnType("decimal(12,3)");
+
+                    b.Property<string>("Uwagi")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<decimal>("ZuzycieGJ")
+                        .HasColumnType("decimal(12,3)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ObiektId");
+
+                    b.ToTable("odczyty_ciepla");
+                });
+
             modelBuilder.Entity("Mieszkaniec.Model.Entities.OdczytWody", b =>
                 {
                     b.Property<int>("Id")
@@ -396,6 +550,49 @@ namespace Mieszkaniec.Migrations
                     b.HasIndex("LicznikId");
 
                     b.ToTable("odczyty_wody");
+                });
+
+            modelBuilder.Entity("Mieszkaniec.Model.Entities.PozycjaFakturyCiepla", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("CenaNetto")
+                        .HasColumnType("decimal(14,6)");
+
+                    b.Property<int>("FakturaCieplaId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Ilosc")
+                        .HasColumnType("decimal(14,6)");
+
+                    b.Property<string>("Jm")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<int>("Lp")
+                        .HasColumnType("int");
+
+                    b.Property<string>("NazwaTowaruUslugi")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<decimal>("StawkaVat")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<decimal>("WartoscNetto")
+                        .HasColumnType("decimal(14,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FakturaCieplaId");
+
+                    b.ToTable("pozycje_faktur_ciepla");
                 });
 
             modelBuilder.Entity("Mieszkaniec.Model.Entities.PraceRemontowe", b =>
@@ -1278,6 +1475,15 @@ namespace Mieszkaniec.Migrations
                     b.Navigation("Obiekt");
                 });
 
+            modelBuilder.Entity("Mieszkaniec.Model.Entities.OdczytCiepla", b =>
+                {
+                    b.HasOne("Mieszkaniec.Model.Entities.Obiekt", "Obiekt")
+                        .WithMany()
+                        .HasForeignKey("ObiektId");
+
+                    b.Navigation("Obiekt");
+                });
+
             modelBuilder.Entity("Mieszkaniec.Model.Entities.OdczytWody", b =>
                 {
                     b.HasOne("Mieszkaniec.Model.Entities.Licznik", "Licznik")
@@ -1287,6 +1493,15 @@ namespace Mieszkaniec.Migrations
                         .IsRequired();
 
                     b.Navigation("Licznik");
+                });
+
+            modelBuilder.Entity("Mieszkaniec.Model.Entities.PozycjaFakturyCiepla", b =>
+                {
+                    b.HasOne("Mieszkaniec.Model.Entities.FakturaCiepla", null)
+                        .WithMany("Pozycje")
+                        .HasForeignKey("FakturaCieplaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Mieszkaniec.Model.Entities.PraceRemontowe", b =>
@@ -1447,6 +1662,11 @@ namespace Mieszkaniec.Migrations
                         .IsRequired();
 
                     b.Navigation("UmowaNajmu");
+                });
+
+            modelBuilder.Entity("Mieszkaniec.Model.Entities.FakturaCiepla", b =>
+                {
+                    b.Navigation("Pozycje");
                 });
 
             modelBuilder.Entity("Mieszkaniec.Model.Entities.Licznik", b =>

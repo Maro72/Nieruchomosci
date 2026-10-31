@@ -96,6 +96,7 @@ builder.Services.AddScoped<IUmowaService, UmowaService>();
 builder.Services.AddScoped<INajemcaService, NajemcaService>();
 builder.Services.AddScoped<IUzytkownikService, UzytkownikService>();
 builder.Services.AddScoped<ILicznikService, LicznikService>();
+builder.Services.AddScoped<ICieploService, CieploService>();
 
 
 

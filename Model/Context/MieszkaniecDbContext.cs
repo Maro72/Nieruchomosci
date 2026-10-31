@@ -181,7 +181,9 @@ namespace Mieszkaniec.Model.Context
                 new Uprawnienie { Id = 31, NazwaSystemowa = "Konfiguracja.Odczyt", Opis = "Podgląd konfiguracji systemu" },
                 new Uprawnienie { Id = 32, NazwaSystemowa = "Konfiguracja.Edycja", Opis = "Zarządzanie konfiguracją systemu" },
                 new Uprawnienie { Id = 33, NazwaSystemowa = "Liczniki.Odczyt", Opis = "Podgląd liczników wody" },
-                new Uprawnienie { Id = 34, NazwaSystemowa = "Liczniki.Edycja", Opis = "Dodawanie i edycja liczników wody" }
+                new Uprawnienie { Id = 34, NazwaSystemowa = "Liczniki.Edycja", Opis = "Dodawanie i edycja liczników wody" },
+                new Uprawnienie { Id = 35, NazwaSystemowa = "Cieplo.Odczyt", Opis = "Podgląd odczytów, faktur i zużycia ciepła" },
+                new Uprawnienie { Id = 36, NazwaSystemowa = "Cieplo.Edycja", Opis = "Dodawanie, edycja i usuwanie odczytów oraz faktur ciepła" }
             );
         }
     }

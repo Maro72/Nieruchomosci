@@ -1,5 +1,5 @@
 @page "/cieplo"
-@attribute [Authorize(Policy = "Liczniki.Odczyt")]
+@attribute [Authorize(Policy = "Cieplo.Odczyt")]
 @using Mieszkaniec.Model.Entities
 @using Mieszkaniec.Services.Interfaces
 @using Mieszkaniec.Components.UI
@@ -29,7 +29,7 @@
                             }
                         </MudSelect>
                     }
-                    <AuthorizeView Policy="Liczniki.Edycja">
+                    <AuthorizeView Policy="Cieplo.Edycja">
                         <Authorized>
                             <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.Add" OnClick="DodajOdczyt">
                                 Dodaj odczyt
@@ -70,7 +70,7 @@
                                 <FGrid TItem="OdczytCiepla"
                                        Items="@odczytyMiesiaca"
                                        GridKey="@(gridKey + miesiac)"
-                                       CrudPolicy="Liczniki.Edycja"
+                                       CrudPolicy="Cieplo.Edycja"
                                        Title="@($"Odczyty liczników — {NazwaMiesiaca(miesiac)} {RokWidoku}")"
                                        SelectedItem="@WybranyOdczyt(miesiac)"
                                        SelectedItemChanged="@(wiersz => UstawWybranyOdczyt(miesiac, wiersz))"
@@ -130,7 +130,7 @@
                         <MudText Typo="Typo.body2" Color="Color.Secondary">Wczytaj fakturę i zweryfikuj rozpoznane dane przed zapisem.</MudText>
                     </div>
                     <div class="d-flex align-center gap-2">
-                        <AuthorizeView Policy="Liczniki.Edycja">
+                        <AuthorizeView Policy="Cieplo.Edycja">
                             <Authorized>
                         <MudFileUpload T="IBrowserFile" FilesChanged="PrzetworzFakturePdf" Accept=".pdf,.png,.jpg,.jpeg" Style="width:auto; flex:0 0 auto;">
                             <CustomContent Context="upload">
@@ -155,7 +155,7 @@
                         <MudText Typo="Typo.h6">Nowa faktura</MudText>
                         <MudText Typo="Typo.body2" Color="Color.Secondary">Dodaj fakturę, której nie ma w systemie.</MudText>
                     </div>
-                    <AuthorizeView Policy="Liczniki.Edycja">
+                    <AuthorizeView Policy="Cieplo.Edycja">
                         <Authorized>
                             <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.Add" OnClick="DodajFakture">
                                 Dodaj fakturę ręcznie
@@ -193,7 +193,7 @@
                             <MudPaper Outlined="true" Class="pa-3 mt-2">
                                 <div class="d-flex align-center justify-space-between flex-wrap gap-2 mb-3">
                                      <MudText Typo="Typo.h6">Szczegóły faktury</MudText>
-                                     <AuthorizeView Policy="Liczniki.Edycja">
+                                     <AuthorizeView Policy="Cieplo.Edycja">
                                          <Authorized>
                                              <div class="d-flex align-center gap-2">
                                                  <MudButton Variant="Variant.Text" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Edit" OnClick="@(() => EdytujFakturePodsumowania(podsumowanie))">Edytuj</MudButton>

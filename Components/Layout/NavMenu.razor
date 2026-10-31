@@ -85,10 +85,12 @@
             </Authorized>
         </AuthorizeView>
 
-        <AuthorizeView Policy="Liczniki.Odczyt">
+        <AuthorizeView Policy="Liczniki.Menu">
             <Authorized>
                 <MudNavGroup Title="Liczniki" @bind-Expanded="_licznikiExpanded" Icon="@Icons.Material.Filled.ReceiptLong">
                     <div class="nav-guide-branch">
+                    <AuthorizeView Policy="Liczniki.Odczyt" Context="wodaGroupCtx">
+                        <Authorized>
                     <MudNavGroup Title="Woda" @bind-Expanded="_wodaExpanded" Icon="@Icons.Material.Filled.WaterDrop">
                         <div class="nav-guide-branch">
                         <AuthorizeView Policy="Liczniki.Odczyt" Context="wodaCtx">
@@ -99,9 +101,13 @@
                         </AuthorizeView>
                         </div>
                     </MudNavGroup>
+                        </Authorized>
+                    </AuthorizeView>
+                    <AuthorizeView Policy="Cieplo.Odczyt" Context="cieploGroupCtx">
+                        <Authorized>
                     <MudNavGroup Title="Ciepło" @bind-Expanded="_cieploExpanded" Icon="@Icons.Material.Filled.LocalFireDepartment">
                         <div class="nav-guide-branch">
-                            <AuthorizeView Policy="Liczniki.Odczyt" Context="cieploCtx">
+                            <AuthorizeView Policy="Cieplo.Odczyt" Context="cieploCtx">
                                 <Authorized>
                                     <MudNavLink Href="cieplo" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Whatshot" Ripple="false">Odczyty</MudNavLink>
                                     <MudNavLink Href="cieplo/zuzycia" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.BarChart" Ripple="false">Zużycia</MudNavLink>
@@ -109,6 +115,8 @@
                             </AuthorizeView>
                         </div>
                     </MudNavGroup>
+                        </Authorized>
+                    </AuthorizeView>
                     </div>
                 </MudNavGroup>
             </Authorized>

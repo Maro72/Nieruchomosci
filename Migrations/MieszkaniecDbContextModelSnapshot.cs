@@ -1186,6 +1186,18 @@ namespace Mieszkaniec.Migrations
                             Id = 34,
                             NazwaSystemowa = "Liczniki.Edycja",
                             Opis = "Dodawanie i edycja liczników wody"
+                        },
+                        new
+                        {
+                            Id = 35,
+                            NazwaSystemowa = "Cieplo.Odczyt",
+                            Opis = "Podgląd odczytów, faktur i zużycia ciepła"
+                        },
+                        new
+                        {
+                            Id = 36,
+                            NazwaSystemowa = "Cieplo.Edycja",
+                            Opis = "Dodawanie, edycja i usuwanie odczytów oraz faktur ciepła"
                         });
                 });
 

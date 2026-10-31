@@ -65,6 +65,9 @@ builder.Services.AddAuthorizationCore(options =>
     options.AddPolicy("Umowy.Zarzadzanie", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Umowy.Zarzadzanie", "ZarzadzanieUmowami")));
     options.AddPolicy("Liczniki.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Liczniki.Odczyt", "Liczniki.Edycja")));
     options.AddPolicy("Liczniki.Edycja", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Liczniki.Edycja")));
+    options.AddPolicy("Cieplo.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Cieplo.Odczyt", "Cieplo.Edycja")));
+    options.AddPolicy("Cieplo.Edycja", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Cieplo.Edycja")));
+    options.AddPolicy("Liczniki.Menu", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Liczniki.Odczyt", "Liczniki.Edycja", "Cieplo.Odczyt", "Cieplo.Edycja")));
     options.AddPolicy("Najem.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Umowy.Odczyt", "Umowy.Zarzadzanie", "Najemcy.Odczyt", "Najemcy.Edycja", "Lokale.Odczyt", "Lokale.Edycja", "ZarzadzanieUmowami")));
     options.AddPolicy("Uzytkownicy.Zarzadzanie", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Uzytkownicy.Zarzadzanie", "ZarzadzanieUzytkownikami")));
     options.AddPolicy("Uzytkownicy.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Uzytkownicy.Odczyt", "Uzytkownicy.Edycja", "Uzytkownicy.Zarzadzanie", "ZarzadzanieUzytkownikami")));

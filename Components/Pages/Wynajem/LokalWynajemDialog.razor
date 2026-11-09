@@ -59,15 +59,15 @@
                         </div>
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <label class="form-label small fw-bold text-secondary mb-1">Numer lokalu / nazwa</label>
                         <div class="input-group input-group-sm shadow-sm">
                             <span class="input-group-text bg-light text-muted"><i class="bi bi-hash"></i></span>
-                            <input type="text" class="form-control" @bind="Model.NumerLokalu" placeholder="np. Biuro 12" required />
+                            <input type="text" class="form-control" @bind="Model.NumerLokalu" placeholder="np. Parter 8 lub Piętro 8" required />
                         </div>
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label small fw-bold text-secondary mb-1">Powierzchnia</label>
                         <div class="input-group input-group-sm shadow-sm">
                             <span class="input-group-text bg-light text-muted"><i class="bi bi-rulers"></i></span>
@@ -76,7 +76,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         @if (Model.CzyCzescWspolna)
                         {
                             <label class="form-label small fw-bold text-secondary mb-1">Rozliczenie</label>

@@ -42,6 +42,7 @@ namespace Mieszkaniec.Components.UI
         [Parameter] public bool ShowPrint { get; set; } = true;
         [Parameter] public bool ShowSearch { get; set; } = true;
         [Parameter] public bool ShowPager { get; set; } = true;
+        [Parameter] public bool Groupable { get; set; }
         private string _searchText = "";
         private string _lastParameterSearchText = "";
         protected bool CanUseCrudActions { get; private set; }

@@ -140,7 +140,10 @@
                                             {
                                                 <MudSelectItem Value="@PoziomOdczyt">Odczyt</MudSelectItem>
                                             }
-                                            <MudSelectItem Value="@PoziomEdycja">Pełna edycja</MudSelectItem>
+                                            @if (context.UprawnienieEdycja is not null)
+                                            {
+                                                <MudSelectItem Value="@PoziomEdycja">Pełna edycja</MudSelectItem>
+                                            }
                                         </MudSelect>
                                     </MudTd>
                                 </RowTemplate>
@@ -177,17 +180,24 @@
 
     private IReadOnlyList<ModulDostepu> ModulyDostepu { get; } = new List<ModulDostepu>
     {
-        new("Budynki i obiekty", "Podgląd oraz ewidencja nieruchomości", "Budynki.Odczyt", "Budynki.Edycja", Icons.Material.Filled.Apartment),
+        new("Nieruchomości i budynki", "Podgląd oraz ewidencja nieruchomości, budynków i obiektów", "Budynki.Odczyt", "Budynki.Edycja", Icons.Material.Filled.Apartment,
+            new[] { "OdczytBudynkow" }, new[] { "ZarzadzanieBudynkami" }),
         new("Dashboard", "Pulpit zbiorczy systemu", "Dashboard.Odczyt", null, Icons.Material.Filled.Dashboard),
         new("Awarie i usterki", "Zgłoszenia i obsługa usterek", "Awarie.Odczyt", "Awarie.Obsluga", Icons.Material.Filled.WarningAmber),
         new("Historia usterek", "Historia eksploatacji obiektów", "HistoriaUsterek.Odczyt", null, Icons.Material.Filled.ManageHistory),
-        new("Przeglądy", "Harmonogramy i kontrole techniczne", "Przeglady.Odczyt", "Przeglady.Edycja", Icons.Material.Filled.EventNote),
-        new("Remonty", "Planowanie i obsługa prac remontowych", "Remonty.Odczyt", "Remonty.Edycja", Icons.Material.Filled.Handyman),
-        new("Lokale", "Lokale i pomieszczenia", "Lokale.Odczyt", "Lokale.Edycja", Icons.Material.Filled.MeetingRoom),
-        new("Najemcy", "Baza najemców", "Najemcy.Odczyt", "Najemcy.Edycja", Icons.Material.Filled.People),
+        new("Przeglądy", "Harmonogramy i kontrole techniczne", "Przeglady.Odczyt", "Przeglady.Edycja", Icons.Material.Filled.EventNote,
+            null, new[] { "Przeglady.Zarzadzanie" }),
+        new("Remonty", "Planowanie i obsługa prac remontowych", "Remonty.Odczyt", "Remonty.Edycja", Icons.Material.Filled.Handyman,
+            null, new[] { "Remonty.Zarzadzanie" }),
+        new("Lokale i rzuty", "Lokale oraz rzuty budynków H-74, L-75 i F21/3 (wspólne uprawnienie)", "Lokale.Odczyt", "Lokale.Edycja", Icons.Material.Filled.MeetingRoom,
+            null, new[] { "Lokale.Zarzadzanie" }),
+        new("Najemcy", "Baza najemców", "Najemcy.Odczyt", "Najemcy.Edycja", Icons.Material.Filled.People,
+            null, new[] { "Najemcy.Zarzadzanie" }),
         new("Umowy", "Umowy najmu i aneksy", "Umowy.Odczyt", "Umowy.Zarzadzanie", Icons.Material.Filled.Description),
-        new("Użytkownicy", "Konta użytkowników", "Uzytkownicy.Odczyt", "Uzytkownicy.Edycja", Icons.Material.Filled.People),
-        new("Uprawnienia", "Nadawanie ról i dostępów", "Uprawnienia.Odczyt", "Uprawnienia.Edycja", Icons.Material.Filled.VerifiedUser),
+        new("Użytkownicy", "Konta użytkowników", "Uzytkownicy.Odczyt", "Uzytkownicy.Edycja", Icons.Material.Filled.People,
+            null, new[] { "Uzytkownicy.Zarzadzanie" }),
+        new("Uprawnienia", "Nadawanie ról i dostępów", "Uprawnienia.Odczyt", "Uprawnienia.Edycja", Icons.Material.Filled.VerifiedUser,
+            null, new[] { "Uprawnienia.Nadawanie" }),
         new("Konfiguracja", "Baza danych, pliki i ustawienia", "Konfiguracja.Odczyt", "Konfiguracja.Edycja", Icons.Material.Filled.Settings),
         new("Liczniki wody", "Odczyty i zarządzanie licznikami wody", "Liczniki.Odczyt", "Liczniki.Edycja", Icons.Material.Filled.WaterDrop),
         new("Ciepło", "Odczyty, faktury i zużycie ciepła", "Cieplo.Odczyt", "Cieplo.Edycja", Icons.Material.Filled.LocalFireDepartment)
@@ -243,12 +253,14 @@
 
     private string PobierzPoziomDostepu(ModulDostepu modul)
     {
-        if (CzyMaUprawnienie(modul.UprawnienieEdycja))
+        if (CzyMaUprawnienie(modul.UprawnienieEdycja) ||
+            modul.DodatkoweUprawnieniaEdycji?.Any(CzyMaUprawnienie) == true)
         {
             return PoziomEdycja;
         }
 
-        if (CzyMaUprawnienie(modul.UprawnienieOdczyt))
+        if (CzyMaUprawnienie(modul.UprawnienieOdczyt) ||
+            modul.DodatkoweUprawnieniaOdczytu?.Any(CzyMaUprawnienie) == true)
         {
             return PoziomOdczyt;
         }
@@ -263,9 +275,18 @@
             return;
         }
 
+        var nazwyUprawnienModulu = new[]
+            {
+                modul.UprawnienieOdczyt,
+                modul.UprawnienieEdycja
+            }
+            .Concat(modul.DodatkoweUprawnieniaOdczytu ?? Array.Empty<string>())
+            .Concat(modul.DodatkoweUprawnieniaEdycji ?? Array.Empty<string>())
+            .Where(nazwa => !string.IsNullOrEmpty(nazwa))
+            .ToHashSet(StringComparer.Ordinal);
+
         var noweUprawnienia = WybraneUprawnienia
-            .Where(uprawnienie => uprawnienie.NazwaSystemowa != modul.UprawnienieOdczyt &&
-                                  uprawnienie.NazwaSystemowa != modul.UprawnienieEdycja)
+            .Where(uprawnienie => !nazwyUprawnienModulu.Contains(uprawnienie.NazwaSystemowa))
             .ToList();
 
         var nazwaUprawnienia = poziom switch
@@ -408,7 +429,9 @@
         string Opis,
         string? UprawnienieOdczyt,
         string? UprawnienieEdycja,
-        string Ikon)
+        string Ikon,
+        string[]? DodatkoweUprawnieniaOdczytu = null,
+        string[]? DodatkoweUprawnieniaEdycji = null)
     {
         public bool MaPoziomOdczytu => !string.IsNullOrEmpty(UprawnienieOdczyt);
     }

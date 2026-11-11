@@ -97,8 +97,13 @@ namespace Mieszkaniec.Components.Pages.Umowy
         protected IEnumerable<LokalWynajem> DostepneLokaleDoWyboru => ListaDostepnychLokali
             .Where(lok => !lok.CzyCzescWspolna
                           && (Model.WynajmowaneLokale == null || !Model.WynajmowaneLokale.Any(rl => rl.LokalWynajemId == lok.Id))
-                          && lok.PowierzchniaDostepnaM2 > 0
+                          && (lok.CzyInfrastrukturaTechniczna
+                              ? lok.HistoriaUmow?.Any(relacja => relacja.UmowaNajmu?.CzyAktywna == true && relacja.UmowaNajmuId != Model.Id) != true
+                              : lok.PowierzchniaDostepnaM2 > 0)
                           && (lok.StatusAktualny != "Zarezerwowany" || (Model.NajemcaId > 0 && lok.NajemcaId == Model.NajemcaId)));
+
+        protected bool WybranoInfrastruktureTechniczna =>
+            ListaDostepnychLokali.FirstOrDefault(lokal => lokal.Id == WybranyLokalId)?.CzyInfrastrukturaTechniczna == true;
 
         protected decimal PowierzchniaDostepnaDlaUmowy(LokalWynajem lokal) =>
             Math.Max(0, lokal.PowierzchniaM2 - (lokal.HistoriaUmow?
@@ -166,6 +171,17 @@ namespace Mieszkaniec.Components.Pages.Umowy
                 var lokal = ListaDostepnychLokali.FirstOrDefault(l => l.Id == id);
                 if (lokal != null)
                 {
+                    if (lokal.CzyInfrastrukturaTechniczna)
+                    {
+                        TrybCzynszu = TrybWprowadzaniaCzynszu.KwotaMiesieczna;
+                        WybranaWartosc = 0;
+                        WybranaPowierzchniaM2 = 0;
+                        WybranaDostepnaPowierzchniaM2 = 0;
+                        StateHasChanged();
+                        return;
+                    }
+
+                    TrybCzynszu = TrybWprowadzaniaCzynszu.StawkaZaM2;
                     WybranaWartosc = TrybCzynszu == TrybWprowadzaniaCzynszu.StawkaZaM2
                         ? lokal.CenaZaM2
                         : lokal.CenaZaM2 * PowierzchniaDostepnaDlaUmowy(lokal);
@@ -217,9 +233,14 @@ namespace Mieszkaniec.Components.Pages.Umowy
             if (lokal == null) return;
 
             var dostepnaPowierzchnia = PowierzchniaDostepnaDlaUmowy(lokal);
-            if (WybranaPowierzchniaM2 <= 0 || WybranaPowierzchniaM2 > dostepnaPowierzchnia)
+            var czyInfrastruktura = lokal.CzyInfrastrukturaTechniczna;
+            if (czyInfrastruktura
+                ? WybranaWartosc <= 0
+                : WybranaPowierzchniaM2 <= 0 || WybranaPowierzchniaM2 > dostepnaPowierzchnia)
             {
-                await JS.InvokeVoidAsync("alert", $"Podaj powierzchnię większą od 0 i nie większą niż dostępne {dostepnaPowierzchnia:N2} m².");
+                await JS.InvokeVoidAsync("alert", czyInfrastruktura
+                    ? "Podaj kwotę ryczałtu większą od 0 zł miesięcznie."
+                    : $"Podaj powierzchnię większą od 0 i nie większą niż dostępne {dostepnaPowierzchnia:N2} m².");
                 return;
             }
 
@@ -228,9 +249,9 @@ namespace Mieszkaniec.Components.Pages.Umowy
                 UmowaNajmuId = Model.Id,
                 LokalWynajemId = WybranyLokalId,
                 LokalWynajem = lokal,
-                PowierzchniaWynajetaM2 = WybranaPowierzchniaM2,
-                WynegocjowanaCenaZaM2 = WyliczonaStawka,
-                CzyRyczalt = false
+                PowierzchniaWynajetaM2 = czyInfrastruktura ? 0 : WybranaPowierzchniaM2,
+                WynegocjowanaCenaZaM2 = czyInfrastruktura ? WybranaWartosc : WyliczonaStawka,
+                CzyRyczalt = czyInfrastruktura
             };
 
             Model.WynajmowaneLokale.Add(nowaRelacja);

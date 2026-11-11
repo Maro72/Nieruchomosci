@@ -42,7 +42,7 @@ public sealed class BackupService : IBackupService
             var sqlPath = Path.Combine(backupDirectory, $"mieszkaniec_{stamp}.sql");
             var archivePath = Path.Combine(backupDirectory, $"mieszkaniec_{stamp}.zip");
 
-            // mysqldump tworzy spójny eksport bazy, który następnie trafia do archiwum ZIP.
+            // Pomijamy opcje z plików konfiguracyjnych klienta, które mogą wymusić zrzut samej struktury.
             var dumpPath = FindMySqlDump(settings.MysqldumpPath);
             var process = new Process
             {
@@ -55,10 +55,13 @@ public sealed class BackupService : IBackupService
                 }
             };
 
+            process.StartInfo.ArgumentList.Add("--no-defaults");
             process.StartInfo.ArgumentList.Add("--protocol=TCP");
             process.StartInfo.ArgumentList.Add($"--host={connection.Server}");
             process.StartInfo.ArgumentList.Add($"--port={connection.Port}");
             process.StartInfo.ArgumentList.Add($"--user={connection.UserID}");
+            process.StartInfo.ArgumentList.Add("--skip-no-data");
+            process.StartInfo.ArgumentList.Add("--quick");
             process.StartInfo.ArgumentList.Add($"--password={connection.Password}");
             process.StartInfo.ArgumentList.Add("--routines");
             process.StartInfo.ArgumentList.Add("--events");

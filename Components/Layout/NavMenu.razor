@@ -1,5 +1,14 @@
 @using MudBlazor
 @using Microsoft.AspNetCore.Components.Authorization
+@using Mieszkaniec.Components.Pages.FPrzeglady
+@using Mieszkaniec.Model.Entities
+@using Mieszkaniec.Services.Interfaces
+@inject IPrzegladService PrzegladService
+@inject IDialogService DialogService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@inject ILogger<NavMenu> Logger
+
 <div class="navigation-tree @(IsDarkMode ? "dark-mode" : string.Empty)">
     <MudNavMenu Class="pt-4">
 
@@ -14,9 +23,14 @@
                     <AuthorizeView Policy="Dashboard.Odczyt" Context="dashboardCtx">
                         <Authorized>
                             <MudNavLink Href="dashboard" Icon="@Icons.Material.Filled.Dashboard" Ripple="false">Dashboard</MudNavLink>
+                            <MudNavLink Href="dashboard2" Icon="@Icons.Material.Filled.Analytics" Ripple="false">Wkaźnik najmu</MudNavLink>
                         </Authorized>
                     </AuthorizeView>
-                    <MudNavLink Href="fbudynki" Icon="@Icons.Material.Filled.Apartment" Ripple="false">Budynki</MudNavLink>
+                    <AuthorizeView Policy="Budynki.Odczyt" Context="budynkiCtx">
+                        <Authorized>
+                            <MudNavLink Href="fbudynki" Icon="@Icons.Material.Filled.Apartment" Ripple="false">Budynki</MudNavLink>
+                        </Authorized>
+                    </AuthorizeView>
                     </div>
                 </MudNavGroup>
             </Authorized>
@@ -76,6 +90,7 @@
                                 <div class="nav-guide-branch">
                                     <MudNavLink Href="/rzut-l75" Icon="@Icons.Material.Filled.Apartment" Ripple="false">L-75</MudNavLink>
                                     <MudNavLink Href="/rzut-h74" Icon="@Icons.Material.Filled.Apartment" Ripple="false">H-74</MudNavLink>
+                                    <MudNavLink Href="/rzut-f21-3" Icon="@Icons.Material.Filled.Apartment" Ripple="false">F21/3</MudNavLink>
                                 </div>
                             </MudNavGroup>
                         </Authorized>
@@ -89,30 +104,22 @@
             <Authorized>
                 <MudNavGroup Title="Liczniki" @bind-Expanded="_licznikiExpanded" Icon="@Icons.Material.Filled.ReceiptLong">
                     <div class="nav-guide-branch">
-                    <AuthorizeView Policy="Liczniki.Odczyt" Context="wodaGroupCtx">
+                    <AuthorizeView Policy="Liczniki.Odczyt" Context="wodaCtx">
                         <Authorized>
                     <MudNavGroup Title="Woda" @bind-Expanded="_wodaExpanded" Icon="@Icons.Material.Filled.WaterDrop">
                         <div class="nav-guide-branch">
-                        <AuthorizeView Policy="Liczniki.Odczyt" Context="wodaCtx">
-                            <Authorized>
-                                <MudNavLink Href="woda" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.WaterDrop" Ripple="false" Class="water-reading-nav-link">Odczyty</MudNavLink>
-                                <MudNavLink Href="woda/zuzycia" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.BarChart" Ripple="false">Zużycia</MudNavLink>
-                            </Authorized>
-                        </AuthorizeView>
+                            <MudNavLink Href="woda" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.WaterDrop" Ripple="false" Class="water-reading-nav-link">Odczyty</MudNavLink>
+                            <MudNavLink Href="woda/zuzycia" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.BarChart" Ripple="false">Zużycia</MudNavLink>
                         </div>
                     </MudNavGroup>
                         </Authorized>
                     </AuthorizeView>
-                    <AuthorizeView Policy="Cieplo.Odczyt" Context="cieploGroupCtx">
+                    <AuthorizeView Policy="Cieplo.Odczyt" Context="cieploCtx">
                         <Authorized>
                     <MudNavGroup Title="Ciepło" @bind-Expanded="_cieploExpanded" Icon="@Icons.Material.Filled.LocalFireDepartment">
                         <div class="nav-guide-branch">
-                            <AuthorizeView Policy="Cieplo.Odczyt" Context="cieploCtx">
-                                <Authorized>
-                                    <MudNavLink Href="cieplo" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Whatshot" Ripple="false">Odczyty</MudNavLink>
-                                    <MudNavLink Href="cieplo/zuzycia" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.BarChart" Ripple="false">Zużycia</MudNavLink>
-                                </Authorized>
-                            </AuthorizeView>
+                            <MudNavLink Href="cieplo" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Whatshot" Ripple="false">Odczyty</MudNavLink>
+                            <MudNavLink Href="cieplo/zuzycia" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.BarChart" Ripple="false">Zużycia</MudNavLink>
                         </div>
                     </MudNavGroup>
                         </Authorized>

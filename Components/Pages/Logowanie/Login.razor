@@ -49,7 +49,7 @@
                     <MudText Typo="Typo.body2">
                         @(_databaseReady
                             ? "Wprowadź dane, aby otworzyć panel administracyjny"
-                            : "Nie można połączyć się z bazą. Wpisz aktualne hasło, aby przywrócić połączenie.")
+                            : "Nie można połączyć się z bazą. Wpisz parametry połączenia, aby je skonfigurować.")
                     </MudText>
                 </div>
                 <MudIcon Icon="@Icons.Material.Filled.LockPerson" Class="login-card-icon" />
@@ -103,7 +103,7 @@
                         }
                         else
                         {
-                            <span>Zapisz hasło i połącz</span>
+                            <span>Zapisz i połącz</span>
                             <MudIcon Icon="@Icons.Material.Filled.Storage" Size="Size.Small" />
                         }
                     </MudButton>
@@ -267,13 +267,13 @@
         if (firstRender)
         {
             _connectionModel = DbConfigService.PobierzAktualnaKonfiguracje();
-            var wynik = await DbConfigService.TestujPolaczenieAsync(_connectionModel);
-            _databaseReady = wynik.CzySukces;
-            _databaseError = wynik.CzySukces
-                ? string.Empty
-                : OpisBleduPolaczenia(wynik.Wiadomosc);
-            if (!wynik.CzySukces)
+            _databaseReady = await DbConnectionService.CanConnectAsync();
+            if (!_databaseReady)
             {
+                var wynik = await DbConfigService.TestujPolaczenieAsync(_connectionModel);
+                _databaseError = wynik.CzySukces
+                    ? "Skonfiguruj i zapisz połączenie z bazą danych."
+                    : OpisBleduPolaczenia(wynik.Wiadomosc);
                 _connectionModel.Password = string.Empty;
             }
 

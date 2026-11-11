@@ -116,11 +116,6 @@ namespace Mieszkaniec.Services
 
                 foreach (var relacja in relacjeDoZapisania)
                 {
-                    if (relacja.PowierzchniaWynajetaM2 <= 0)
-                    {
-                        throw new InvalidOperationException("Powierzchnia wynajęta musi być większa od 0 m².");
-                    }
-
                     var lokal = await _context.LokaleWynajem.FindAsync(relacja.LokalWynajemId);
                     if (lokal == null)
                     {
@@ -130,6 +125,35 @@ namespace Mieszkaniec.Services
                     if (lokal.CzyCzescWspolna)
                     {
                         throw new InvalidOperationException($"Pomieszczenie „{lokal.NumerLokalu}” jest częścią wspólną i nie może być wynajęte.");
+                    }
+
+                    if (lokal.CzyInfrastrukturaTechniczna)
+                    {
+                        if (!relacja.CzyRyczalt || relacja.PowierzchniaWynajetaM2 != 0 || relacja.WynegocjowanaCenaZaM2 <= 0)
+                        {
+                            throw new InvalidOperationException(
+                                $"Infrastruktura techniczna „{lokal.NumerLokalu}” wymaga dodatniego ryczałtu miesięcznego i nie może mieć przypisanego metrażu.");
+                        }
+
+                        if (umowa.CzyAktywna)
+                        {
+                            var jestWynajetaPrzezInnaUmowe = await _context.Set<UmowaLokal>()
+                                .AnyAsync(innaRelacja => innaRelacja.LokalWynajemId == relacja.LokalWynajemId
+                                    && innaRelacja.UmowaNajmuId != umowa.Id
+                                    && innaRelacja.UmowaNajmu.CzyAktywna);
+                            if (jestWynajetaPrzezInnaUmowe)
+                            {
+                                throw new InvalidOperationException(
+                                    $"Infrastruktura „{lokal.NumerLokalu}” jest już przypisana do innej aktywnej umowy.");
+                            }
+                        }
+
+                        continue;
+                    }
+
+                    if (relacja.PowierzchniaWynajetaM2 <= 0)
+                    {
+                        throw new InvalidOperationException("Powierzchnia wynajęta musi być większa od 0 m².");
                     }
 
                     if (umowa.CzyAktywna)
@@ -242,7 +266,10 @@ namespace Mieszkaniec.Services
                         {
                             if (najnowszyAneks != null && najnowszyAneks.NowaStawkaCzynszu.HasValue)
                             {
-                                aktualizowanyLokal.CenaZaM2 = najnowszyAneks.NowaStawkaCzynszu.Value;
+                                if (!aktualizowanyLokal.CzyInfrastrukturaTechniczna)
+                                {
+                                    aktualizowanyLokal.CenaZaM2 = najnowszyAneks.NowaStawkaCzynszu.Value;
+                                }
                                 dbLokal.WynegocjowanaCenaZaM2 = najnowszyAneks.NowaStawkaCzynszu.Value;
                             }
                             _context.Set<LokalWynajem>().Update(aktualizowanyLokal);
@@ -330,6 +357,23 @@ namespace Mieszkaniec.Services
                     })
                     .ToListAsync();
 
+                if (lokal.CzyInfrastrukturaTechniczna)
+                {
+                    if (aktywneRelacje.Count > 0)
+                    {
+                        lokal.Status = "Wynajęty";
+                        var najemcy = aktywneRelacje.Select(relacja => relacja.NajemcaId).Distinct().ToList();
+                        lokal.NajemcaId = najemcy.Count == 1 ? najemcy[0] : null;
+                    }
+                    else if (lokal.Status != "Zarezerwowany")
+                    {
+                        lokal.Status = "Wolny";
+                        lokal.NajemcaId = null;
+                    }
+
+                    continue;
+                }
+
                 var powierzchniaWynajeta = aktywneRelacje.Sum(relacja => relacja.PowierzchniaWynajetaM2);
                 if (powierzchniaWynajeta >= lokal.PowierzchniaM2 && powierzchniaWynajeta > 0)
                 {
@@ -392,6 +436,27 @@ namespace Mieszkaniec.Services
                     throw new InvalidOperationException("Nie można przywrócić umowy z brakującym lokalem lub częścią wspólną.");
                 }
 
+                if (lokal.CzyInfrastrukturaTechniczna)
+                {
+                    if (!relacja.CzyRyczalt || relacja.PowierzchniaWynajetaM2 != 0 || relacja.WynegocjowanaCenaZaM2 <= 0)
+                    {
+                        throw new InvalidOperationException(
+                            $"Nie można przywrócić umowy: infrastruktura „{lokal.NumerLokalu}” wymaga dodatniego ryczałtu i braku metrażu.");
+                    }
+
+                    var jestWynajetaPrzezInnaUmowe = await _context.Set<UmowaLokal>()
+                        .AnyAsync(innaRelacja => innaRelacja.LokalWynajemId == relacja.LokalWynajemId
+                            && innaRelacja.UmowaNajmuId != umowa.Id
+                            && innaRelacja.UmowaNajmu.CzyAktywna);
+                    if (jestWynajetaPrzezInnaUmowe)
+                    {
+                        throw new InvalidOperationException(
+                            $"Nie można przywrócić umowy: infrastruktura „{lokal.NumerLokalu}” jest już przypisana do innej aktywnej umowy.");
+                    }
+
+                    continue;
+                }
+
                 var powierzchniaZajeta = await _context.Set<UmowaLokal>()
                     .Where(innaRelacja => innaRelacja.LokalWynajemId == relacja.LokalWynajemId
                         && innaRelacja.UmowaNajmuId != umowa.Id
@@ -445,8 +510,11 @@ namespace Mieszkaniec.Services
                         if (fizycznyLokal != null)
                         {
                             // Ustawiamy nową cenę w fizycznym lokalu
-                            fizycznyLokal.CenaZaM2 = nowyAneks.NowaStawkaCzynszu.Value;
-                            _context.Set<LokalWynajem>().Update(fizycznyLokal);
+                            if (!fizycznyLokal.CzyInfrastrukturaTechniczna)
+                            {
+                                fizycznyLokal.CenaZaM2 = nowyAneks.NowaStawkaCzynszu.Value;
+                                _context.Set<LokalWynajem>().Update(fizycznyLokal);
+                            }
                         }
 
                         // Aktualizujemy stawkę wynegocjowaną na bieżąco

@@ -1,4 +1,4 @@
-﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @using Mieszkaniec.Components.Layout @* Dopasuj, jeśli Twój RedirectToLogin jest w innym folderze *@
 
 <Router AppAssembly="@typeof(Program).Assembly">
@@ -6,9 +6,21 @@
 
         @* Używamy AuthorizeRouteView zamiast zwykłego RouteView *@
         <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)">
-            <NotAuthorized>
+            <NotAuthorized Context="authState">
+                @if (authState.User.Identity?.IsAuthenticated == true)
+                {
+                    <LayoutView Layout="@typeof(Layout.MainLayout)">
+                        <main class="pa-4" role="alert">
+                            <h1>Brak dostępu</h1>
+                            <p>Nie masz uprawnień do wyświetlenia tej strony.</p>
+                        </main>
+                    </LayoutView>
+                }
+                else
+                {
                 @* Jeśli niezalogowany - wywołujemy nasz komponent z Kroku 1 *@
                 <RedirectToLogin />
+                }
             </NotAuthorized>
         </AuthorizeRouteView>
 

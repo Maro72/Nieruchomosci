@@ -73,4 +73,50 @@ public class PartialRentalAreaTests
         Assert.Equal(0m, lokal.PowierzchniaWynajetaM2);
         Assert.Equal(0m, relacja.WartoscCzynszuMiesiecznego);
     }
+
+    [Fact]
+    public void InfrastrukturaTechnicznaJestWynajmowanaRyczaltemBezMetrazu()
+    {
+        var lokal = new LokalWynajem
+        {
+            TypLokalu = "Infrastruktura techniczna",
+            PowierzchniaM2 = 0,
+            CenaZaM2 = 0
+        };
+        var relacja = new UmowaLokal
+        {
+            LokalWynajem = lokal,
+            PowierzchniaWynajetaM2 = 0,
+            WynegocjowanaCenaZaM2 = 850,
+            CzyRyczalt = true
+        };
+        lokal.HistoriaUmow = [relacja];
+        relacja.UmowaNajmu = new UmowaNajmu { CzyAktywna = true };
+
+        Assert.True(lokal.CzyInfrastrukturaTechniczna);
+        Assert.False(lokal.CzyCzescWspolna);
+        Assert.Equal(0m, lokal.CenaWynajmu);
+        Assert.Equal(0m, lokal.PowierzchniaWynajetaM2);
+        Assert.Equal(850m, relacja.WartoscCzynszuMiesiecznego);
+        Assert.Equal(850m, lokal.CzynszWynajetyMiesiecznie);
+    }
+
+    [Fact]
+    public void InfrastrukturaTechnicznaNieZwiekszaMetrazuUmowy()
+    {
+        var relacja = new UmowaLokal
+        {
+            LokalWynajem = new LokalWynajem { TypLokalu = "Infrastruktura techniczna" },
+            PowierzchniaWynajetaM2 = 0,
+            WynegocjowanaCenaZaM2 = 850,
+            CzyRyczalt = true
+        };
+        var umowa = new UmowaNajmu
+        {
+            WynajmowaneLokale = [relacja]
+        };
+
+        Assert.Equal(0m, umowa.CalkowitaPowierzchniaM2);
+        Assert.Equal(850m, umowa.AktualnyCzynszMiesieczny);
+    }
 }

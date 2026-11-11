@@ -4,7 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <DefaultItemExcludes>$(DefaultItemExcludes);BenchmarkSuite1/**;publish/**;installer/**;Mieszkaniec.Tests/**;**/._*</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);BenchmarkSuite1/**;publish/**;publikacja_*/**;installer/**;Mieszkaniec.Tests/**;**/._*</DefaultItemExcludes>
     <UseAppHost>false</UseAppHost>
   </PropertyGroup>
 

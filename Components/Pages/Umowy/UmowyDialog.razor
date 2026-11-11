@@ -117,49 +117,72 @@
                                                        ValueChanged="OnLokalChanged"
                                                        Label="Lokal do wynajęcia" Variant="Variant.Outlined"
                                                        Margin="Margin.Dense" Dense="true" FullWidth="true"
-                                                       Placeholder="Wybierz lokal">
+                                                       Placeholder="Wybierz lokal"
+                                                       RelativeWidth="DropdownWidth.Adaptive"
+                                                       PopoverClass="rental-location-popover">
                                                 @foreach (var lokal in DostepneLokaleDoWyboru)
                                                 {
                                                     <MudSelectItem T="int?" Value="@lokal.Id">
-                                                        @($"[{lokal.Obiekt?.Nazwa ?? "Budynek"}] {lokal.NumerLokalu} · {lokal.TypLokalu} · dostępne {PowierzchniaDostepnaDlaUmowy(lokal):N2} m²")
+                                                        <span style="white-space: nowrap">
+                                                            @(lokal.CzyInfrastrukturaTechniczna
+                                                                ? $"[{lokal.Obiekt?.Nazwa ?? "Budynek"}] {lokal.NumerLokalu} · {lokal.TypLokalu} · ryczałt miesięczny"
+                                                                : $"[{lokal.Obiekt?.Nazwa ?? "Budynek"}] {lokal.NumerLokalu} · {lokal.TypLokalu} · dostępne {PowierzchniaDostepnaDlaUmowy(lokal):N2} m²")
+                                                        </span>
                                                     </MudSelectItem>
                                                 }
                                             </MudSelect>
                                         </MudItem>
 
-                                        <MudItem xs="6" sm="4" md="2">
-                                            <MudNumericField T="decimal" @bind-Value="WybranaPowierzchniaM2"
-                                                             Label="Powierzchnia (m²)" Variant="Variant.Outlined"
-                                                             Margin="Margin.Dense" FullWidth="true"
-                                                             Min="0.01m" Max="@WybranaDostepnaPowierzchniaM2"
-                                                             Format="N2" HideSpinButtons="true" />
-                                            @if (WybranyLokalId > 0)
-                                            {
-                                                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="assignment-hint">
-                                                    Dostępne: @WybranaDostepnaPowierzchniaM2.ToString("N2") m²
+                                        @if (WybranoInfrastruktureTechniczna)
+                                        {
+                                            <MudItem xs="6" sm="4" md="4">
+                                                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-2">
+                                                    Bez metrażu — rozliczenie ryczałtem miesięcznym.
                                                 </MudText>
-                                            }
-                                        </MudItem>
+                                            </MudItem>
+                                        }
+                                        else
+                                        {
+                                            <MudItem xs="6" sm="4" md="2">
+                                                <MudNumericField T="decimal" @bind-Value="WybranaPowierzchniaM2"
+                                                                 Label="Powierzchnia (m²)" Variant="Variant.Outlined"
+                                                                 Margin="Margin.Dense" FullWidth="true"
+                                                                 Min="0.01m" Max="@WybranaDostepnaPowierzchniaM2"
+                                                                 Format="N2" HideSpinButtons="true" />
+                                                @if (WybranyLokalId > 0)
+                                                {
+                                                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="assignment-hint">
+                                                        Dostępne: @WybranaDostepnaPowierzchniaM2.ToString("N2") m²
+                                                    </MudText>
+                                                }
+                                            </MudItem>
 
-                                        <MudItem xs="6" sm="4" md="2">
-                                            <MudSelect T="TrybWprowadzaniaCzynszu"
-                                                       Value="@TrybCzynszu"
-                                                       ValueChanged="ZmienTrybCzynszu"
-                                                       Label="Wprowadzam" Variant="Variant.Outlined"
-                                                       Margin="Margin.Dense" Dense="true" FullWidth="true">
-                                                <MudSelectItem T="TrybWprowadzaniaCzynszu" Value="@TrybWprowadzaniaCzynszu.StawkaZaM2">Stawkę / m²</MudSelectItem>
-                                                <MudSelectItem T="TrybWprowadzaniaCzynszu" Value="@TrybWprowadzaniaCzynszu.KwotaMiesieczna">Kwotę / mies.</MudSelectItem>
-                                            </MudSelect>
-                                        </MudItem>
+                                            <MudItem xs="6" sm="4" md="2">
+                                                <MudSelect T="TrybWprowadzaniaCzynszu"
+                                                           Value="@TrybCzynszu"
+                                                           ValueChanged="ZmienTrybCzynszu"
+                                                           Label="Wprowadzam" Variant="Variant.Outlined"
+                                                           Margin="Margin.Dense" Dense="true" FullWidth="true">
+                                                    <MudSelectItem T="TrybWprowadzaniaCzynszu" Value="@TrybWprowadzaniaCzynszu.StawkaZaM2">Stawkę / m²</MudSelectItem>
+                                                    <MudSelectItem T="TrybWprowadzaniaCzynszu" Value="@TrybWprowadzaniaCzynszu.KwotaMiesieczna">Kwotę / mies.</MudSelectItem>
+                                                </MudSelect>
+                                            </MudItem>
+                                        }
 
                                         <MudItem xs="6" sm="4" md="2">
                                             <MudNumericField T="decimal"
                                                              Value="@WybranaWartosc"
                                                              ValueChanged="ZmienWartosc"
-                                                             Label="Wartość (zł)" Variant="Variant.Outlined"
+                                                             Label="@(WybranoInfrastruktureTechniczna ? "Ryczałt (zł/mies.)" : "Wartość (zł)")" Variant="Variant.Outlined"
                                                              Margin="Margin.Dense" FullWidth="true"
                                                              Min="0m" Format="N2" HideSpinButtons="true" />
-                                            @if (WybranaPowierzchniaM2 > 0)
+                                            @if (WybranoInfrastruktureTechniczna)
+                                            {
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="assignment-hint">
+                                                    Kwota miesięczna dla stanowiska antenowego.
+                                                </MudText>
+                                            }
+                                            else if (WybranaPowierzchniaM2 > 0)
                                             {
                                                 <MudText Typo="Typo.caption" Color="Color.Secondary" Class="assignment-hint">
                                                     @(TrybCzynszu == TrybWprowadzaniaCzynszu.StawkaZaM2
@@ -193,8 +216,8 @@
                                                     <th>Budynek</th>
                                                     <th>Numer Lokalu</th>
                                                     <th>Typ</th>
-                                                    <th>Wynajęte (m²)</th>
-                                                    <th>Stawka (zł/m²)</th>
+                                                    <th>Powierzchnia</th>
+                                                    <th>Stawka / ryczałt</th>
                                                     <th>Rozliczenie</th>
                                                     <th>Suma (mies.)</th>
                                                     <th class="assigned-actions-column" aria-label="Akcje"></th>
@@ -208,12 +231,23 @@
                                                         <td class="fw-bold text-primary">@(rel.LokalWynajem?.NumerLokalu ?? $"ID: {rel.LokalWynajemId}")</td>
                                                         <td>@(rel.LokalWynajem?.TypLokalu ?? "-")</td>
                                                         <td class="assigned-area-column">
-                                                            <input type="number" step="0.01" min="0.01"
-                                                                   max="@PowierzchniaDostepnaDlaUmowy(rel.LokalWynajem!)"
-                                                                   class="form-control-plaintext assigned-area-input"
-                                                                   @bind="rel.PowierzchniaWynajetaM2" />
+                                                            @if (rel.LokalWynajem?.CzyInfrastrukturaTechniczna == true)
+                                                            {
+                                                                <span class="text-muted">Bez metrażu</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <input type="number" step="0.01" min="0.01"
+                                                                       max="@PowierzchniaDostepnaDlaUmowy(rel.LokalWynajem!)"
+                                                                       class="form-control-plaintext assigned-area-input"
+                                                                       @bind="rel.PowierzchniaWynajetaM2" />
+                                                            }
                                                         </td>
-                                                        <td class="fw-bold text-success">@($"{rel.WynegocjowanaCenaZaM2:N2} zł/m²")</td>
+                                                        <td class="fw-bold text-success">
+                                                            @(rel.CzyRyczalt
+                                                                ? $"{rel.WynegocjowanaCenaZaM2:N2} zł/mies."
+                                                                : $"{rel.WynegocjowanaCenaZaM2:N2} zł/m²")
+                                                        </td>
                                                         <td>
                                                             <span class="badge @(rel.CzyRyczalt ? "bg-info text-dark" : "bg-secondary text-white")">
                                                                 @(rel.CzyRyczalt ? "Ryczałt" : "Za m²")

@@ -121,6 +121,7 @@ namespace Mieszkaniec.Components.Pages.FPrzeglady
             }
 
             ListaPrzegladow = skompilowanaLista;
+            WybranyPrzeglad = null;
             StateHasChanged();
         }
 
@@ -233,7 +234,7 @@ namespace Mieszkaniec.Components.Pages.FPrzeglady
 
         protected void WybierzWiersz(Przeglad model)
         {
-            WybranyPrzeglad = (WybranyPrzeglad != null && WybranyPrzeglad.Id == model.Id) ? null : model;
+            WybranyPrzeglad = WybranyPrzeglad?.Id == model.Id ? null : model;
             StateHasChanged();
         }
 

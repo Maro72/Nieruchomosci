@@ -30,9 +30,14 @@ namespace Mieszkaniec.Components.Pages.Wynajem
                 if (MudDialog == null) throw new Exception("MudDialog nie został wstrzyknięty.");
                 if (LokalService == null) throw new Exception("LokalService nie został wstrzyknięty.");
 
-                if (Model.CzyCzescWspolna)
+                if (Model.CzyCzescWspolna || Model.CzyInfrastrukturaTechniczna)
                 {
                     Model.CenaZaM2 = 0;
+                }
+
+                if (Model.CzyInfrastrukturaTechniczna)
+                {
+                    Model.PowierzchniaM2 = 0;
                 }
 
                 // KROK 1: Zapisujemy zmiany w bazie. Entity Framework potrzebuje TYLKO kluczy obcych (ObiektId, NajemcaId), 
@@ -74,9 +79,16 @@ namespace Mieszkaniec.Components.Pages.Wynajem
         private void OnTypLokaluChanged(ChangeEventArgs e)
         {
             Model.TypLokalu = e.Value?.ToString() ?? string.Empty;
-            if (Model.CzyCzescWspolna)
+            if (Model.CzyCzescWspolna || Model.CzyInfrastrukturaTechniczna)
             {
                 Model.CenaZaM2 = 0;
+            }
+
+            if (Model.CzyInfrastrukturaTechniczna)
+            {
+                Model.PowierzchniaM2 = 0;
+                Model.NajemcaId = null;
+                Model.Status = "Wolny";
             }
         }
 

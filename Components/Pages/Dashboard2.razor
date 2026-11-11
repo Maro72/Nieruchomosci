@@ -1,0 +1,553 @@
+@page "/dashboard2"
+@using Microsoft.AspNetCore.Authorization
+@using Mieszkaniec.Model.Entities
+@using Mieszkaniec.Services.Interfaces
+@using MudBlazor
+@attribute [Authorize(Policy = "Dashboard.Odczyt")]
+@inject IObiektService ObiektService
+@inject ILokalWynajemService LokalService
+@inject NavigationManager Navigation
+@inject ILogger<Dashboard2> Logger
+
+<PageTitle>Dashboard 2 - Wynajem budynków</PageTitle>
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <MudText Typo="Typo.overline" Color="Color.Primary">ANALITYKA NIERUCHOMOŚCI</MudText>
+        <MudText Typo="Typo.h4" Class="fw-bold">Wynajem budynków</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary">
+            Obłożenie powierzchni, czynsze i porównanie aktywnych budynków.
+        </MudText>
+    </div>
+    <MudButton Variant="Variant.Outlined"
+               Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.Refresh"
+               Disabled="@_isLoading"
+               OnClick="LoadDataAsync">
+        Odśwież dane
+    </MudButton>
+</div>
+
+@if (_isLoading)
+{
+    <MudPaper Class="pa-10 d-flex justify-center" Outlined="true">
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+    </MudPaper>
+}
+else if (_loadError is not null)
+{
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-4">
+        @_loadError
+        <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="LoadDataAsync">Spróbuj ponownie</MudButton>
+    </MudAlert>
+}
+else
+{
+    <div class="dashboard-summary-grid mb-4">
+            <MudPaper Class="pa-3 h-100" Outlined="true">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">AKTYWNE BUDYNKI</MudText>
+                        <MudText Typo="Typo.h6" Class="fw-bold mt-1">@_buildings.Count</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@TotalUnits lokali do wynajmu</MudText>
+                    </div>
+                    <MudAvatar Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled">
+                        <MudIcon Icon="@Icons.Material.Filled.Apartment" Size="Size.Small" />
+                    </MudAvatar>
+                </div>
+            </MudPaper>
+
+            <MudPaper Class="pa-3 h-100" Outlined="true">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">WYNAJĘTA POWIERZCHNIA</MudText>
+                        <MudText Typo="Typo.h6" Class="fw-bold mt-1">@PortfolioOccupancy.ToString("N1")%</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@TotalRentedArea.ToString("N0") z @TotalArea.ToString("N0") m²</MudText>
+                    </div>
+                    <MudAvatar Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">
+                        <MudIcon Icon="@Icons.Material.Filled.DonutLarge" Size="Size.Small" />
+                    </MudAvatar>
+                </div>
+                <MudProgressLinear Value="@((double)PortfolioOccupancy)" Color="@OccupancyColor(PortfolioOccupancy)" Class="mt-3" />
+            </MudPaper>
+
+            <MudPaper Class="pa-3 h-100" Outlined="true">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">CZYNSZ MIESIĘCZNY</MudText>
+                        <MudText Typo="Typo.h6" Class="fw-bold mt-1">@TotalMonthlyRent.ToString("N0") zł</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">z aktywnego najmu</MudText>
+                    </div>
+                    <MudAvatar Size="Size.Small" Color="Color.Info" Variant="Variant.Filled">
+                        <MudIcon Icon="@Icons.Material.Filled.Payments" Size="Size.Small" />
+                    </MudAvatar>
+                </div>
+            </MudPaper>
+
+            <MudPaper Class="pa-3 h-100" Outlined="true">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">CZYNSZ ROCZNY Z AKTYWNEGO NAJMU</MudText>
+                        <MudText Typo="Typo.h6" Class="fw-bold mt-1">@ProjectedAnnualRent.ToString("N0") zł</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">aktualny czynsz miesięczny × 12</MudText>
+                    </div>
+                    <MudAvatar Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">
+                        <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Size="Size.Small" />
+                    </MudAvatar>
+                </div>
+            </MudPaper>
+
+            <MudPaper Class="dashboard-loss-card pa-3 h-100" Outlined="true">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">SZACUNKOWY POTENCJAŁ ROCZNY</MudText>
+                        <MudText Typo="Typo.h6" Class="fw-bold mt-1">@EstimatedAnnualRentalLoss.ToString("N0") zł</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">średnia stawka × niewynajęta powierzchnia × 12, także rezerwacje</MudText>
+                    </div>
+                    <MudAvatar Size="Size.Small" Color="Color.Error" Variant="Variant.Filled">
+                        <MudIcon Icon="@Icons.Material.Filled.TrendingDown" Size="Size.Small" />
+                    </MudAvatar>
+                </div>
+            </MudPaper>
+
+            <MudPaper Class="pa-3 h-100" Outlined="true">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">ŚREDNI CZYNSZ / m²</MudText>
+                        <MudText Typo="Typo.h6" Class="fw-bold mt-1">@PortfolioRate.ToString("N2") zł</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">miesięcznie, ważony wynajętą powierzchnią</MudText>
+                    </div>
+                    <MudAvatar Size="Size.Small" Color="Color.Warning" Variant="Variant.Filled">
+                        <MudIcon Icon="@Icons.Material.Filled.PriceCheck" Size="Size.Small" />
+                    </MudAvatar>
+                </div>
+            </MudPaper>
+    </div>
+
+    <MudGrid Spacing="3" Class="mb-4">
+        <MudItem xs="12" lg="8">
+            <MudPaper Class="pa-4 h-100" Outlined="true">
+                <MudText Typo="Typo.h6" Class="fw-bold">Obłożenie według budynku</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">Procent wynajętej powierzchni użytkowej</MudText>
+                @if (ChartBuildings.Count > 0)
+                {
+                    <div class="occupancy-chart-scroll">
+                        <div class="occupancy-chart" role="img" aria-label="Obłożenie według budynku: @string.Join("; ", ChartBuildings.Select(building => $"{building.Building.Nazwa}: {building.Occupancy:N1}%"))">
+                            <div class="occupancy-chart-axis" aria-hidden="true">
+                                <span>100%</span>
+                                <span>75%</span>
+                                <span>50%</span>
+                                <span>25%</span>
+                                <span>0%</span>
+                            </div>
+                            <div class="occupancy-chart-bars">
+                                @foreach (var building in ChartBuildings)
+                                {
+                                    <div class="occupancy-chart-column">
+                                        <div class="occupancy-chart-track">
+                                            <div class="occupancy-chart-bar"
+                                                 style="height: @(building.Occupancy.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))%;">
+                                                <span class="occupancy-chart-value">@building.Occupancy.ToString("N1")%</span>
+                                            </div>
+                                        </div>
+                                        <div class="occupancy-chart-label">@building.Building.Nazwa</div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-4">
+                        Brak powierzchni do wynajmu, którą można porównać.
+                    </MudText>
+                }
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" lg="4">
+            <MudPaper Class="pa-4 h-100" Outlined="true">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <MudIcon Icon="@Icons.Material.Filled.Lightbulb" Color="Color.Warning" />
+                    <MudText Typo="Typo.h6" Class="fw-bold">Sugestie zarządcze</MudText>
+                </div>
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-3 d-block">
+                    Wskazówki na podstawie aktualnych danych najmu; porównania nie uwzględniają cen rynkowych.
+                </MudText>
+                @foreach (var suggestion in Suggestions)
+                {
+                    <MudAlert Severity="@suggestion.Severity" Variant="Variant.Outlined" Class="mb-3">
+                        <strong>@suggestion.Title</strong><br />
+                        @suggestion.Description
+                    </MudAlert>
+                }
+                <MudButton Variant="Variant.Text"
+                           Color="Color.Primary"
+                           EndIcon="@Icons.Material.Filled.ArrowForward"
+                           Class="mt-2"
+                           OnClick="@(() => Navigation.NavigateTo("wynajem"))">
+                    Przejdź do lokali
+                </MudButton>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    <MudPaper Class="building-table-card" Outlined="true">
+        <div class="building-table-toolbar">
+            <div>
+                <div class="building-table-title">
+                    <MudAvatar Size="Size.Medium" Color="Color.Primary" Variant="Variant.Outlined">
+                        <MudIcon Icon="@Icons.Material.Filled.Domain" />
+                    </MudAvatar>
+                    <div>
+                        <MudText Typo="Typo.h6" Class="fw-bold">Wyniki według budynku</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                            Obłożenie i niewynajęta powierzchnia są liczone z m², a odsetek pustych pomieszczeń z liczby lokali. Średni czynsz obejmuje czynsze za powierzchnie, także ryczałtowe, ale bez ryczałtu za infrastrukturę bez metrażu. Lokale wspólne są pomijane.
+                        </MudText>
+                    </div>
+                </div>
+            </div>
+            <MudTextField T="string"
+                          @bind-Value="_search"
+                          Placeholder="Nazwa lub adres"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Clearable="true"
+                          Class="building-table-search" />
+        </div>
+
+        @if (FilteredBuildings.Count == 0)
+        {
+            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="building-table-empty">
+                @(_buildings.Count == 0 ? "Nie znaleziono aktywnych budynków." : "Brak budynków pasujących do wyszukiwania.")
+            </MudText>
+        }
+        else
+        {
+            <MudTable T="BuildingStats"
+                      Items="@FilteredBuildings"
+                      Hover="true"
+                      Dense="false"
+                      Striped="true"
+                      Elevation="0"
+                      Breakpoint="Breakpoint.Sm"
+                      Class="building-performance-table">
+                <HeaderContent>
+                    <MudTh Class="building-column">BUDYNEK</MudTh>
+                    <MudTh>OBŁOŻENIE</MudTh>
+                    <MudTh>PUSTE LOKALE</MudTh>
+                    <MudTh>WYNAJĘTA POWIERZCHNIA</MudTh>
+                    <MudTh>ŚREDNI CZYNSZ WAŻONY / m²</MudTh>
+                    <MudTh>CZYNSZ MIESIĘCZNY</MudTh>
+                    <MudTh>LOKALE</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Budynek" Class="building-column">
+                        <div class="building-identity">
+                            <MudAvatar Size="Size.Medium" Color="Color.Primary" Variant="Variant.Filled">
+                                <MudIcon Icon="@Icons.Material.Filled.Apartment" />
+                            </MudAvatar>
+                            <div>
+                                <MudText Typo="Typo.body1" Class="fw-bold">@context.Building.Nazwa</MudText>
+                        @if (!string.IsNullOrWhiteSpace(context.Building.Adres))
+                        {
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Building.Adres</MudText>
+                        }
+                            </div>
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel="Obłożenie">
+                        <div class="building-metric">
+                            <div class="building-metric-label">
+                                <MudText Typo="Typo.body2" Class="fw-bold">@context.Occupancy.ToString("N1")%</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="@OccupancyColor(context.Occupancy)" Variant="Variant.Outlined">
+                                    @OccupancyLabel(context.Occupancy)
+                                </MudChip>
+                            </div>
+                            <MudProgressLinear Value="@((double)context.Occupancy)" Color="@OccupancyColor(context.Occupancy)" />
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel="Puste pomieszczenia">
+                        <div class="building-metric">
+                            <div class="building-metric-label">
+                                <MudText Typo="Typo.body2" Class="fw-bold">@context.EmptyUnits</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@context.EmptyUnitPercent.ToString("N1")% lokali</MudText>
+                            </div>
+                            <MudProgressLinear Value="@((double)context.EmptyUnitPercent)"
+                                               Color="@(context.EmptyUnits > 0 ? Color.Warning : Color.Success)" />
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Wolna pow.: @context.AvailableAreaPercent.ToString("N1")%</MudText>
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel="Wynajęta powierzchnia">
+                        <MudText Typo="Typo.body2" Class="fw-bold">@context.RentedArea.ToString("N1") m²</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">z @context.RentableArea.ToString("N1") m²</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Średni czynsz ważony / m²">
+                        @if (context.RentedArea > 0)
+                        {
+                            <MudText Typo="Typo.body2" Class="fw-bold">@context.AverageRate.ToString("N2") zł</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">zł / m² / miesiąc</MudText>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">—</MudText>
+                        }
+                    </MudTd>
+                    <MudTd DataLabel="Czynsz miesięczny">
+                        <MudText Typo="Typo.body2" Class="fw-bold">@context.MonthlyRent.ToString("N2") zł</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">miesięcznie</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Lokale">
+                        <MudText Typo="Typo.body2" Class="fw-bold">@context.RentedUnits <span class="building-unit-divider">/</span> @context.RentableUnits</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">wynajęte / wszystkie</MudText>
+                        @if (context.ReservedUnits > 0)
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined" Class="ml-1">
+                                @context.ReservedUnits rezerw.
+                            </MudChip>
+                        }
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+            <div class="building-table-footer">
+                <MudIcon Icon="@Icons.Material.Filled.Sort" Size="Size.Small" />
+                <MudText Typo="Typo.caption">Budynki uporządkowane od najniższego obłożenia</MudText>
+                <MudSpacer />
+                <MudText Typo="Typo.caption">@FilteredBuildings.Count budynków</MudText>
+            </div>
+        }
+    </MudPaper>
+}
+
+@code {
+    private bool _isLoading = true;
+    private string? _loadError;
+    private string _search = string.Empty;
+    private List<BuildingStats> _buildings = [];
+
+    private decimal TotalArea => _buildings.Sum(building => building.RentableArea);
+    private decimal TotalRentedArea => _buildings.Sum(building => building.RentedArea);
+    private decimal TotalAvailableArea => Math.Max(0, TotalArea - TotalRentedArea);
+    private decimal TotalMonthlyRent => _buildings.Sum(building => building.MonthlyRent);
+    private decimal PortfolioOccupancy => TotalArea > 0 ? Math.Round(TotalRentedArea / TotalArea * 100, 1) : 0;
+    private decimal PortfolioRate => TotalRentedArea > 0 ? _buildings.Sum(building => building.RentForMeasuredArea) / TotalRentedArea : 0;
+    private decimal EstimatedPotentialRent => TotalAvailableArea * PortfolioRate;
+    private decimal EstimatedAnnualRentalLoss => EstimatedPotentialRent * 12;
+    private decimal ProjectedAnnualRent => TotalMonthlyRent * 12;
+    private int TotalUnits => _buildings.Sum(building => building.RentableUnits);
+    private List<ManagementSuggestion> Suggestions => BuildSuggestions(_buildings);
+    private List<BuildingStats> FilteredBuildings => _buildings
+        .Where(building => string.IsNullOrWhiteSpace(_search) ||
+            building.Building.Nazwa.Contains(_search, StringComparison.CurrentCultureIgnoreCase) ||
+            building.Building.Adres.Contains(_search, StringComparison.CurrentCultureIgnoreCase))
+        .OrderBy(building => building.Occupancy)
+        .ThenBy(building => building.Building.Nazwa)
+        .ToList();
+    private List<BuildingStats> ChartBuildings => _buildings
+        .Where(building => building.RentableArea > 0)
+        .OrderBy(building => building.Occupancy)
+        .Take(12)
+        .ToList();
+    protected override Task OnInitializedAsync() => LoadDataAsync();
+
+    private async Task LoadDataAsync()
+    {
+        _isLoading = true;
+        _loadError = null;
+        _buildings = [];
+
+        try
+        {
+            var buildings = await ObiektService.GetAllActiveAsync();
+            var rentals = await LokalService.PobierzWszystkieAsync();
+            var rentalsByBuilding = rentals
+                .Where(rental => !rental.CzyCzescWspolna)
+                .GroupBy(rental => rental.ObiektId)
+                .ToDictionary(group => group.Key, group => group.ToList());
+
+            _buildings = buildings
+                .Select(building => BuildStats(
+                    building,
+                    rentalsByBuilding.TryGetValue(building.Id, out var buildingRentals)
+                        ? buildingRentals
+                        : []))
+                .ToList();
+        }
+        catch (Exception exception)
+        {
+            Logger.LogError(exception, "Nie udało się załadować statystyk wynajmu dla dashboardu.");
+            _loadError = "Nie udało się pobrać danych o budynkach i wynajmie. Sprawdź połączenie z bazą i spróbuj ponownie.";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    internal static BuildingStats BuildStats(Obiekt building, List<LokalWynajem> rentals)
+    {
+        var rentableArea = rentals.Sum(rental => Math.Max(0, rental.PowierzchniaM2));
+        var rentedArea = rentals.Sum(rental => Math.Clamp(
+            rental.PowierzchniaWynajetaM2,
+            0,
+            Math.Max(0, rental.PowierzchniaM2)));
+        var monthlyRent = rentals.Sum(rental => rental.CzynszWynajetyMiesiecznie);
+        var rentForMeasuredArea = rentals
+            .Where(rental => !rental.CzyInfrastrukturaTechniczna)
+            .Sum(rental => rental.CzynszWynajetyMiesiecznie);
+        var rentableUnits = rentals.Count;
+        var rentedUnits = rentals.Count(rental => rental.CzyInfrastrukturaTechniczna
+            ? string.Equals(rental.StatusAktualny, "Wynajęty", StringComparison.OrdinalIgnoreCase)
+            : rental.PowierzchniaWynajetaM2 > 0);
+        var emptyUnits = rentals.Count(rental =>
+            rental.PowierzchniaWynajetaM2 <= 0 &&
+            string.Equals(rental.StatusAktualny, "Wolny", StringComparison.OrdinalIgnoreCase));
+        var reservedUnits = rentals.Count(rental =>
+            rental.PowierzchniaWynajetaM2 <= 0 &&
+            string.Equals(rental.StatusAktualny, "Zarezerwowany", StringComparison.OrdinalIgnoreCase));
+        var marketableArea = rentals
+            .Where(rental => !rental.CzyInfrastrukturaTechniczna &&
+                rental.Status != "Zarezerwowany" && rental.StatusAktualny != "Zarezerwowany")
+            .Sum(rental => Math.Clamp(rental.PowierzchniaDostepnaM2, 0, Math.Max(0, rental.PowierzchniaM2)));
+
+        return new BuildingStats(
+            building,
+            rentableArea,
+            rentedArea,
+            monthlyRent,
+            rentForMeasuredArea,
+            marketableArea,
+            rentableUnits,
+            rentedUnits,
+            emptyUnits,
+            reservedUnits);
+    }
+
+    internal static List<ManagementSuggestion> BuildSuggestions(IReadOnlyCollection<BuildingStats> buildings)
+    {
+        var suggestions = new List<ManagementSuggestion>();
+        var totalArea = buildings.Sum(building => building.RentableArea);
+        var totalRentedArea = buildings.Sum(building => building.RentedArea);
+        var totalMarketableArea = buildings.Sum(building => building.MarketableArea);
+        var measuredRent = buildings.Sum(building => building.RentForMeasuredArea);
+        var portfolioRate = totalRentedArea > 0 ? measuredRent / totalRentedArea : 0;
+
+        if (totalArea <= 0)
+        {
+            suggestions.Add(new("brak-powierzchni", Severity.Info, "Brak danych o powierzchni",
+                "Nie ma powierzchni do porównania. Sprawdź dane lokali; stanowiska infrastruktury bez metrażu nie są uwzględniane w obłożeniu."));
+        }
+        else
+        {
+            var lowestOccupancy = buildings
+                .Where(building => building.RentableArea > 0 && building.RentedArea / building.RentableArea < 0.7m)
+                .OrderBy(building => building.RentedArea / building.RentableArea)
+                .ThenBy(building => building.Building.Nazwa)
+                .FirstOrDefault();
+            if (lowestOccupancy is not null)
+            {
+                suggestions.Add(new("oblozenie", Severity.Warning, "Sprawdź niskie obłożenie",
+                    $"{lowestOccupancy.Building.Nazwa}: {lowestOccupancy.RentedArea / lowestOccupancy.RentableArea * 100:N2}% wynajętej powierzchni. Przeanalizuj przyczyny i ofertę dostępnych lokali."));
+            }
+
+            var largestVacancy = buildings
+                .Where(building => building.MarketableArea > 0)
+                .OrderByDescending(building => building.MarketableArea)
+                .ThenBy(building => building.Building.Nazwa)
+                .FirstOrDefault();
+            if (largestVacancy is not null)
+            {
+                suggestions.Add(new("wolna-powierzchnia", Severity.Info, "Priorytet dla oferty",
+                    $"{largestVacancy.Building.Nazwa} ma {largestVacancy.MarketableArea:N1} m² niewynajętej i niezarezerwowanej powierzchni. Sprawdź jej gotowość do wynajmu i promuj ofertę."));
+            }
+
+            if (totalMarketableArea > 0)
+            {
+                if (portfolioRate > 0)
+                {
+                    var potential = totalMarketableArea * portfolioRate;
+                    suggestions.Add(new("potencjal", Severity.Info, "Oszacuj potencjał oferty",
+                        $"{totalMarketableArea:N1} m² niezarezerwowanej powierzchni × {portfolioRate:N2} zł/m² daje orientacyjnie {potential:N0} zł/mies. ({potential * 12:N0} zł/rok). To szacunek, nie prognoza ani gwarantowany przychód."));
+                }
+                else
+                {
+                    suggestions.Add(new("brak-stawki", Severity.Info, "Zweryfikuj stawki",
+                        "Brak dodatniej średniej stawki z wynajętej powierzchni, dlatego nie można oszacować potencjału. Sprawdź dane umów i stawki ofertowe."));
+                }
+            }
+
+            if (totalRentedArea / totalArea >= 0.9m)
+            {
+                suggestions.Add(new("wysokie-oblozenie", Severity.Success, "Utrzymaj wysokie obłożenie",
+                    $"Wynajęto {totalRentedArea / totalArea * 100:N1}% powierzchni. Monitoruj terminy umów i przygotuj rozmowy o ich odnowieniu."));
+            }
+
+            var lowRateBuilding = buildings
+                .Where(building => building.RentedArea > 0 && building.AverageRate > 0 &&
+                    portfolioRate > 0 && building.AverageRate < portfolioRate * 0.8m)
+                .OrderBy(building => building.AverageRate)
+                .ThenBy(building => building.Building.Nazwa)
+                .FirstOrDefault();
+            if (lowRateBuilding is not null)
+            {
+                suggestions.Add(new("stawka", Severity.Info, "Porównaj stawki",
+                    $"{lowRateBuilding.Building.Nazwa}: {lowRateBuilding.AverageRate:N2} zł/m²/mies., poniżej 80% średniej portfela ({portfolioRate:N2} zł/m²). Sprawdź warunki umów i różnice między lokalami przed zmianą cen."));
+            }
+        }
+
+        var reservedCount = buildings.Sum(building => building.ReservedUnits);
+        if (reservedCount > 0)
+        {
+            suggestions.Add(new("rezerwacje", Severity.Warning, "Przejrzyj rezerwacje",
+                $"Liczba zarezerwowanych pozycji: {reservedCount}. Potwierdź zainteresowanie i dalsze kroki z najemcami; powierzchnia zarezerwowana nie jest liczona w potencjale oferty."));
+        }
+
+        if (buildings.Count > 0 && buildings.Any(building => building.RentableUnits == 0))
+        {
+            var withoutUnits = buildings.Count(building => building.RentableUnits == 0);
+            suggestions.Add(new("brak-lokali", Severity.Info, "Sprawdź kompletność danych",
+                $"Liczba aktywnych budynków bez pozycji do wynajęcia: {withoutUnits}. Zweryfikuj, czy należy uzupełnić ich ewidencję."));
+        }
+
+        return suggestions;
+    }
+
+    internal sealed record ManagementSuggestion(string Key, Severity Severity, string Title, string Description);
+
+    private static Color OccupancyColor(decimal occupancy) => occupancy switch
+    {
+        >= 90 => Color.Success,
+        >= 70 => Color.Info,
+        >= 40 => Color.Warning,
+        _ => Color.Error
+    };
+
+    private static string OccupancyLabel(decimal occupancy) => occupancy switch
+    {
+        >= 90 => "Wysokie",
+        >= 70 => "Dobre",
+        >= 40 => "Średnie",
+        _ => "Niskie"
+    };
+
+    internal sealed record BuildingStats(
+        Obiekt Building,
+        decimal RentableArea,
+        decimal RentedArea,
+        decimal MonthlyRent,
+        decimal RentForMeasuredArea,
+        decimal MarketableArea,
+        int RentableUnits,
+        int RentedUnits,
+        int EmptyUnits,
+        int ReservedUnits)
+    {
+        public decimal AvailableArea => Math.Max(0, RentableArea - RentedArea);
+        public decimal Occupancy => RentableArea > 0 ? Math.Round(RentedArea / RentableArea * 100, 1) : 0;
+        public decimal EmptyUnitPercent => RentableUnits > 0 ? (decimal)EmptyUnits / RentableUnits * 100 : 0;
+        public decimal AvailableAreaPercent => RentableArea > 0 ? AvailableArea / RentableArea * 100 : 0;
+        public decimal AverageRate => RentedArea > 0 ? RentForMeasuredArea / RentedArea : 0;
+    }
+}

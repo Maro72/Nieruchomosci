@@ -1,0 +1,10 @@
+.rental-location-popover {
+    width: max-content !important;
+    min-width: min(680px, calc(100vw - 32px)) !important;
+    max-width: calc(100vw - 32px) !important;
+    overflow-x: auto;
+}
+
+.rental-location-popover .mud-list-item {
+    white-space: nowrap;
+}

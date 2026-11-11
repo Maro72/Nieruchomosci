@@ -56,9 +56,19 @@ namespace Mieszkaniec.Services.Implementations
             }
             else
             {
-                context.LokaleWynajem.Update(model);
+                var lokal = await context.LokaleWynajem
+                    .FirstOrDefaultAsync(item => item.Id == model.Id);
+
+                if (lokal is null)
+                {
+                    return false;
+                }
+
+                context.Entry(lokal).CurrentValues.SetValues(model);
             }
-            return await context.SaveChangesAsync() > 0;
+
+            await context.SaveChangesAsync();
+            return true;
         }
 
         public async Task<bool> UsunAsync(int id)

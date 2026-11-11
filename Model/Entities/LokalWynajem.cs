@@ -22,7 +22,10 @@ namespace Mieszkaniec.Model.Entities
         public string TypLokalu { get; set; } = "Biuro";
 
         [NotMapped]
-        public bool CzyCzescWspolna => TypLokalu is "WC" or "Korytarz" or "Węzeł CO";
+        public bool CzyInfrastrukturaTechniczna => TypLokalu == "Infrastruktura techniczna";
+
+        [NotMapped]
+        public bool CzyCzescWspolna => TypLokalu is "WC" or "Korytarz" or "Węzeł CO" or "Kuchnia";
 
         [Required]
         [Column(TypeName = "decimal(18, 2)")] // Wymusza 2 miejsca po przecinku w bazie SQL
@@ -34,7 +37,9 @@ namespace Mieszkaniec.Model.Entities
 
         // Właściwość wyliczana - [NotMapped] mówi bazie, żeby NIE tworzyła dla tego kolumny
         [NotMapped]
-        public decimal CenaWynajmu => CzyCzescWspolna ? 0 : Math.Round(PowierzchniaM2 * CenaZaM2, 2);
+        public decimal CenaWynajmu => CzyCzescWspolna || CzyInfrastrukturaTechniczna
+            ? 0
+            : Math.Round(PowierzchniaM2 * CenaZaM2, 2);
 
         [Required]
         public string Status { get; set; } = "Wolny"; // "Wolny", "Wynajęty", "Zarezerwowany"

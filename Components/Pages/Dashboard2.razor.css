@@ -1,0 +1,196 @@
+.building-table-card {
+    overflow: hidden;
+    border-radius: 14px;
+    background: var(--mud-palette-surface);
+}
+
+.dashboard-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+    gap: 16px;
+}
+
+.occupancy-chart-scroll {
+    overflow-x: auto;
+}
+
+.occupancy-chart {
+    display: flex;
+    width: max-content;
+    min-width: 100%;
+    padding-top: 32px;
+}
+
+.occupancy-chart-axis {
+    display: flex;
+    height: 220px;
+    flex: 0 0 42px;
+    flex-direction: column;
+    justify-content: space-between;
+    color: var(--mud-palette-text-secondary);
+    font-size: 0.75rem;
+    text-align: right;
+    transform: translateY(-0.5em);
+}
+
+.occupancy-chart-bars {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    margin-left: 8px;
+    background-image: repeating-linear-gradient(to top, var(--mud-palette-divider) 0 1px, transparent 1px 55px);
+    background-size: 100% 220px;
+    background-repeat: no-repeat;
+    background-position: left top;
+}
+
+.occupancy-chart-column {
+    flex: 1 0 85px;
+    min-width: 85px;
+    text-align: center;
+}
+
+.occupancy-chart-track {
+    display: flex;
+    height: 220px;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.occupancy-chart-bar {
+    position: relative;
+    width: 48px;
+    background-color: #2563eb;
+}
+
+.occupancy-chart-value {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    padding-bottom: 4px;
+    color: var(--mud-palette-text-primary);
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+    transform: translateX(-50%);
+}
+
+.occupancy-chart-label {
+    padding: 8px 4px;
+    color: var(--mud-palette-text-secondary);
+    font-size: 0.75rem;
+    overflow-wrap: anywhere;
+}
+
+::deep .dashboard-loss-card {
+    border-color: #fecaca;
+    background-color: #fff5f5;
+}
+
+.building-table-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 22px 24px;
+    border-bottom: 1px solid var(--mud-palette-divider);
+}
+
+.building-table-title,
+.building-identity {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.building-table-search {
+    width: min(100%, 300px);
+}
+
+.building-table-empty {
+    padding: 40px 24px;
+    text-align: center;
+}
+
+.building-column {
+    min-width: 220px;
+}
+
+.building-metric {
+    display: flex;
+    min-width: 145px;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.building-metric-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.building-unit-divider {
+    padding: 0 3px;
+    color: var(--mud-palette-text-disabled);
+}
+
+.building-table-footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 48px;
+    padding: 0 20px;
+    border-top: 1px solid var(--mud-palette-divider);
+    color: var(--mud-palette-text-secondary);
+}
+
+::deep .building-performance-table .mud-table-container {
+    border-radius: 0;
+}
+
+::deep .building-performance-table .mud-table-head .mud-table-cell {
+    padding: 15px 16px;
+    background: var(--mud-palette-background-gray);
+    color: var(--mud-palette-text-secondary);
+    font-size: 0.69rem;
+    font-weight: 700;
+    letter-spacing: 0.055em;
+    white-space: nowrap;
+}
+
+::deep .building-performance-table .mud-table-body .mud-table-cell {
+    padding: 16px;
+    border-bottom-color: var(--mud-palette-divider);
+    vertical-align: middle;
+}
+
+::deep .building-performance-table .mud-table-row:last-child .mud-table-cell {
+    border-bottom: 0;
+}
+
+::deep .building-performance-table .mud-table-row:hover {
+    background: var(--mud-palette-action-default-hover);
+}
+
+@media (max-width: 700px) {
+    .dashboard-summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .building-table-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+        padding: 18px;
+    }
+
+    .building-table-search {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-summary-grid {
+        grid-template-columns: 1fr;
+    }
+}

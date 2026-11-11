@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using Mieszkaniec.Components.Pages.FBudynki;
 using Mieszkaniec.Model.Entities;
@@ -21,6 +22,7 @@ namespace Mieszkaniec.Components.Pages.Obiekty
         [Inject] protected IJSRuntime JSRuntime { get; set; } = default!; // Wstrzyknięcie JS do pobierania Excela
         [Inject] protected AuthenticationStateProvider AuthenticationStateProvider { get; set; } = default!;
         [Inject] protected ISnackbar Snackbar { get; set; } = default!;
+        [Inject] protected ILogger<FBudynki> Logger { get; set; } = default!;
 
         protected List<Obiekt> WszystkieObiekty { get; set; } = new();
         protected List<Obiekt> FiltrowanaListaObiektow { get; set; } = new();
@@ -207,9 +209,28 @@ namespace Mieszkaniec.Components.Pages.Obiekty
                 }
                 else if (OczekujacaAkcja == TypAkcji.Zapis)
                 {
-                    await ObiektService.SaveAsync(ObiektDoPrzetworzenia);
-                    WybranyObiekt = null;
-                    await OdswiezDane();
+                    var czyNowyObiekt = ObiektDoPrzetworzenia.Id == 0;
+                    try
+                    {
+                        var zapisano = await ObiektService.SaveAsync(ObiektDoPrzetworzenia);
+                        if (zapisano)
+                        {
+                            Snackbar.Add(
+                                czyNowyObiekt ? "Budynek został zapisany." : "Zmiany w budynku zostały zapisane.",
+                                Severity.Success);
+                            WybranyObiekt = null;
+                            await OdswiezDane();
+                        }
+                        else
+                        {
+                            Snackbar.Add("Nie udało się zapisać budynku.", Severity.Error);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError(ex, "Nie udało się zapisać budynku {BuildingName}.", ObiektDoPrzetworzenia.Nazwa);
+                        Snackbar.Add($"Nie udało się zapisać budynku: {ex.Message}", Severity.Error);
+                    }
                 }
             }
             ObiektDoPrzetworzenia = null;

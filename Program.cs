@@ -40,51 +40,51 @@ builder.Services.AddAuthorizationCore(options =>
         return permNames.Any(p => user.HasClaim("Permission", p));
     }
 
-    // Nowe polityki granularne:
+    // Uprawnienia edycji pozwalają też na odczyt, ale nie przenoszą dostępu między modułami.
     options.AddPolicy("Budynki.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Budynki.Odczyt", "Budynki.Edycja", "OdczytBudynkow", "ZarzadzanieBudynkami")));
     options.AddPolicy("Budynki.Edycja", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Budynki.Edycja", "ZarzadzanieBudynkami")));
-    options.AddPolicy("Dashboard.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Dashboard.Odczyt", "Budynki.Edycja", "ZarzadzanieBudynkami")));
+    options.AddPolicy("Dashboard.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Dashboard.Odczyt")));
     options.AddPolicy("Nieruchomosci.Menu", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Budynki.Odczyt", "Budynki.Edycja", "OdczytBudynkow", "ZarzadzanieBudynkami", "Dashboard.Odczyt")));
-    options.AddPolicy("HistoriaUsterek.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "HistoriaUsterek.Odczyt", "Awarie.Odczyt", "Budynki.Edycja", "ZarzadzanieBudynkami")));
-    options.AddPolicy("Techniczny.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Awarie.Odczyt", "Przeglady.Odczyt", "Przeglady.Edycja", "Remonty.Odczyt", "Remonty.Edycja", "HistoriaUsterek.Odczyt", "Awarie.Obsluga", "ZarzadzanieBudynkami")));
-    options.AddPolicy("Lokale.Zarzadzanie", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Lokale.Zarzadzanie", "ZarzadzanieUmowami")));
-    options.AddPolicy("Lokale.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Lokale.Odczyt", "Lokale.Edycja", "Lokale.Zarzadzanie", "ZarzadzanieUmowami")));
-    options.AddPolicy("Lokale.Edycja", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Lokale.Edycja", "Lokale.Zarzadzanie", "ZarzadzanieUmowami")));
-    options.AddPolicy("Awarie.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Awarie.Odczyt", "Awarie.Obsluga", "OdczytBudynkow", "ZarzadzanieBudynkami")));
-    options.AddPolicy("Awarie.Obsluga", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Awarie.Obsluga", "OdczytBudynkow", "ZarzadzanieBudynkami")));
-    options.AddPolicy("Przeglady.Zarzadzanie", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Przeglady.Zarzadzanie", "OdczytBudynkow", "ZarzadzanieBudynkami")));
-    options.AddPolicy("Przeglady.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Przeglady.Odczyt", "Przeglady.Edycja", "Przeglady.Zarzadzanie", "OdczytBudynkow", "ZarzadzanieBudynkami")));
-    options.AddPolicy("Przeglady.Edycja", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Przeglady.Edycja", "Przeglady.Zarzadzanie", "ZarzadzanieBudynkami")));
-    options.AddPolicy("Remonty.Zarzadzanie", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Remonty.Zarzadzanie", "OdczytBudynkow", "ZarzadzanieBudynkami")));
-    options.AddPolicy("Remonty.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Remonty.Odczyt", "Remonty.Edycja", "Remonty.Zarzadzanie", "OdczytBudynkow", "ZarzadzanieBudynkami")));
-    options.AddPolicy("Remonty.Edycja", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Remonty.Edycja", "Remonty.Zarzadzanie", "ZarzadzanieBudynkami")));
-    options.AddPolicy("Najemcy.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Najemcy.Odczyt", "Najemcy.Edycja", "Najemcy.Zarzadzanie", "ZarzadzanieUmowami")));
-    options.AddPolicy("Najemcy.Edycja", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Najemcy.Edycja", "Najemcy.Zarzadzanie", "ZarzadzanieUmowami")));
-    options.AddPolicy("Najemcy.Zarzadzanie", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Najemcy.Zarzadzanie", "ZarzadzanieUmowami")));
-    options.AddPolicy("Umowy.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Umowy.Odczyt", "Umowy.Zarzadzanie", "ZarzadzanieUmowami")));
-    options.AddPolicy("Umowy.Zarzadzanie", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Umowy.Zarzadzanie", "ZarzadzanieUmowami")));
+    options.AddPolicy("HistoriaUsterek.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "HistoriaUsterek.Odczyt")));
+    options.AddPolicy("Techniczny.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Awarie.Odczyt", "Awarie.Obsluga", "Przeglady.Odczyt", "Przeglady.Edycja", "Przeglady.Zarzadzanie", "Remonty.Odczyt", "Remonty.Edycja", "Remonty.Zarzadzanie", "HistoriaUsterek.Odczyt")));
+    options.AddPolicy("Lokale.Zarzadzanie", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Lokale.Zarzadzanie")));
+    options.AddPolicy("Lokale.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Lokale.Odczyt", "Lokale.Edycja", "Lokale.Zarzadzanie")));
+    options.AddPolicy("Lokale.Edycja", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Lokale.Edycja", "Lokale.Zarzadzanie")));
+    options.AddPolicy("Awarie.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Awarie.Odczyt", "Awarie.Obsluga")));
+    options.AddPolicy("Awarie.Obsluga", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Awarie.Obsluga")));
+    options.AddPolicy("Przeglady.Zarzadzanie", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Przeglady.Zarzadzanie")));
+    options.AddPolicy("Przeglady.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Przeglady.Odczyt", "Przeglady.Edycja", "Przeglady.Zarzadzanie")));
+    options.AddPolicy("Przeglady.Edycja", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Przeglady.Edycja", "Przeglady.Zarzadzanie")));
+    options.AddPolicy("Remonty.Zarzadzanie", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Remonty.Zarzadzanie")));
+    options.AddPolicy("Remonty.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Remonty.Odczyt", "Remonty.Edycja", "Remonty.Zarzadzanie")));
+    options.AddPolicy("Remonty.Edycja", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Remonty.Edycja", "Remonty.Zarzadzanie")));
+    options.AddPolicy("Najemcy.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Najemcy.Odczyt", "Najemcy.Edycja", "Najemcy.Zarzadzanie")));
+    options.AddPolicy("Najemcy.Edycja", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Najemcy.Edycja", "Najemcy.Zarzadzanie")));
+    options.AddPolicy("Najemcy.Zarzadzanie", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Najemcy.Zarzadzanie")));
+    options.AddPolicy("Umowy.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Umowy.Odczyt", "Umowy.Zarzadzanie")));
+    options.AddPolicy("Umowy.Zarzadzanie", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Umowy.Zarzadzanie")));
     options.AddPolicy("Liczniki.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Liczniki.Odczyt", "Liczniki.Edycja")));
     options.AddPolicy("Liczniki.Edycja", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Liczniki.Edycja")));
     options.AddPolicy("Cieplo.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Cieplo.Odczyt", "Cieplo.Edycja")));
     options.AddPolicy("Cieplo.Edycja", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Cieplo.Edycja")));
     options.AddPolicy("Liczniki.Menu", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Liczniki.Odczyt", "Liczniki.Edycja", "Cieplo.Odczyt", "Cieplo.Edycja")));
-    options.AddPolicy("Najem.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Umowy.Odczyt", "Umowy.Zarzadzanie", "Najemcy.Odczyt", "Najemcy.Edycja", "Lokale.Odczyt", "Lokale.Edycja", "ZarzadzanieUmowami")));
-    options.AddPolicy("Uzytkownicy.Zarzadzanie", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Uzytkownicy.Zarzadzanie", "ZarzadzanieUzytkownikami")));
-    options.AddPolicy("Uzytkownicy.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Uzytkownicy.Odczyt", "Uzytkownicy.Edycja", "Uzytkownicy.Zarzadzanie", "ZarzadzanieUzytkownikami")));
-    options.AddPolicy("Uzytkownicy.Edycja", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Uzytkownicy.Edycja", "Uzytkownicy.Zarzadzanie", "ZarzadzanieUzytkownikami")));
-    options.AddPolicy("Uprawnienia.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Uprawnienia.Odczyt", "Uprawnienia.Edycja", "Uprawnienia.Nadawanie", "ZarzadzanieUzytkownikami")));
-    options.AddPolicy("Uprawnienia.Edycja", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Uprawnienia.Edycja", "Uprawnienia.Nadawanie", "ZarzadzanieUzytkownikami")));
-    options.AddPolicy("Administracja.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Uzytkownicy.Odczyt", "Uzytkownicy.Edycja", "Uzytkownicy.Zarzadzanie", "Uprawnienia.Edycja", "Uprawnienia.Nadawanie", "ZarzadzanieUzytkownikami", "Liczniki.Odczyt", "Liczniki.Edycja")));
-    options.AddPolicy("HistoriaLogowan.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Uzytkownicy.Zarzadzanie", "ZarzadzanieUzytkownikami")));
+    options.AddPolicy("Najem.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Umowy.Odczyt", "Umowy.Zarzadzanie", "Najemcy.Odczyt", "Najemcy.Edycja", "Najemcy.Zarzadzanie", "Lokale.Odczyt", "Lokale.Edycja", "Lokale.Zarzadzanie")));
+    options.AddPolicy("Uzytkownicy.Zarzadzanie", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Uzytkownicy.Zarzadzanie")));
+    options.AddPolicy("Uzytkownicy.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Uzytkownicy.Odczyt", "Uzytkownicy.Edycja", "Uzytkownicy.Zarzadzanie")));
+    options.AddPolicy("Uzytkownicy.Edycja", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Uzytkownicy.Edycja", "Uzytkownicy.Zarzadzanie")));
+    options.AddPolicy("Uprawnienia.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Uprawnienia.Odczyt", "Uprawnienia.Edycja", "Uprawnienia.Nadawanie")));
+    options.AddPolicy("Uprawnienia.Edycja", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Uprawnienia.Edycja", "Uprawnienia.Nadawanie")));
+    options.AddPolicy("Administracja.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Uzytkownicy.Odczyt", "Uzytkownicy.Edycja", "Uzytkownicy.Zarzadzanie", "Uprawnienia.Odczyt", "Uprawnienia.Edycja", "Uprawnienia.Nadawanie", "Liczniki.Odczyt", "Liczniki.Edycja")));
+    options.AddPolicy("HistoriaLogowan.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Uzytkownicy.Edycja", "Uzytkownicy.Zarzadzanie")));
     options.AddPolicy("Konfiguracja.Odczyt", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Konfiguracja.Odczyt", "Konfiguracja.Edycja")));
     options.AddPolicy("Konfiguracja.Edycja", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Konfiguracja.Edycja")));
-    options.AddPolicy("Uprawnienia.Nadawanie", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Uprawnienia.Nadawanie", "ZarzadzanieUzytkownikami")));
+    options.AddPolicy("Uprawnienia.Nadawanie", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Uprawnienia.Nadawanie")));
 
-    // Kompatybilność ze starszymi nazwami polityk:
-    options.AddPolicy("ZarzadzanieUzytkownikami", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Uzytkownicy.Zarzadzanie", "Uprawnienia.Nadawanie", "ZarzadzanieUzytkownikami")));
+    // Starsze nazwy polityk zachowują dostęp wyłącznie do swojego modułu.
+    options.AddPolicy("ZarzadzanieUzytkownikami", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Uzytkownicy.Zarzadzanie")));
     options.AddPolicy("ZarzadzanieBudynkami", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Budynki.Edycja", "ZarzadzanieBudynkami")));
-    options.AddPolicy("ZarzadzanieUmowami", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Umowy.Zarzadzanie", "ZarzadzanieUmowami")));
-    options.AddPolicy("OdczytBudynkow", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Budynki.Odczyt", "Awarie.Odczyt", "OdczytBudynkow", "ZarzadzanieBudynkami")));
+    options.AddPolicy("ZarzadzanieUmowami", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Umowy.Zarzadzanie")));
+    options.AddPolicy("OdczytBudynkow", policy => policy.RequireAssertion(ctx => HasPerm(ctx.User, "Budynki.Odczyt", "Budynki.Edycja", "OdczytBudynkow", "ZarzadzanieBudynkami")));
 });
 
 // Rejestracja z podziaem na interfejs oraz serwis implementujcy

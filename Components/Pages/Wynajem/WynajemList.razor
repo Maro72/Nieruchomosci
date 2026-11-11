@@ -111,22 +111,33 @@
                 </CellTemplate>
             </MudBlazor.TemplateColumn>
             <MudBlazor.PropertyColumn T="LokalWynajem" TProperty="string" Property="x => x.NumerLokalu" Title="Numer"
-                                      Width="70px"
-                                      HeaderStyle="width:70px; min-width:70px; max-width:70px; white-space:nowrap;"
-                                      CellStyle="width:70px; min-width:70px; max-width:70px; white-space:nowrap;" />
+                                      Width="110px"
+                                      HeaderStyle="width:110px; min-width:110px; max-width:110px; white-space:nowrap;"
+                                      CellStyle="width:110px; min-width:110px; max-width:110px; white-space:nowrap;" />
             <MudBlazor.TemplateColumn T="LokalWynajem" Title="Powierzchnia wynajęta">
                 <CellTemplate Context="ctx">
-                    @($"{ctx.Item.PowierzchniaWynajetaM2:N2} m²")
+                    @(ctx.Item.CzyInfrastrukturaTechniczna ? "—" : $"{ctx.Item.PowierzchniaWynajetaM2:N2} m²")
                 </CellTemplate>
             </MudBlazor.TemplateColumn>
             <MudBlazor.TemplateColumn T="LokalWynajem" Title="Powierzchnia pozostała">
                 <CellTemplate Context="ctx">
-                    <span class="@(ctx.Item.PowierzchniaDostepnaM2 == 0 ? "text-danger fw-semibold" : null)">
-                        @($"{ctx.Item.PowierzchniaDostepnaM2:N2} m²")
-                    </span>
+                    @if (ctx.Item.CzyInfrastrukturaTechniczna)
+                    {
+                        <span>—</span>
+                    }
+                    else
+                    {
+                        <span class="@(ctx.Item.PowierzchniaDostepnaM2 == 0 ? "text-danger fw-semibold" : null)">
+                            @($"{ctx.Item.PowierzchniaDostepnaM2:N2} m²")
+                        </span>
+                    }
                 </CellTemplate>
             </MudBlazor.TemplateColumn>
-            <MudBlazor.PropertyColumn T="LokalWynajem" TProperty="decimal" Property="x => x.CenaZaM2" Title="Cena / m²" Format="C2" />
+            <MudBlazor.TemplateColumn T="LokalWynajem" Title="Cena / m²">
+                <CellTemplate Context="ctx">
+                    @(ctx.Item.CzyInfrastrukturaTechniczna ? "—" : ctx.Item.CenaZaM2.ToString("C2"))
+                </CellTemplate>
+            </MudBlazor.TemplateColumn>
             <MudBlazor.TemplateColumn T="LokalWynajem" Title="Wartość najmu" CellStyle="white-space:nowrap; font-size:0.9rem;">
                 <CellTemplate Context="ctx">
                     @ctx.Item.CzynszWynajetyMiesiecznie.ToString("C2")

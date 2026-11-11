@@ -52,7 +52,9 @@ public class UmowaNajmu
 
     [NotMapped]
     public decimal CalkowitaPowierzchniaM2 =>
-        WynajmowaneLokale?.Sum(wl => wl.LokalWynajem is { CzyCzescWspolna: false } ? wl.PowierzchniaWynajetaM2 : 0) ?? 0;
+        WynajmowaneLokale?.Sum(wl => wl.LokalWynajem is { CzyCzescWspolna: false, CzyInfrastrukturaTechniczna: false }
+            ? wl.PowierzchniaWynajetaM2
+            : 0) ?? 0;
 
     [NotMapped]
     public decimal AktualnyCzynszMiesieczny
@@ -68,8 +70,11 @@ public class UmowaNajmu
 
             if (najnowszyAneks != null)
             {
-                // MNOŻYMY stawkę z aneksu przez całkowity metraż!
-                return najnowszyAneks.NowaStawkaCzynszu.Value * CalkowitaPowierzchniaM2;
+                var czynszInfrastrukturyRyczaltowej = WynajmowaneLokale?
+                    .Where(relacja => relacja.LokalWynajem?.CzyInfrastrukturaTechniczna == true)
+                    .Sum(relacja => relacja.WartoscCzynszuMiesiecznego) ?? 0;
+                return najnowszyAneks.NowaStawkaCzynszu.Value * CalkowitaPowierzchniaM2
+                    + czynszInfrastrukturyRyczaltowej;
             }
 
             // 2. Jeśli nie ma aneksów, zsumuj wynegocjowane kwoty ze wszystkich przypisanych lokali

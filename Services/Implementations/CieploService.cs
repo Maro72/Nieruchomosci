@@ -469,19 +469,31 @@ public sealed class CieploService : ICieploService
     public async Task<List<OdczytCiepla>> PobierzOdczytyAsync()
     {
         await using var db = await _dbContextFactory.CreateDbContextAsync();
-        return await db.OdczytyCiepla
+        var odczyty = await db.OdczytyCiepla
             .Include(x => x.Obiekt)
             .AsNoTracking()
             .OrderByDescending(x => x.Rok)
             .ThenByDescending(x => x.Miesiac)
             .ThenBy(x => x.NumerLicznika)
             .ToListAsync();
+        var liczniki = DopasowanieLicznikow.UtworzIndeks(
+            await db.Liczniki.Include(x => x.Obiekt).AsNoTracking().ToListAsync());
+        foreach (var odczyt in odczyty)
+        {
+            DopasowanieLicznikow.Przypisz(odczyt, liczniki);
+        }
+        return odczyty;
     }
 
     public async Task ZapiszOdczytAsync(OdczytCiepla odczyt)
     {
         ArgumentNullException.ThrowIfNull(odczyt);
         await using var db = await _dbContextFactory.CreateDbContextAsync();
+        var liczniki = DopasowanieLicznikow.UtworzIndeks(await db.Liczniki.AsNoTracking().ToListAsync());
+        if (!DopasowanieLicznikow.Przypisz(odczyt, liczniki))
+        {
+            throw new InvalidOperationException($"Licznik „{odczyt.NumerLicznika}” nie istnieje w ewidencji liczników.");
+        }
         odczyt.Obiekt = null;
         if (odczyt.Id == 0)
         {
@@ -499,14 +511,19 @@ public sealed class CieploService : ICieploService
     {
         ArgumentNullException.ThrowIfNull(odczyty);
         var lista = odczyty.ToList();
-        if (lista.GroupBy(x => (x.NumerLicznika.Trim(), x.Rok, x.Miesiac)).Any(g => g.Count() > 1))
+        if (lista.GroupBy(x => (x.NumerLicznika.Trim().ToUpperInvariant(), x.Rok, x.Miesiac)).Any(g => g.Count() > 1))
         {
             throw new InvalidOperationException("Numer licznika powtarza się w tym samym okresie.");
         }
 
         await using var db = await _dbContextFactory.CreateDbContextAsync();
+        var liczniki = DopasowanieLicznikow.UtworzIndeks(await db.Liczniki.AsNoTracking().ToListAsync());
         foreach (var wiersz in lista)
         {
+            if (!DopasowanieLicznikow.Przypisz(wiersz, liczniki))
+            {
+                throw new InvalidOperationException($"Licznik „{wiersz.NumerLicznika}” nie istnieje w ewidencji liczników.");
+            }
             var numer = wiersz.NumerLicznika.Trim();
             var odczyt = await db.OdczytyCiepla.FirstOrDefaultAsync(x =>
                 x.NumerLicznika == numer && x.Rok == wiersz.Rok && x.Miesiac == wiersz.Miesiac);

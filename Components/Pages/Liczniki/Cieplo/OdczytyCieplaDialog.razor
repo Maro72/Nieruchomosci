@@ -1,5 +1,6 @@
 @using Mieszkaniec.Model.Entities
 @using Mieszkaniec.Services.Interfaces
+@using Mieszkaniec.Services.Implementations
 @using Microsoft.AspNetCore.Components.Forms
 @using MudBlazor
 @inject ICieploService CieploService
@@ -76,8 +77,10 @@
                     <MudText Typo="Typo.overline" Color="Color.Primary">Liczniki (@wiersze.Count)</MudText>
                     <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.Add" OnClick="DodajWiersz">Dodaj licznik</MudButton>
                 </div>
+                <MudText Typo="Typo.caption">Zaznacz liczniki, których odczyty chcesz zapisać.</MudText>
                 <MudTable Items="wiersze" Dense="true" Hover="true" Elevation="0" Breakpoint="Breakpoint.None" Class="ct-table">
                         <HeaderContent>
+                            <MudTh>Zapisz</MudTh>
                             <MudTh Style="width:14%;">Nr licznika</MudTh>
                             <MudTh Style="width:18%;">Budynek</MudTh>
                             <MudTh Style="width:13%; text-align:right;">Stan początkowy</MudTh>
@@ -89,15 +92,22 @@
                         </HeaderContent>
                         <RowTemplate Context="w">
                             <MudTd>
-                                <MudTextField @bind-Value="w.NumerLicznika" Variant="Variant.Outlined" Margin="Margin.Dense" Class="ct-meter" />
+                                <MudCheckBox T="bool" Value="@wybrane.Contains(w)" ValueChanged="@(value => UstawWybrany(w, value))" />
                             </MudTd>
                             <MudTd>
-                                <MudSelect T="int?" @bind-Value="w.ObiektId" Placeholder="Wybierz budynek" Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true">
-                                    @foreach (var o in Obiekty)
+                                <MudSelect T="string" @bind-Value="w.NumerLicznika" @bind-Value:after="@(() => PrzypiszLicznik(w))" Variant="Variant.Outlined" Margin="Margin.Dense" Class="ct-meter">
+                                    @if (!Liczniki.Any(x => x.NumerLicznika == w.NumerLicznika) && !string.IsNullOrWhiteSpace(w.NumerLicznika))
                                     {
-                                        <MudSelectItem T="int?" Value="@o.Id">@o.Nazwa</MudSelectItem>
+                                        <MudSelectItem T="string" Value="@w.NumerLicznika">@w.NumerLicznika (brak w ewidencji)</MudSelectItem>
+                                    }
+                                    @foreach (var licznik in Liczniki)
+                                    {
+                                        <MudSelectItem T="string" Value="@licznik.NumerLicznika">@licznik.NumerLicznika — @(licznik.Obiekt?.Nazwa ?? "Nieprzypisany")</MudSelectItem>
                                     }
                                 </MudSelect>
+                            </MudTd>
+                            <MudTd>
+                                <MudText>@(w.Obiekt?.Nazwa ?? "Nieprzypisany")</MudText>
                             </MudTd>
                             <MudTd>
                                 <MudNumericField @bind-Value="w.StanPoczatkowy" @bind-Value:after="() => Przelicz(w)" HideSpinButtons="true" Format="N0" Variant="Variant.Outlined" Margin="Margin.Dense" Class="ct-num" />
@@ -111,14 +121,14 @@
                             </MudTd>
                             <MudTd Style="text-align:right;"><span class="ct-sum">@w.IloscDoZafakturowania.ToString("N0")</span> <span class="ct-unit">GJ</span></MudTd>
                             <MudTd>
-                                <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline" Color="Color.Error" Size="Size.Small" OnClick="@(() => wiersze.Remove(w))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline" Color="Color.Error" Size="Size.Small" OnClick="@(() => UsunWiersz(w))" />
                             </MudTd>
                         </RowTemplate>
                         <FooterContent>
-                            <MudTd colspan="4" Style="text-align:right; font-weight:600;">Razem</MudTd>
-                            <MudTd Style="text-align:right; font-weight:600;">@wiersze.Sum(x => x.ZuzycieGJ).ToString("N0") <span class="ct-unit">GJ</span></MudTd>
-                            <MudTd Style="text-align:right; font-weight:600;">@wiersze.Sum(x => x.Korekta ?? 0).ToString("N0")</MudTd>
-                            <MudTd Style="text-align:right; font-weight:600;"><span class="ct-sum">@wiersze.Sum(x => x.IloscDoZafakturowania).ToString("N0")</span> <span class="ct-unit">GJ</span></MudTd>
+                            <MudTd colspan="5" Style="text-align:right; font-weight:600;">Razem zaznaczone</MudTd>
+                            <MudTd Style="text-align:right; font-weight:600;">@wiersze.Where(wybrane.Contains).Sum(x => x.ZuzycieGJ).ToString("N0") <span class="ct-unit">GJ</span></MudTd>
+                            <MudTd Style="text-align:right; font-weight:600;">@wiersze.Where(wybrane.Contains).Sum(x => x.Korekta ?? 0).ToString("N0")</MudTd>
+                            <MudTd Style="text-align:right; font-weight:600;"><span class="ct-sum">@wiersze.Where(wybrane.Contains).Sum(x => x.IloscDoZafakturowania).ToString("N0")</span> <span class="ct-unit">GJ</span></MudTd>
                             <MudTd></MudTd>
                         </FooterContent>
                 </MudTable>
@@ -146,13 +156,14 @@
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
 
     [Parameter] public IEnumerable<OdczytCiepla> Istniejace { get; set; } = Array.Empty<OdczytCiepla>();
-    [Parameter] public IEnumerable<Obiekt> Obiekty { get; set; } = Array.Empty<Obiekt>();
+    [Parameter] public IEnumerable<Licznik> Liczniki { get; set; } = Array.Empty<Licznik>();
 
     private readonly DialogOptions DialogOptions = new() { MaxWidth = MaxWidth.ExtraExtraLarge, FullWidth = true, CloseButton = true };
 
     private int rok = DateTime.Now.AddMonths(-1).Year;
     private int miesiac = DateTime.Now.AddMonths(-1).Month;
     private List<OdczytCiepla> wiersze = new();
+    private readonly HashSet<OdczytCiepla> wybrane = new();
     private string? blad;
     private bool trwaImport;
 
@@ -164,42 +175,24 @@
     private void OnRokChanged(int value) { rok = value; WczytajWiersze(); }
     private void OnMiesiacChanged(int value) { miesiac = value; WczytajWiersze(); }
 
-    // Dla okresu z zapisanymi odczytami pokazuje je; w przeciwnym razie liczniki z ostatniego wcześniejszego okresu.
     private void WczytajWiersze()
     {
-        var wszystkie = Istniejace.ToList();
-        var zapisane = wszystkie.Where(x => x.Rok == rok && x.Miesiac == miesiac).ToList();
-        if (zapisane.Count > 0)
+        wiersze = DopasowanieLicznikow.PrzygotujOdczytyCiepla(Liczniki, Istniejace, rok, miesiac);
+        wybrane.Clear();
+        foreach (var wiersz in wiersze.Where(w => Istniejace.Any(x =>
+                     x.Rok == rok && x.Miesiac == miesiac &&
+                     string.Equals(x.NumerLicznika.Trim(), w.NumerLicznika.Trim(), StringComparison.OrdinalIgnoreCase))))
         {
-            wiersze = zapisane.Select(x => Kopia(x, x.StanPoczatkowy, x.StanKoncowy, x.Korekta)).ToList();
-            return;
+            wybrane.Add(wiersz);
         }
-
-        var kodOkresu = rok * 12 + miesiac;
-        var poprzedni = wszystkie.Where(x => x.Rok * 12 + x.Miesiac < kodOkresu)
-            .OrderByDescending(x => x.Rok * 12 + x.Miesiac)
-            .FirstOrDefault();
-        wiersze = poprzedni is null
-            ? new List<OdczytCiepla>()
-            : wszystkie.Where(x => x.Rok == poprzedni.Rok && x.Miesiac == poprzedni.Miesiac)
-                .Select(x => Kopia(x, x.StanKoncowy, x.StanKoncowy, null))
-                .ToList();
-        wiersze.ForEach(Przelicz);
     }
 
-    private OdczytCiepla Kopia(OdczytCiepla x, decimal poczatkowy, decimal koncowy, decimal? korekta) => new()
+    private void PrzypiszLicznik(OdczytCiepla odczyt)
     {
-        NumerLicznika = x.NumerLicznika,
-        ObiektId = x.ObiektId,
-        Rok = rok,
-        Miesiac = miesiac,
-        StanPoczatkowy = poczatkowy,
-        StanKoncowy = koncowy,
-        Korekta = korekta,
-        ZuzycieGJ = x.Rok == rok && x.Miesiac == miesiac ? x.ZuzycieGJ : koncowy - poczatkowy,
-        IloscDoZafakturowania = x.Rok == rok && x.Miesiac == miesiac ? x.IloscDoZafakturowania : koncowy - poczatkowy,
-        Uwagi = x.Rok == rok && x.Miesiac == miesiac ? x.Uwagi : null
-    };
+        odczyt.ObiektId = null;
+        odczyt.Obiekt = null;
+        DopasowanieLicznikow.Przypisz(odczyt, DopasowanieLicznikow.UtworzIndeks(Liczniki));
+    }
 
     private async Task WczytajZPliku(IBrowserFile? plik)
     {
@@ -222,22 +215,17 @@
             rok = wynik.Rok;
             miesiac = wynik.Miesiac;
 
-            // Budynek zostaje przypisany na podstawie wcześniej zapisanych liczników o tym samym numerze.
-            var budynki = Istniejace
-                .Where(x => x.ObiektId.HasValue)
-                .GroupBy(x => x.NumerLicznika)
-                .ToDictionary(g => g.Key, g => g.First().ObiektId);
+            var liczniki = DopasowanieLicznikow.UtworzIndeks(Liczniki);
             foreach (var odczyt in wynik.Odczyty)
             {
                 odczyt.Rok = rok;
                 odczyt.Miesiac = miesiac;
-                if (budynki.TryGetValue(odczyt.NumerLicznika, out var obiektId))
-                {
-                    odczyt.ObiektId = obiektId;
-                }
+                DopasowanieLicznikow.Przypisz(odczyt, liczniki);
             }
 
             wiersze = wynik.Odczyty;
+            wybrane.Clear();
+            wybrane.UnionWith(wiersze);
             Snackbar.Add($"Wczytano {wiersze.Count} liczników za {miesiac:D2}/{rok}. Zweryfikuj dane i zapisz.", Severity.Info);
         }
         catch (Exception ex)
@@ -250,10 +238,28 @@
         }
     }
 
-    private void DodajWiersz() => wiersze.Add(new OdczytCiepla { Rok = rok, Miesiac = miesiac });
-
-    private static void Przelicz(OdczytCiepla w)
+    private void DodajWiersz()
     {
+        var wiersz = new OdczytCiepla { Rok = rok, Miesiac = miesiac };
+        wiersze.Add(wiersz);
+        wybrane.Add(wiersz);
+    }
+
+    private void UstawWybrany(OdczytCiepla wiersz, bool value)
+    {
+        if (value) wybrane.Add(wiersz);
+        else wybrane.Remove(wiersz);
+    }
+
+    private void UsunWiersz(OdczytCiepla wiersz)
+    {
+        wybrane.Remove(wiersz);
+        wiersze.Remove(wiersz);
+    }
+
+    private void Przelicz(OdczytCiepla w)
+    {
+        wybrane.Add(w);
         w.ZuzycieGJ = w.StanKoncowy - w.StanPoczatkowy;
         w.IloscDoZafakturowania = w.ZuzycieGJ + (w.Korekta ?? 0);
     }
@@ -261,32 +267,42 @@
     private void Submit()
     {
         blad = null;
-        if (wiersze.Count == 0)
+        var doZapisu = wiersze.Where(wybrane.Contains).ToList();
+        if (doZapisu.Count == 0)
         {
-            blad = "Dodaj co najmniej jeden licznik.";
+            blad = "Zaznacz co najmniej jeden licznik.";
             return;
         }
 
-        if (wiersze.Any(x => string.IsNullOrWhiteSpace(x.NumerLicznika)))
+        if (doZapisu.Any(x => string.IsNullOrWhiteSpace(x.NumerLicznika)))
         {
             blad = "Każdy wiersz musi mieć numer licznika.";
             return;
         }
 
-        if (wiersze.GroupBy(x => x.NumerLicznika.Trim()).Any(g => g.Count() > 1))
+        var liczniki = DopasowanieLicznikow.UtworzIndeks(Liczniki);
+        var nieznane = doZapisu.Where(x => !liczniki.ContainsKey(x.NumerLicznika.Trim()))
+            .Select(x => x.NumerLicznika).ToList();
+        if (nieznane.Count > 0)
+        {
+            blad = $"Brak liczników w ewidencji: {string.Join(", ", nieznane)}. Dodaj je w administracji lub usuń wiersze.";
+            return;
+        }
+
+        if (doZapisu.GroupBy(x => x.NumerLicznika.Trim(), StringComparer.OrdinalIgnoreCase).Any(g => g.Count() > 1))
         {
             blad = "Numery liczników nie mogą się powtarzać.";
             return;
         }
 
-        if (wiersze.Any(x => x.StanKoncowy < x.StanPoczatkowy))
+        if (doZapisu.Any(x => x.StanKoncowy < x.StanPoczatkowy))
         {
             blad = "Stan końcowy nie może być mniejszy od początkowego.";
             return;
         }
 
-        wiersze.ForEach(w => { w.Rok = rok; w.Miesiac = miesiac; });
-        MudDialog.Close(DialogResult.Ok(wiersze));
+        doZapisu.ForEach(w => { w.Rok = rok; w.Miesiac = miesiac; });
+        MudDialog.Close(DialogResult.Ok(doZapisu));
     }
 
     private void Cancel() => MudDialog.Cancel();

@@ -9,7 +9,7 @@
                 <MudSelect T="int?" @bind-Value="wybranyLicznikId" Label="Licznik" Required="true">
                     @foreach (var licznik in Liczniki.OrderBy(x => x.Obiekt?.Nazwa).ThenBy(x => x.NumerLicznika))
                     {
-                        <MudSelectItem T="int?" Value="@licznik.Id">@licznik.NumerLicznika</MudSelectItem>
+                        <MudSelectItem T="int?" Value="@licznik.Id">@licznik.NumerLicznika — @(licznik.Obiekt?.Nazwa ?? "Nieprzypisany")</MudSelectItem>
                     }
                 </MudSelect>
             }

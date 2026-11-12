@@ -8,6 +8,7 @@
 @inject ICieploService CieploService
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
+@inject ILicznikService LicznikService
 
 <MudText Typo="Typo.h5" Class="mb-4">Liczniki i Rozliczenia Ciepła</MudText>
 
@@ -300,7 +301,7 @@
 
     private List<OdczytCiepla> odczyty = new();
     private List<FakturaCiepla> faktury = new();
-    private List<Obiekt> obiekty = new();
+    private List<Licznik> liczniki = new();
     private PodsumowanieMiesiacaCiepla? wybranyMiesiac;
     private int aktywnaZakladka;
     private int RokWidoku = DateTime.Now.Year;
@@ -418,12 +419,12 @@
 
     protected override async Task OnInitializedAsync()
     {
-        obiekty = await CieploService.PobierzObiektyAsync();
         await Odswiez();
     }
 
     private async Task Odswiez()
     {
+        liczniki = await LicznikService.PobierzLicznikiAsync();
         odczyty = await CieploService.PobierzOdczytyAsync();
         faktury = await CieploService.PobierzFakturyAsync();
         wybranyMiesiac = null;
@@ -454,7 +455,7 @@
 
     private async Task WczytajOdczyty()
     {
-        var parametry = new DialogParameters { ["Istniejace"] = odczyty, ["Obiekty"] = obiekty };
+        var parametry = new DialogParameters { ["Istniejace"] = odczyty, ["Liczniki"] = liczniki };
         var dialog = await DialogService.ShowAsync<OdczytyCieplaDialog>("Wczytaj odczyty liczników ciepła", parametry);
         var wynik = await dialog.Result;
         if (wynik is { Canceled: false, Data: List<OdczytCiepla> wiersze })
@@ -465,7 +466,7 @@
 
     private async Task OtworzDialogOdczytu(OdczytCiepla odczyt, string tytul)
     {
-        var parametry = new DialogParameters { ["Odczyt"] = odczyt, ["Obiekty"] = obiekty };
+        var parametry = new DialogParameters { ["Odczyt"] = odczyt, ["Liczniki"] = liczniki };
         var dialog = await DialogService.ShowAsync<OdczytCieplaDialog>(tytul, parametry);
         var wynik = await dialog.Result;
         if (wynik is { Canceled: false, Data: OdczytCiepla zapisywany })

@@ -45,6 +45,13 @@ public sealed class LicznikService : ILicznikService
             .ToListAsync();
     }
 
+    public async Task<List<Licznik>> PobierzLicznikiAsync()
+    {
+        await using var db = await _dbContextFactory.CreateDbContextAsync();
+        return await db.Liczniki.Include(x => x.Obiekt).AsNoTracking()
+            .OrderBy(x => x.NumerLicznika).ToListAsync();
+    }
+
     public async Task<List<PodsumowanieMiesiacaWody>> PobierzPodsumowaniaAsync()
     {
         await using var db = await _dbContextFactory.CreateDbContextAsync();
@@ -172,20 +179,19 @@ public sealed class LicznikService : ILicznikService
         }
 
         await using var db = await _dbContextFactory.CreateDbContextAsync();
-        var liczniki = await db.Liczniki
+        var liczniki = DopasowanieLicznikow.UtworzIndeks(await db.Liczniki
             .Include(x => x.Obiekt)
             .AsNoTracking()
-            .ToListAsync();
+            .ToListAsync());
 
         foreach (var odczyt in odczyty)
         {
-            var licznik = liczniki.FirstOrDefault(x =>
-                string.Equals(x.NumerLicznika, odczyt.NumerLicznika, StringComparison.OrdinalIgnoreCase));
-            if (licznik is null)
+            if (!liczniki.TryGetValue(odczyt.NumerLicznika.Trim(), out var licznik))
             {
                 continue;
             }
 
+            odczyt.NumerLicznika = licznik.NumerLicznika;
             odczyt.ObiektId = licznik.ObiektId;
             odczyt.ObiektNazwa = licznik.Obiekt?.Nazwa ?? string.Empty;
             odczyt.JestNowy = false;
@@ -235,32 +241,33 @@ public sealed class LicznikService : ILicznikService
     {
         ArgumentNullException.ThrowIfNull(odczyty);
         await using var db = await _dbContextFactory.CreateDbContextAsync();
+        var liczniki = DopasowanieLicznikow.UtworzIndeks(await db.Liczniki.ToListAsync());
 
         foreach (var dto in odczyty.Where(x => !x.Ignoruj))
         {
-            if (dto.ObiektId is null)
+            if (!liczniki.TryGetValue(dto.NumerLicznika.Trim(), out var licznik))
             {
-                throw new InvalidOperationException($"Licznik {dto.NumerLicznika} nie ma przypisanego budynku.");
-            }
-
-            var licznik = await db.Liczniki.FirstOrDefaultAsync(x =>
-                x.NumerLicznika == dto.NumerLicznika);
-            if (licznik is null)
-            {
+                if (dto.ObiektId is null)
+                {
+                    throw new InvalidOperationException($"Licznik {dto.NumerLicznika} nie ma przypisanego budynku.");
+                }
                 licznik = new Licznik
                 {
-                    NumerLicznika = dto.NumerLicznika,
+                    NumerLicznika = dto.NumerLicznika.Trim(),
                     ObiektId = dto.ObiektId
                 };
                 db.Liczniki.Add(licznik);
+                liczniki.Add(licznik.NumerLicznika, licznik);
             }
-            else
+            else if (licznik.ObiektId is null)
             {
-                licznik.ObiektId = dto.ObiektId;
+                throw new InvalidOperationException($"Licznik {licznik.NumerLicznika} nie ma przypisanego budynku w ewidencji.");
             }
 
-            var odczyt = await db.OdczytyWody.FirstOrDefaultAsync(x =>
-                x.LicznikId == licznik.Id && x.Rok == dto.Rok && x.Miesiac == dto.Miesiac);
+            var odczyt = db.OdczytyWody.Local.FirstOrDefault(x =>
+                x.Licznik == licznik && x.Rok == dto.Rok && x.Miesiac == dto.Miesiac)
+                ?? (licznik.Id > 0 ? await db.OdczytyWody.FirstOrDefaultAsync(x =>
+                    x.LicznikId == licznik.Id && x.Rok == dto.Rok && x.Miesiac == dto.Miesiac) : null);
             if (odczyt is null)
             {
                 odczyt = new OdczytWody

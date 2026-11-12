@@ -1,4 +1,5 @@
 @using Mieszkaniec.Model.Entities
+@using Mieszkaniec.Services.Implementations
 @using MudBlazor
 
 <MudDialog Options="DialogOptions">
@@ -17,15 +18,15 @@
         <MudForm @ref="form">
             <MudGrid Spacing="2">
                 <MudItem xs="12" md="6">
-                    <MudTextField @bind-Value="Odczyt.NumerLicznika" Label="Numer licznika" Variant="Variant.Outlined" Margin="Margin.Dense" Required="true" RequiredError="Podaj numer licznika" />
-                </MudItem>
-                <MudItem xs="12" md="6">
-                    <MudSelect T="int?" @bind-Value="Odczyt.ObiektId" Label="Budynek" Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true">
-                        @foreach (var obiekt in Obiekty)
+                    <MudSelect T="string" @bind-Value="Odczyt.NumerLicznika" @bind-Value:after="PrzypiszLicznik" Label="Numer licznika" Variant="Variant.Outlined" Margin="Margin.Dense" Required="true" RequiredError="Wybierz licznik">
+                        @foreach (var licznik in Liczniki)
                         {
-                            <MudSelectItem T="int?" Value="@obiekt.Id">@obiekt.Nazwa</MudSelectItem>
+                            <MudSelectItem T="string" Value="@licznik.NumerLicznika">@licznik.NumerLicznika — @(licznik.Obiekt?.Nazwa ?? "Nieprzypisany")</MudSelectItem>
                         }
                     </MudSelect>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField Value="@(Odczyt.Obiekt?.Nazwa ?? "Nieprzypisany")" Label="Budynek" Variant="Variant.Outlined" Margin="Margin.Dense" ReadOnly="true" />
                 </MudItem>
                 <MudItem xs="6">
                     <MudNumericField @bind-Value="Odczyt.Rok" Label="Rok" Variant="Variant.Outlined" Margin="Margin.Dense" HideSpinButtons="true" Required="true" />
@@ -64,11 +65,20 @@
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
 
     [Parameter] public OdczytCiepla Odczyt { get; set; } = new() { Rok = DateTime.Now.Year, Miesiac = DateTime.Now.Month };
-    [Parameter] public IEnumerable<Obiekt> Obiekty { get; set; } = Array.Empty<Obiekt>();
+    [Parameter] public IEnumerable<Licznik> Liczniki { get; set; } = Array.Empty<Licznik>();
 
     private readonly DialogOptions DialogOptions = new() { MaxWidth = MaxWidth.Small, FullWidth = true, CloseButton = true };
 
     private MudForm form = default!;
+
+    protected override void OnParametersSet() => PrzypiszLicznik();
+
+    private void PrzypiszLicznik()
+    {
+        Odczyt.ObiektId = null;
+        Odczyt.Obiekt = null;
+        DopasowanieLicznikow.Przypisz(Odczyt, DopasowanieLicznikow.UtworzIndeks(Liczniki));
+    }
 
     private void Przelicz()
     {
@@ -83,7 +93,7 @@
     private async Task Submit()
     {
         await form.Validate();
-        if (form.IsValid)
+        if (form.IsValid && Liczniki.Any(x => x.NumerLicznika == Odczyt.NumerLicznika))
         {
             MudDialog.Close(DialogResult.Ok(Odczyt));
         }

@@ -99,8 +99,20 @@ public sealed class LicznikService : ILicznikService
     {
         ArgumentNullException.ThrowIfNull(licznik);
         await using var db = await _dbContextFactory.CreateDbContextAsync();
-        db.Liczniki.Update(licznik);
+        var istniejacy = await db.Liczniki.SingleOrDefaultAsync(x => x.Id == licznik.Id)
+            ?? throw new InvalidOperationException("Licznik nie istnieje.");
+        AktualizujDaneLicznika(istniejacy, licznik);
         await db.SaveChangesAsync();
+    }
+
+    internal static void AktualizujDaneLicznika(Licznik istniejacy, Licznik zmiany)
+    {
+        istniejacy.NumerLicznika = zmiany.NumerLicznika;
+        istniejacy.Typ = zmiany.Typ;
+        istniejacy.Uwagi = zmiany.Uwagi;
+        istniejacy.ObiektId = zmiany.ObiektId;
+        istniejacy.DataDodania = zmiany.DataDodania;
+        istniejacy.CzyAktywny = zmiany.CzyAktywny;
     }
 
     public async Task DodajOdczytAsync(OdczytWody odczyt)

@@ -34,7 +34,7 @@ public sealed class LicznikService : ILicznikService
         _dbContextFactory = dbContextFactory;
     }
 
-    public async Task<List<Licznik>> PobierzWszystkieLicznikiWodyAsync()
+    public async Task<List<Licznik>> PobierzWszystkieLicznikiAsync()
     {
         await using var db = await _dbContextFactory.CreateDbContextAsync();
         return await db.Liczniki
@@ -44,6 +44,16 @@ public sealed class LicznikService : ILicznikService
             .OrderBy(x => x.NumerLicznika)
             .ToListAsync();
     }
+
+    public async Task<List<Licznik>> PobierzLicznikiWodyAsync() =>
+        (await PobierzWszystkieLicznikiAsync())
+            .Where(x => x.CzyLicznikWody)
+            .ToList();
+
+    public async Task<List<Licznik>> PobierzLicznikiCieplaAsync() =>
+        (await PobierzWszystkieLicznikiAsync())
+            .Where(x => x.CzyLicznikCiepla)
+            .ToList();
 
     public async Task<List<PodsumowanieMiesiacaWody>> PobierzPodsumowaniaAsync()
     {
@@ -92,7 +102,17 @@ public sealed class LicznikService : ILicznikService
     {
         ArgumentNullException.ThrowIfNull(licznik);
         await using var db = await _dbContextFactory.CreateDbContextAsync();
-        db.Liczniki.Update(licznik);
+        var zapisanyLicznik = await db.Liczniki.SingleOrDefaultAsync(x => x.Id == licznik.Id);
+        if (zapisanyLicznik is null)
+        {
+            throw new InvalidOperationException($"Nie znaleziono licznika o identyfikatorze {licznik.Id}.");
+        }
+
+        zapisanyLicznik.NumerLicznika = licznik.NumerLicznika;
+        zapisanyLicznik.Typ = licznik.Typ;
+        zapisanyLicznik.ObiektId = licznik.ObiektId;
+        zapisanyLicznik.Uwagi = licznik.Uwagi;
+        zapisanyLicznik.CzyAktywny = licznik.CzyAktywny;
         await db.SaveChangesAsync();
     }
 

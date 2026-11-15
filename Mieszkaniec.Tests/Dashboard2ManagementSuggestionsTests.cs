@@ -1,5 +1,6 @@
 using Mieszkaniec.Components.Pages;
 using Mieszkaniec.Model.Entities;
+using MudBlazor;
 
 namespace Mieszkaniec.Tests;
 
@@ -83,15 +84,26 @@ public class Dashboard2ManagementSuggestionsTests
     }
 
     [Fact]
-    public void NiskieOblozenieUzywaDokladnejWartosciPrzedZaokragleniem()
+    public void SugestiaOblozeniaJestSpojnaZEtykietaIPorownujeSredniaPortfela()
     {
         var low = Dashboard2.BuildStats(new Obiekt { Nazwa = "Niski" },
-            [Wynajety(1000, 699.6m, 10)]);
-        var boundary = Dashboard2.BuildStats(new Obiekt { Nazwa = "Granica" },
-            [Wynajety(100, 70, 10)]);
+            [Wynajety(1000, 399, 10)]);
+        var moderate = Dashboard2.BuildStats(new Obiekt { Nazwa = "F21/3" },
+            [Wynajety(100, 40, 10)]);
+        var high = Dashboard2.BuildStats(new Obiekt { Nazwa = "Wysoki" },
+            [Wynajety(100, 100, 10)]);
 
-        Assert.Contains(Dashboard2.BuildSuggestions([low]), item => item.Key == "oblozenie");
-        Assert.DoesNotContain(Dashboard2.BuildSuggestions([boundary]), item => item.Key == "oblozenie");
+        var lowSuggestion = Assert.Single(Dashboard2.BuildSuggestions([low]), item => item.Key == "oblozenie");
+        var moderateSuggestion = Assert.Single(Dashboard2.BuildSuggestions([moderate]), item => item.Key == "oblozenie");
+        var relativeSuggestion = Assert.Single(Dashboard2.BuildSuggestions([moderate, high]), item => item.Key == "oblozenie");
+
+        Assert.Equal(Severity.Warning, lowSuggestion.Severity);
+        Assert.Equal("Zwiększ obłożenie", lowSuggestion.Title);
+        Assert.Equal(Severity.Info, moderateSuggestion.Severity);
+        Assert.Equal("Monitoruj obłożenie", moderateSuggestion.Title);
+        Assert.Contains(moderate.Occupancy.ToString("N1"), moderateSuggestion.Description);
+        Assert.Contains("średnie obłożenie", moderateSuggestion.Description);
+        Assert.Contains($"{(70m - moderate.Occupancy).ToString("N1")} p.p.", relativeSuggestion.Description);
     }
 
     [Fact]
@@ -130,6 +142,8 @@ public class Dashboard2ManagementSuggestionsTests
 
         var suggestions = Dashboard2.BuildSuggestions([reserved, empty]);
 
+        Assert.Equal(0, reserved.ReservedUnits);
+        Assert.Equal(1, reserved.ReservedTechnicalInfrastructureUnits);
         Assert.Contains(suggestions, item => item.Key == "brak-powierzchni");
         Assert.Contains(suggestions, item => item.Key == "rezerwacje");
         Assert.Contains(suggestions, item => item.Key == "brak-lokali");

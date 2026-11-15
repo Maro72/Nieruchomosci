@@ -6,7 +6,9 @@ namespace Mieszkaniec.Services.Interfaces;
 
 public interface ILicznikService
 {
-    Task<List<Licznik>> PobierzWszystkieLicznikiWodyAsync();
+    Task<List<Licznik>> PobierzWszystkieLicznikiAsync();
+    Task<List<Licznik>> PobierzLicznikiWodyAsync();
+    Task<List<Licznik>> PobierzLicznikiCieplaAsync();
     Task<List<PodsumowanieMiesiacaWody>> PobierzPodsumowaniaAsync();
     Task DodajLicznikAsync(Licznik licznik);
     Task AktualizujLicznikAsync(Licznik licznik);

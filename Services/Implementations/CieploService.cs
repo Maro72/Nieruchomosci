@@ -469,27 +469,50 @@ public sealed class CieploService : ICieploService
     public async Task<List<OdczytCiepla>> PobierzOdczytyAsync()
     {
         await using var db = await _dbContextFactory.CreateDbContextAsync();
-        return await db.OdczytyCiepla
+        var liczniki = await db.Liczniki
+            .Include(x => x.Obiekt)
+            .AsNoTracking()
+            .ToListAsync();
+        var odczyty = await db.OdczytyCiepla
             .Include(x => x.Obiekt)
             .AsNoTracking()
             .OrderByDescending(x => x.Rok)
             .ThenByDescending(x => x.Miesiac)
             .ThenBy(x => x.NumerLicznika)
             .ToListAsync();
+
+        foreach (var odczyt in odczyty)
+        {
+            PowiazZLicznikiem(odczyt, liczniki);
+        }
+
+        return odczyty;
     }
 
     public async Task ZapiszOdczytAsync(OdczytCiepla odczyt)
     {
         ArgumentNullException.ThrowIfNull(odczyt);
+        if (odczyt.LicznikId is not int licznikId)
+        {
+            throw new InvalidOperationException("Odczyt ciepła musi być przypisany do licznika.");
+        }
+
         await using var db = await _dbContextFactory.CreateDbContextAsync();
-        odczyt.Obiekt = null;
+        var licznik = await db.Liczniki.SingleOrDefaultAsync(x => x.Id == licznikId);
+        if (licznik is null)
+        {
+            throw new InvalidOperationException($"Nie znaleziono licznika o identyfikatorze {licznikId}.");
+        }
+
+        var zapisanyOdczyt = odczyt.Id == 0
+            ? new OdczytCiepla()
+            : await db.OdczytyCiepla.SingleOrDefaultAsync(x => x.Id == odczyt.Id)
+                ?? throw new InvalidOperationException($"Nie znaleziono odczytu o identyfikatorze {odczyt.Id}.");
+
+        ZastosujDaneOdczytu(zapisanyOdczyt, odczyt, licznik);
         if (odczyt.Id == 0)
         {
-            db.OdczytyCiepla.Add(odczyt);
-        }
-        else
-        {
-            db.OdczytyCiepla.Update(odczyt);
+            db.OdczytyCiepla.Add(zapisanyOdczyt);
         }
 
         await db.SaveChangesAsync();
@@ -499,34 +522,128 @@ public sealed class CieploService : ICieploService
     {
         ArgumentNullException.ThrowIfNull(odczyty);
         var lista = odczyty.ToList();
-        if (lista.GroupBy(x => (x.NumerLicznika.Trim(), x.Rok, x.Miesiac)).Any(g => g.Count() > 1))
+        if (lista.GroupBy(x => (x.LicznikId, x.Rok, x.Miesiac)).Any(g => g.Count() > 1))
         {
-            throw new InvalidOperationException("Numer licznika powtarza się w tym samym okresie.");
+            throw new InvalidOperationException("Ten sam licznik powtarza się w tym samym okresie.");
+        }
+
+        if (lista.Any(x => !x.LicznikId.HasValue))
+        {
+            throw new InvalidOperationException("Każdy odczyt musi być przypisany do licznika.");
         }
 
         await using var db = await _dbContextFactory.CreateDbContextAsync();
+        var licznikIds = lista.Select(x => x.LicznikId!.Value).Distinct().ToList();
+        var liczniki = await db.Liczniki
+            .Where(x => licznikIds.Contains(x.Id))
+            .ToDictionaryAsync(x => x.Id);
+        if (liczniki.Count != licznikIds.Count)
+        {
+            throw new InvalidOperationException("Co najmniej jeden przypisany licznik nie istnieje.");
+        }
+
         foreach (var wiersz in lista)
         {
-            var numer = wiersz.NumerLicznika.Trim();
+            var licznik = liczniki[wiersz.LicznikId!.Value];
             var odczyt = await db.OdczytyCiepla.FirstOrDefaultAsync(x =>
-                x.NumerLicznika == numer && x.Rok == wiersz.Rok && x.Miesiac == wiersz.Miesiac);
+                x.LicznikId == licznik.Id && x.Rok == wiersz.Rok && x.Miesiac == wiersz.Miesiac);
             if (odczyt is null)
             {
-                odczyt = new OdczytCiepla { NumerLicznika = numer, Rok = wiersz.Rok, Miesiac = wiersz.Miesiac };
+                var legacyOdczyty = await db.OdczytyCiepla
+                    .Where(x => x.LicznikId == null &&
+                        x.NumerLicznika == licznik.NumerLicznika &&
+                        x.Rok == wiersz.Rok &&
+                        x.Miesiac == wiersz.Miesiac)
+                    .ToListAsync();
+                var legacyForBuilding = legacyOdczyty
+                    .Where(x => x.ObiektId == licznik.ObiektId)
+                    .ToList();
+
+                odczyt = legacyForBuilding.Count == 1
+                    ? legacyForBuilding[0]
+                    : legacyOdczyty.Count == 1
+                        ? legacyOdczyty[0]
+                        : null;
+                if (legacyOdczyty.Count > 1 && odczyt is null)
+                {
+                    throw new InvalidOperationException(
+                        $"Nie można jednoznacznie przypisać istniejącego odczytu licznika {licznik.NumerLicznika}.");
+                }
+            }
+
+            if (odczyt is null)
+            {
+                odczyt = new OdczytCiepla();
                 db.OdczytyCiepla.Add(odczyt);
             }
 
-            odczyt.ObiektId = wiersz.ObiektId;
-            odczyt.StanPoczatkowy = wiersz.StanPoczatkowy;
-            odczyt.StanKoncowy = wiersz.StanKoncowy;
-            odczyt.ZuzycieGJ = wiersz.ZuzycieGJ;
-            odczyt.Korekta = wiersz.Korekta;
-            odczyt.IloscDoZafakturowania = wiersz.IloscDoZafakturowania;
-            odczyt.Uwagi = wiersz.Uwagi;
-            odczyt.DataOdczytu = DateTime.Now;
+            ZastosujDaneOdczytu(odczyt, wiersz, licznik);
         }
 
         await db.SaveChangesAsync();
+    }
+
+    internal static bool PowiazZLicznikiem(OdczytCiepla odczyt, IReadOnlyCollection<Licznik> liczniki)
+    {
+        Licznik? licznik = odczyt.LicznikId is int licznikId
+            ? liczniki.FirstOrDefault(x => x.Id == licznikId)
+            : null;
+
+        if (licznik is null && odczyt.LicznikId is null)
+        {
+            var pasujaceLiczniki = liczniki
+                .Where(x => x.CzyLicznikCiepla && string.Equals(
+                    x.NumerLicznika.Trim(),
+                    odczyt.NumerLicznika.Trim(),
+                    StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (pasujaceLiczniki.Count > 1 && odczyt.ObiektId.HasValue)
+            {
+                var pasujaceWBudynku = pasujaceLiczniki
+                    .Where(x => x.ObiektId == odczyt.ObiektId)
+                    .ToList();
+                if (pasujaceWBudynku.Count == 1)
+                {
+                    pasujaceLiczniki = pasujaceWBudynku;
+                }
+            }
+
+            if (pasujaceLiczniki.Count == 1)
+            {
+                licznik = pasujaceLiczniki[0];
+            }
+        }
+
+        if (licznik is null)
+        {
+            return false;
+        }
+
+        odczyt.LicznikId = licznik.Id;
+        odczyt.Licznik = licznik;
+        odczyt.NumerLicznika = licznik.NumerLicznika;
+        odczyt.ObiektId = licznik.ObiektId;
+        odczyt.Obiekt = licznik.Obiekt;
+        return true;
+    }
+
+    private static void ZastosujDaneOdczytu(OdczytCiepla cel, OdczytCiepla zrodlo, Licznik licznik)
+    {
+        cel.LicznikId = licznik.Id;
+        cel.Licznik = licznik;
+        cel.NumerLicznika = licznik.NumerLicznika;
+        cel.ObiektId = licznik.ObiektId;
+        cel.Obiekt = null;
+        cel.Rok = zrodlo.Rok;
+        cel.Miesiac = zrodlo.Miesiac;
+        cel.StanPoczatkowy = zrodlo.StanPoczatkowy;
+        cel.StanKoncowy = zrodlo.StanKoncowy;
+        cel.ZuzycieGJ = zrodlo.ZuzycieGJ;
+        cel.Korekta = zrodlo.Korekta;
+        cel.IloscDoZafakturowania = zrodlo.IloscDoZafakturowania;
+        cel.Uwagi = zrodlo.Uwagi;
+        cel.DataOdczytu = DateTime.Now;
     }
 
     public async Task<bool> UsunOdczytAsync(int id)

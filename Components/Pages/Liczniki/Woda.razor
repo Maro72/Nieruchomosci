@@ -4,6 +4,7 @@
 @using Mieszkaniec.Services.Interfaces
 @using Mieszkaniec.Model.Entities
 @using Mieszkaniec.Components.UI
+@using System.Globalization
 @inject ILicznikService LicznikService
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
@@ -338,48 +339,57 @@
             </MudGrid>
         </MudItem>
 
-        <MudItem xs="12" md="6">
+        <MudItem xs="12">
             <div class="data-section">
                 <div class="data-section-header">
                     <div>
                         <MudText Typo="Typo.h6" Class="section-heading">Zużycie wody w czasie</MudText>
-                        <MudText Class="reading-muted">Miesięczne zużycie wszystkich liczników.</MudText>
+                        <MudText Class="reading-muted">Miesięczne ilości z zapisanych faktur.</MudText>
                     </div>
                 </div>
                 @if (EtykietyZuzycia.Any())
                 {
-                    <MudChart T="double"
-                    ChartType="ChartType.Line"
-                    ChartLabels="@EtykietyZuzycia"
-                    ChartSeries="@SerieZuzycia"
-                    Width="100%"
-                    Height="320px"
-                    ChartOptions="@OpcjeWykresuZuzycia" />
-                }
-                else
-                {
-                    <MudText Class="pa-4 reading-muted">Brak zapisanych odczytów do wyświetlenia.</MudText>
-                }
-            </div>
-        </MudItem>
-
-        <MudItem xs="12" md="6">
-            <div class="data-section">
-                <div class="data-section-header">
-                    <div>
-                        <MudText Typo="Typo.h6" Class="section-heading">Zużycie wody - wykres kolumnowy</MudText>
-                        <MudText Class="reading-muted">Porównanie miesięcznych ilości z faktur.</MudText>
+                    <div style="overflow-x:auto; padding:8px 12px;">
+                        <svg viewBox="@($"0 0 {WykresSzerokosc} {WykresWysokosc}")"
+                             role="img"
+                             aria-label="Wykres liniowy miesięcznego zużycia wody"
+                             preserveAspectRatio="none"
+                             style="@($"display:block; width:100%; min-width:{WykresSzerokosc}px; height:{WykresWysokosc}px;")">
+                            @for (var tick = 0; tick <= 4; tick++)
+                            {
+                                var wartoscOsi = MaksymalnaWartoscZuzycia * tick / 4d;
+                                var y = PozycjaY(wartoscOsi);
+                                <line x1="@SvgNumber(MarginesLewy)" y1="@SvgNumber(y)"
+                                      x2="@SvgNumber(PozycjaOsiPrawa)" y2="@SvgNumber(y)"
+                                      stroke="#dfe3e8" stroke-width="1" />
+                                @TekstSvg(MarginesLewy - 10, y + 4,
+                                    Math.Round(wartoscOsi).ToString("N0", CultureInfo.CurrentCulture), "end", "#64748b")
+                            }
+                            <line x1="@SvgNumber(MarginesLewy)" y1="@SvgNumber(MarginesGorna)"
+                                  x2="@SvgNumber(MarginesLewy)" y2="@SvgNumber(MarginesDolna)"
+                                  stroke="#64748b" stroke-width="1.5" />
+                            <line x1="@SvgNumber(MarginesLewy)" y1="@SvgNumber(MarginesDolna)"
+                                  x2="@SvgNumber(PozycjaOsiPrawa)" y2="@SvgNumber(MarginesDolna)"
+                                  stroke="#64748b" stroke-width="1.5" />
+                            @if (WartosciZuzycia.Length > 1)
+                            {
+                                <polyline points="@PunktyZuzycia"
+                                          fill="none" stroke="#1976d2" stroke-width="3"
+                                          stroke-linecap="round" stroke-linejoin="round" />
+                            }
+                            @for (var index = 0; index < WartosciZuzycia.Length; index++)
+                            {
+                                var x = PozycjaX(index);
+                                var y = PozycjaY(WartosciZuzycia[index]);
+                                <circle cx="@SvgNumber(x)" cy="@SvgNumber(y)" r="4" fill="#1976d2" />
+                                @TekstSvg(x, Math.Max(MarginesGorna + 14, y - 10),
+                                    WartosciZuzycia[index].ToString("N2", CultureInfo.CurrentCulture), "middle", "#1e3a5f", true)
+                                @TekstSvg(x, MarginesDolna + 22, EtykietyZuzycia[index], "middle", "#64748b")
+                            }
+                            @TekstSvg((MarginesLewy + PozycjaOsiPrawa) / 2, WykresWysokosc - 8, "Miesiąc", "middle", "#334155")
+                            @((MarkupString)$"<text x=\"16\" y=\"{SvgNumber((MarginesGorna + MarginesDolna) / 2)}\" text-anchor=\"middle\" font-size=\"13\" fill=\"#334155\" transform=\"rotate(-90 16 {SvgNumber((MarginesGorna + MarginesDolna) / 2)})\">Zużycie (m³)</text>")
+                        </svg>
                     </div>
-                </div>
-                @if (EtykietyZuzycia.Any())
-                {
-                    <MudChart T="double"
-                    ChartType="ChartType.Bar"
-                    ChartLabels="@EtykietyZuzycia"
-                    ChartSeries="@SerieZuzycia"
-                    Width="100%"
-                    Height="320px"
-                    ChartOptions="@OpcjeWykresuKolumnowego" />
                 }
                 else
                 {
@@ -515,24 +525,41 @@
         .Select(x => (double)x.Faktura!.ZuzycieFakturowane_m3)
         .ToArray() ?? Array.Empty<double>();
 
-    private List<ChartSeries<double>> SerieZuzycia => new()
-    {
-        new ChartSeries<double>
-        {
-            Name = "Zużycie fakturowane (m³)",
-            Data = WartosciZuzycia
-        }
-    };
+    private const double WykresWysokosc = 380;
+    private const double MarginesLewy = 72;
+    private const double MarginesPrawa = 32;
+    private const double MarginesGorna = 42;
+    private const double MarginesDolna = 300;
 
-    private ChartOptions OpcjeWykresuZuzycia { get; } = new()
-    {
-        ChartPalette = new[] { "#1976d2" }
-    };
+    private double WykresSzerokosc =>
+        Math.Max(760, MarginesLewy + MarginesPrawa + Math.Max(0, EtykietyZuzycia.Length - 1) * 80);
 
-    private ChartOptions OpcjeWykresuKolumnowego { get; } = new()
+    private double PozycjaOsiPrawa => WykresSzerokosc - MarginesPrawa;
+
+    private double MaksymalnaWartoscZuzycia =>
+        Math.Max(1, WartosciZuzycia.DefaultIfEmpty(0).Max() * 1.1);
+
+    private double PozycjaX(int index) => WartosciZuzycia.Length <= 1
+        ? (MarginesLewy + PozycjaOsiPrawa) / 2
+        : MarginesLewy + index * (PozycjaOsiPrawa - MarginesLewy) / (WartosciZuzycia.Length - 1);
+
+    private double PozycjaY(double wartosc) =>
+        MarginesDolna - wartosc / MaksymalnaWartoscZuzycia * (MarginesDolna - MarginesGorna);
+
+    private string PunktyZuzycia => string.Join(" ",
+        WartosciZuzycia.Select((wartosc, index) =>
+            $"{SvgNumber(PozycjaX(index))},{SvgNumber(PozycjaY(wartosc))}"));
+
+    private static string SvgNumber(double wartosc) =>
+        wartosc.ToString("0.##", CultureInfo.InvariantCulture);
+
+    private static MarkupString TekstSvg(double x, double y, string tekst, string anchor, string kolor, bool pogrubiony = false)
     {
-        ChartPalette = new[] { "#2e7d32" }
-    };
+        var bezpiecznyTekst = System.Net.WebUtility.HtmlEncode(tekst);
+        var fontWeight = pogrubiony ? " font-weight=\"600\"" : string.Empty;
+        return new MarkupString(
+            $"<text x=\"{SvgNumber(x)}\" y=\"{SvgNumber(y)}\" text-anchor=\"{anchor}\" font-size=\"12\" fill=\"{kolor}\"{fontWeight}>{bezpiecznyTekst}</text>");
+    }
 
     private int SumaZuzyciaOdczytow => odczytyZPdf?.Where(x => !x.Ignoruj).Sum(x => x.Zuzycie) ?? 0;
     private int SumaKorekt => odczytyZPdf?.Where(x => !x.Ignoruj).Sum(x => x.Korekta ?? 0) ?? 0;
@@ -585,7 +612,7 @@
 
     private async Task OdswiezDane()
     {
-        liczniki = await LicznikService.PobierzWszystkieLicznikiWodyAsync();
+        liczniki = await LicznikService.PobierzLicznikiWodyAsync();
         podsumowania = await LicznikService.PobierzPodsumowaniaAsync();
         WybranePodsumowanieFaktury = null;
         wybraneOdczytyWedlugMiesiaca.Clear();

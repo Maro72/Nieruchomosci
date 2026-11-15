@@ -102,37 +102,36 @@
 
         @if (ObiektWybrany is not null)
         {
-            <MudPaper Elevation="1" Class="heat-usage-card heat-usage-line-card">
+            <MudPaper Elevation="1" Class="heat-usage-card heat-usage-horizontal-card">
                 <div class="heat-usage-card-heading">
                     <MudText Typo="Typo.h6">Zużycie — @ObiektWybrany.Nazwa, @RokWidoku</MudText>
                     <MudText Typo="Typo.body2">@ObiektWybrany.Liczniki.Count liczników</MudText>
                 </div>
-                <div class="heat-usage-scroll">
-                    <div class="heat-building-chart" role="img"
-                         aria-label="@($"Miesięczna ilość do fakturowania w GJ w budynku {ObiektWybrany.Nazwa} w roku {RokWidoku}")">
-                        @foreach (var miesiac in Miesiace)
-                        {
-                            var ilosc = IloscDoFakturowania(ObiektWybrany, miesiac);
-                            var wysokosc = WysokoscSlupka(ObiektWybrany, miesiac);
-                            <div class="heat-building-column">
-                                <div class="heat-building-plot">
-                                    <span class="heat-building-value">@ilosc.ToString("N3")</span>
-                                    <div class="heat-building-bar" style="@($"height:{wysokosc}%")"
-                                         title="@($"{NazwaMiesiaca(miesiac)}: {ilosc:N3} GJ")"></div>
-                                </div>
-                                <span class="heat-building-month">@NazwaMiesiacaSkrocona(miesiac)</span>
+                <div class="heat-horizontal-chart" role="img"
+                     aria-label="@($"Miesięczna ilość do fakturowania w budynku {ObiektWybrany.Nazwa} w roku {RokWidoku}")">
+                    @foreach (var miesiac in Miesiace)
+                    {
+                        var ilosc = IloscDoFakturowania(ObiektWybrany, miesiac);
+                        <div class="heat-horizontal-row" title="@($"{NazwaMiesiacaSkrocona(miesiac)}: {ilosc:N3} GJ")">
+                            <span class="heat-horizontal-label">@NazwaMiesiacaSkrocona(miesiac)</span>
+                            <div class="heat-horizontal-track">
+                                @if (ilosc > 0)
+                                {
+                                    <div class="heat-horizontal-bar" style="@($"width:{SzerokoscPaska(ilosc)}%")"></div>
+                                }
                             </div>
-                        }
-                    </div>
+                            <span class="heat-horizontal-value">@ilosc.ToString("N3")</span>
+                        </div>
+                    }
                 </div>
             </MudPaper>
         }
 
-        <MudPaper Elevation="1" Class="heat-usage-card heat-usage-line-card">
+        <MudPaper Elevation="1" Class="heat-usage-card heat-usage-horizontal-card">
             <div class="heat-usage-card-heading">
                 <MudText Typo="Typo.h6">Porównanie budynków — @RokWidoku</MudText>
                 <MudText Typo="Typo.caption" Color="Color.Secondary">
-                    Słupki pokazują miesięczną ilość do fakturowania w GJ.
+                    Poziome słupki pokazują miesięczną ilość do fakturowania w GJ.
                 </MudText>
             </div>
             <div class="heat-compare-scroll">
@@ -176,30 +175,28 @@
             </div>
         </MudPaper>
 
-        <MudPaper Elevation="1" Class="heat-usage-card heat-usage-line-card">
+        <MudPaper Elevation="1" Class="heat-usage-card heat-usage-horizontal-card">
             <div class="heat-usage-card-heading">
-                <MudText Typo="Typo.h6">Zużycie ciepła — wykres słupkowy</MudText>
+                <MudText Typo="Typo.h6">Łączne zużycie ciepła — @RokWidoku</MudText>
                 <MudText Typo="Typo.caption" Color="Color.Secondary">
-                    Miesięczna ilość do fakturowania w GJ — @OpisFiltraObiektu, @RokWidoku.
+                    Miesięczna suma ilości do fakturowania w GJ — @OpisFiltraObiektu.
                 </MudText>
             </div>
-            <div class="heat-labeled-chart-scroll">
-                <div class="heat-labeled-chart" role="img"
-                     aria-label="@($"Miesięczna ilość do fakturowania w GJ dla {OpisFiltraObiektu} w roku {RokWidoku}")">
-                    @foreach (var miesiac in Miesiace)
-                    {
-                        var ilosc = SumaMiesieczna(miesiac);
-                        var wysokosc = WysokoscSlupkaZbiorczego(ilosc);
-                        <div class="heat-labeled-column">
-                            <div class="heat-labeled-plot">
-                                <span class="heat-labeled-value" style="@($"bottom:calc({wysokosc}% + 5px)")">@ilosc.ToString("N3")</span>
-                                <div class="heat-labeled-bar" style="@($"height:{wysokosc}%")"
-                                     title="@($"{NazwaMiesiaca(miesiac)}: {ilosc:N3} GJ")"></div>
-                            </div>
-                            <span class="heat-labeled-month">@NazwaMiesiacaSkrocona(miesiac)</span>
+            <div class="heat-horizontal-chart">
+                @foreach (var miesiac in Miesiace)
+                {
+                    var ilosc = SumaMiesieczna(miesiac);
+                    <div class="heat-horizontal-row" title="@($"{NazwaMiesiacaSkrocona(miesiac)}: {ilosc:N3} GJ")">
+                        <span class="heat-horizontal-label">@NazwaMiesiacaSkrocona(miesiac)</span>
+                        <div class="heat-horizontal-track">
+                            @if (ilosc > 0)
+                            {
+                                <div class="heat-horizontal-bar" style="@($"width:{SzerokoscPaskaSumy(ilosc)}%")"></div>
+                            }
                         </div>
-                    }
-                </div>
+                        <span class="heat-horizontal-value">@ilosc.ToString("N3")</span>
+                    </div>
+                }
             </div>
         </MudPaper>
     }
@@ -298,25 +295,18 @@
         .DefaultIfEmpty(0m)
         .Max();
 
-    private int SzerokoscPaska(decimal zuzycie) => MaksymalneZuzycie == 0
-        ? 0
-        : Math.Max(2, (int)Math.Round((double)(zuzycie * 100m / MaksymalneZuzycie)));
+    private decimal MaksymalnaSumaMiesieczna => Miesiace
+        .Select(SumaMiesieczna)
+        .DefaultIfEmpty(0m)
+        .Max();
 
-    private int WysokoscSlupka(ZuzycieObiektu obiekt, int miesiac)
-    {
-        var maksimum = Miesiace
-            .Select(x => IloscDoFakturowania(obiekt, x))
-            .DefaultIfEmpty(0m)
-            .Max();
-        var zuzycie = IloscDoFakturowania(obiekt, miesiac);
-        return maksimum == 0 || zuzycie == 0
-            ? 0
-            : Math.Max(2, (int)Math.Round((double)(zuzycie * 78m / maksimum)));
-    }
-
-    private int WysokoscSlupkaZbiorczego(decimal zuzycie) => MaksymalneZuzycie == 0 || zuzycie == 0
+    private int SzerokoscPaska(decimal ilosc) => MaksymalneZuzycie == 0
         ? 0
-        : Math.Max(2, (int)Math.Round((double)(zuzycie * 78m / MaksymalneZuzycie)));
+        : Math.Max(2, (int)Math.Round((double)(ilosc * 100m / MaksymalneZuzycie)));
+
+    private int SzerokoscPaskaSumy(decimal ilosc) => MaksymalnaSumaMiesieczna == 0
+        ? 0
+        : Math.Max(2, (int)Math.Round((double)(ilosc * 100m / MaksymalnaSumaMiesieczna)));
 
     private static string NazwaMiesiaca(int miesiac) => PelneNazwyMiesiecy[miesiac - 1];
     private static string NazwaMiesiacaSkrocona(int miesiac) => NazwyMiesiecy[miesiac - 1];
@@ -363,41 +353,18 @@
     .heat-usage-total { font-weight: 700; white-space: nowrap; }
     .heat-usage-footer { min-height: 46px; background: var(--mud-palette-background-grey); }
     .heat-grand-total { color: var(--mud-palette-primary); }
-    .heat-usage-line-card { margin-top: 1rem; }
-    .heat-building-chart { display: grid; grid-template-columns: repeat(12, minmax(44px, 1fr)); gap: .5rem; min-width: 640px; height: 340px; padding: .5rem .25rem 0; }
-    .heat-building-column { display: grid; grid-template-rows: minmax(0, 1fr) 26px; min-width: 0; text-align: center; }
-    .heat-building-plot {
-        position: relative; display: flex; align-items: flex-end; justify-content: center;
-        border-bottom: 1px solid var(--mud-palette-divider);
-        background: linear-gradient(to top, var(--mud-palette-divider) 1px, transparent 1px) 0 0 / 100% 25%;
-    }
-    .heat-building-value { position: absolute; top: 0; width: 100%; color: var(--mud-palette-text-primary); font-size: .65rem; font-variant-numeric: tabular-nums; }
-    .heat-building-bar { width: min(62%, 34px); border-radius: 5px 5px 0 0; background: linear-gradient(180deg, #ffb74d, #ef6c00); }
-    .heat-building-month { padding-top: .4rem; color: var(--mud-palette-text-secondary); font-size: .7rem; font-weight: 700; }
-    .heat-labeled-chart-scroll { overflow-x: auto; }
-    .heat-labeled-chart {
-        display: grid; grid-template-columns: repeat(12, minmax(48px, 1fr)); gap: .55rem;
-        min-width: 680px; height: 340px; padding: 1.8rem .25rem 0;
-    }
-    .heat-labeled-column { display: grid; grid-template-rows: minmax(0, 1fr) 26px; min-width: 0; text-align: center; }
-    .heat-labeled-plot {
-        position: relative; display: flex; align-items: flex-end; justify-content: center;
-        border-bottom: 1px solid var(--mud-palette-divider);
-        background: linear-gradient(to top, var(--mud-palette-divider) 1px, transparent 1px) 0 0 / 100% 25%;
-    }
-    .heat-labeled-value {
-        position: absolute; z-index: 1; left: 50%; padding: 2px 6px; border-radius: 6px;
-        background: #ef6c00; color: #fff; font-size: .72rem; font-weight: 700;
-        font-variant-numeric: tabular-nums; transform: translateX(-50%); white-space: nowrap;
-    }
-    .heat-labeled-bar { width: min(62%, 34px); border-radius: 5px 5px 0 0; background: #ef6c00; }
-    .heat-labeled-month { padding-top: .4rem; color: var(--mud-palette-text-secondary); font-size: .7rem; font-weight: 700; }
+    .heat-usage-horizontal-card { margin-top: 1rem; }
+    .heat-horizontal-chart { display: grid; gap: .45rem; }
+    .heat-horizontal-row { display: grid; grid-template-columns: minmax(72px, 110px) minmax(0, 1fr) 90px; align-items: center; gap: .75rem; }
+    .heat-horizontal-label, .heat-horizontal-value { color: var(--mud-palette-text-primary); font-size: .78rem; font-variant-numeric: tabular-nums; }
+    .heat-horizontal-value { text-align: right; }
+    .heat-horizontal-track, .heat-compare-track { height: 12px; overflow: hidden; border-radius: 8px; background: var(--mud-palette-background-grey); }
+    .heat-horizontal-bar, .heat-compare-bar { height: 100%; min-width: 2px; border-radius: inherit; background: linear-gradient(90deg, #ffb74d, #ef6c00); }
     .heat-compare-table { min-width: 1120px; }
     .heat-compare-row { grid-template-columns: minmax(180px, 1.35fr) repeat(12, minmax(58px, 1fr)); min-height: 48px; border-bottom: 1px solid var(--mud-palette-divider); }
     .heat-compare-name { min-width: 0; padding: .55rem .65rem .55rem .25rem; overflow: hidden; color: var(--mud-palette-text-primary); font-size: .78rem; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
     .heat-compare-cell { display: flex; min-width: 0; align-items: center; gap: .25rem; padding: .4rem .2rem; color: var(--mud-palette-text-primary); font-size: .62rem; font-variant-numeric: tabular-nums; }
-    .heat-compare-track { flex: 1; min-width: 8px; height: 12px; overflow: hidden; border-radius: 8px; background: var(--mud-palette-background-grey); }
-    .heat-compare-bar { height: 100%; min-width: 2px; border-radius: inherit; background: linear-gradient(90deg, #ffb74d, #ef6c00); }
+    .heat-compare-track { flex: 1; min-width: 8px; }
     .heat-zero { width: 100%; color: var(--mud-palette-text-disabled); text-align: center; }
     .heat-compare-axis { background: var(--mud-palette-background-grey); }
     .heat-compare-scale { display: flex; align-items: center; justify-content: flex-end; gap: .5rem; padding-top: .75rem; color: var(--mud-palette-text-secondary); font-size: .7rem; }

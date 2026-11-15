@@ -13,6 +13,11 @@ namespace Mieszkaniec.Model.Entities
         [MaxLength(100)]
         public string NumerLicznika { get; set; } = string.Empty;
 
+        public int? LicznikId { get; set; }
+
+        [ForeignKey(nameof(LicznikId))]
+        public virtual Licznik? Licznik { get; set; }
+
         public int? ObiektId { get; set; }
 
         [ForeignKey("ObiektId")]

@@ -1,10 +1,10 @@
 @using Mieszkaniec.Model.Entities
 @using MudBlazor
 
-<MudDialog Options="DialogOptions">
+<MudDialog Options="DialogOptions" Class="heat-reading-dialog" Style="width: calc(100vw - 32px); max-width: 520px;">
     <TitleContent>
         <div class="d-flex align-center gap-3">
-            <MudAvatar Color="Color.Primary" Variant="Variant.Filled" Size="Size.Medium">
+            <MudAvatar Color="Color.Primary" Variant="Variant.Filled" Size="Size.Small">
                 <MudIcon Icon="@Icons.Material.Filled.LocalFireDepartment" />
             </MudAvatar>
             <div>
@@ -15,17 +15,18 @@
     </TitleContent>
     <DialogContent>
         <MudForm @ref="form">
-            <MudGrid Spacing="2">
-                <MudItem xs="12" md="6">
-                    <MudTextField @bind-Value="Odczyt.NumerLicznika" Label="Numer licznika" Variant="Variant.Outlined" Margin="Margin.Dense" Required="true" RequiredError="Podaj numer licznika" />
+            <MudGrid Spacing="1">
+                <MudItem xs="12">
+                    <MudAutocomplete T="Licznik" Value="WybranyLicznik" ValueChanged="WybierzLicznik"
+                                     Label="Licznik" SearchFunc="SzukajLicznikow" ToStringFunc="OpisLicznika"
+                                     Placeholder="Wpisz numer licznika" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                     Required="true" RequiredError="Wybierz licznik z administracji licznikami"
+                                     Clearable="true" CoerceText="false" />
                 </MudItem>
-                <MudItem xs="12" md="6">
-                    <MudSelect T="int?" @bind-Value="Odczyt.ObiektId" Label="Budynek" Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true">
-                        @foreach (var obiekt in Obiekty)
-                        {
-                            <MudSelectItem T="int?" Value="@obiekt.Id">@obiekt.Nazwa</MudSelectItem>
-                        }
-                    </MudSelect>
+                <MudItem xs="12">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                        Budynek: @(WybranyLicznik?.Obiekt?.Nazwa ?? "Nieprzypisany")
+                    </MudText>
                 </MudItem>
                 <MudItem xs="6">
                     <MudNumericField @bind-Value="Odczyt.Rok" Label="Rok" Variant="Variant.Outlined" Margin="Margin.Dense" HideSpinButtons="true" Required="true" />
@@ -34,10 +35,10 @@
                     <MudNumericField @bind-Value="Odczyt.Miesiac" Label="Miesiąc" Variant="Variant.Outlined" Margin="Margin.Dense" Min="1" Max="12" Required="true" />
                 </MudItem>
                 <MudItem xs="6">
-                    <MudNumericField @bind-Value="Odczyt.StanPoczatkowy" @bind-Value:after="Przelicz" Label="Stan początkowy" Variant="Variant.Outlined" Margin="Margin.Dense" HideSpinButtons="true" Format="N3" />
+                    <MudNumericField T="decimal?" @bind-Value="StanPoczatkowy" @bind-Value:after="Przelicz" Label="Stan początkowy" Variant="Variant.Outlined" Margin="Margin.Dense" HideSpinButtons="true" Format="N3" Required="true" />
                 </MudItem>
                 <MudItem xs="6">
-                    <MudNumericField @bind-Value="Odczyt.StanKoncowy" @bind-Value:after="Przelicz" Label="Stan końcowy" Variant="Variant.Outlined" Margin="Margin.Dense" HideSpinButtons="true" Format="N3" />
+                    <MudNumericField T="decimal?" @bind-Value="StanKoncowy" @bind-Value:after="Przelicz" Label="Stan końcowy" Variant="Variant.Outlined" Margin="Margin.Dense" HideSpinButtons="true" Format="N3" Required="true" />
                 </MudItem>
                 <MudItem xs="4">
                     <MudNumericField @bind-Value="Odczyt.ZuzycieGJ" @bind-Value:after="Przelicz" Label="Zużycie" Variant="Variant.Outlined" Margin="Margin.Dense" HideSpinButtons="true" Format="N3" />
@@ -52,6 +53,14 @@
                     <MudTextField @bind-Value="Odczyt.Uwagi" Label="Uwagi" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" />
                 </MudItem>
             </MudGrid>
+            @if (!Liczniki.Any())
+            {
+                <MudAlert Severity="Severity.Warning" Class="mt-3">
+                    Brak liczników ciepła w ewidencji.
+                    <MudLink Href="/administracja/liczniki" Target="_blank">Dodaj licznik w administracji licznikami</MudLink>,
+                    wybierając typ „Ciepło”, a następnie zamknij i ponownie otwórz ten dialog.
+                </MudAlert>
+            }
         </MudForm>
     </DialogContent>
     <DialogActions>
@@ -64,27 +73,73 @@
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
 
     [Parameter] public OdczytCiepla Odczyt { get; set; } = new() { Rok = DateTime.Now.Year, Miesiac = DateTime.Now.Month };
-    [Parameter] public IEnumerable<Obiekt> Obiekty { get; set; } = Array.Empty<Obiekt>();
+    [Parameter] public IEnumerable<Licznik> Liczniki { get; set; } = Array.Empty<Licznik>();
 
     private readonly DialogOptions DialogOptions = new() { MaxWidth = MaxWidth.Small, FullWidth = true, CloseButton = true };
+    private Licznik? WybranyLicznik => Liczniki.FirstOrDefault(x => x.Id == Odczyt.LicznikId);
 
     private MudForm form = default!;
+    private decimal? StanPoczatkowy { get; set; }
+    private decimal? StanKoncowy { get; set; }
+
+    protected override void OnInitialized()
+    {
+        StanPoczatkowy = Odczyt.Id == 0 ? null : Odczyt.StanPoczatkowy;
+        StanKoncowy = Odczyt.Id == 0 ? null : Odczyt.StanKoncowy;
+    }
 
     private void Przelicz()
     {
-        if (Odczyt.StanKoncowy >= Odczyt.StanPoczatkowy)
+        Odczyt.StanPoczatkowy = StanPoczatkowy ?? 0;
+        Odczyt.StanKoncowy = StanKoncowy ?? 0;
+        if (StanPoczatkowy.HasValue && StanKoncowy.HasValue &&
+            StanKoncowy.Value >= StanPoczatkowy.Value)
         {
-            Odczyt.ZuzycieGJ = Odczyt.StanKoncowy - Odczyt.StanPoczatkowy;
+            Odczyt.ZuzycieGJ = StanKoncowy.Value - StanPoczatkowy.Value;
         }
 
         Odczyt.IloscDoZafakturowania = Odczyt.ZuzycieGJ + (Odczyt.Korekta ?? 0);
     }
 
+    private Task<IEnumerable<Licznik>> SzukajLicznikow(string? tekst, CancellationToken cancellationToken)
+    {
+        IEnumerable<Licznik> pasujace = Liczniki;
+        if (!string.IsNullOrWhiteSpace(tekst))
+        {
+            pasujace = pasujace.Where(x =>
+                OpisLicznika(x).Contains(tekst, StringComparison.OrdinalIgnoreCase));
+        }
+
+        return Task.FromResult(pasujace
+            .OrderBy(x => x.Obiekt?.Nazwa)
+            .ThenBy(x => x.NumerLicznika)
+            .AsEnumerable());
+    }
+
+    private static string OpisLicznika(Licznik? licznik) =>
+        licznik is null
+            ? string.Empty
+            : $"{licznik.NumerLicznika} — {licznik.Typ} — {licznik.Obiekt?.Nazwa ?? "Nieprzypisany"}";
+
+    private void WybierzLicznik(Licznik? licznik)
+    {
+        Odczyt.LicznikId = licznik?.Id;
+        if (licznik is null)
+        {
+            return;
+        }
+
+        Odczyt.NumerLicznika = licznik.NumerLicznika;
+        Odczyt.ObiektId = licznik.ObiektId;
+    }
+
     private async Task Submit()
     {
         await form.Validate();
-        if (form.IsValid)
+        if (form.IsValid && Odczyt.LicznikId.HasValue &&
+            StanPoczatkowy.HasValue && StanKoncowy.HasValue)
         {
+            Przelicz();
             MudDialog.Close(DialogResult.Ok(Odczyt));
         }
     }

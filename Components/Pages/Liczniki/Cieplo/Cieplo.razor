@@ -6,6 +6,7 @@
 @using MudBlazor
 @using Microsoft.AspNetCore.Components.Forms
 @inject ICieploService CieploService
+@inject ILicznikService LicznikService
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 
@@ -300,7 +301,7 @@
 
     private List<OdczytCiepla> odczyty = new();
     private List<FakturaCiepla> faktury = new();
-    private List<Obiekt> obiekty = new();
+    private List<Licznik> liczniki = [];
     private PodsumowanieMiesiacaCiepla? wybranyMiesiac;
     private int aktywnaZakladka;
     private int RokWidoku = DateTime.Now.Year;
@@ -418,12 +419,12 @@
 
     protected override async Task OnInitializedAsync()
     {
-        obiekty = await CieploService.PobierzObiektyAsync();
         await Odswiez();
     }
 
     private async Task Odswiez()
     {
+        await OdswiezLiczniki();
         odczyty = await CieploService.PobierzOdczytyAsync();
         faktury = await CieploService.PobierzFakturyAsync();
         wybranyMiesiac = null;
@@ -435,12 +436,16 @@
         }
     }
 
+    private async Task OdswiezLiczniki() =>
+        liczniki = await LicznikService.PobierzLicznikiCieplaAsync();
+
     private Task DodajOdczyt() => OtworzDialogOdczytu(new OdczytCiepla { Rok = RokWidoku, Miesiac = DateTime.Now.Month }, "Dodaj odczyt");
 
     private Task EdytujOdczyt(OdczytCiepla odczyt) => OtworzDialogOdczytu(new OdczytCiepla
     {
         Id = odczyt.Id,
         NumerLicznika = odczyt.NumerLicznika,
+        LicznikId = odczyt.LicznikId,
         ObiektId = odczyt.ObiektId,
         Rok = odczyt.Rok,
         Miesiac = odczyt.Miesiac,
@@ -454,7 +459,9 @@
 
     private async Task WczytajOdczyty()
     {
-        var parametry = new DialogParameters { ["Istniejace"] = odczyty, ["Obiekty"] = obiekty };
+        await OdswiezLiczniki();
+        odczyty = await CieploService.PobierzOdczytyAsync();
+        var parametry = new DialogParameters { ["Istniejace"] = odczyty, ["Liczniki"] = liczniki };
         var dialog = await DialogService.ShowAsync<OdczytyCieplaDialog>("Wczytaj odczyty liczników ciepła", parametry);
         var wynik = await dialog.Result;
         if (wynik is { Canceled: false, Data: List<OdczytCiepla> wiersze })
@@ -465,7 +472,8 @@
 
     private async Task OtworzDialogOdczytu(OdczytCiepla odczyt, string tytul)
     {
-        var parametry = new DialogParameters { ["Odczyt"] = odczyt, ["Obiekty"] = obiekty };
+        await OdswiezLiczniki();
+        var parametry = new DialogParameters { ["Odczyt"] = odczyt, ["Liczniki"] = liczniki };
         var dialog = await DialogService.ShowAsync<OdczytCieplaDialog>(tytul, parametry);
         var wynik = await dialog.Result;
         if (wynik is { Canceled: false, Data: OdczytCiepla zapisywany })

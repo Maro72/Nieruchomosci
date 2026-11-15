@@ -7,7 +7,12 @@
     <DialogContent>
         <MudForm @ref="form">
             <MudTextField @bind-Value="Licznik.NumerLicznika" Label="Numer licznika" Required="true" />
-            <MudTextField @bind-Value="Licznik.Typ" Label="Typ" Required="true" />
+            <MudSelect T="string" @bind-Value="Licznik.Typ" Label="Typ licznika" Required="true">
+                @foreach (var typ in TypyLicznika)
+                {
+                    <MudSelectItem T="string" Value="@typ">@typ</MudSelectItem>
+                }
+            </MudSelect>
             <MudSelect T="int?" @bind-Value="Licznik.ObiektId" Label="Budynek" Required="true">
                 @foreach (var obiekt in obiekty)
                 {
@@ -29,6 +34,7 @@
 
     [Parameter] public Licznik Licznik { get; set; } = new Licznik();
 
+    private static readonly string[] TypyLicznika = ["Woda", "Ciepło", "Energia"];
     private List<Obiekt> obiekty = new();
 
     MudForm form;

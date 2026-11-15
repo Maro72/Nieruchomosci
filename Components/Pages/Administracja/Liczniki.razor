@@ -3,79 +3,65 @@
 @using Mieszkaniec.Model.Entities
 @using Mieszkaniec.Services.Interfaces
 @using Mieszkaniec.Components.Pages.Liczniki
+@using Mieszkaniec.Components.UI
 @using MudBlazor
-@using Microsoft.AspNetCore.Components.Authorization
 @inject ILicznikService LicznikService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
-<PageTitle>Administracja licznikami wody</PageTitle>
+<PageTitle>Administracja licznikami</PageTitle>
 
 <div class="pa-4">
-    <MudPaper Class="pa-4" Elevation="1">
-        <div class="d-flex align-center justify-space-between mb-4">
-            <div>
-                <MudText Typo="Typo.h5">Administracja licznikami</MudText>
-                <MudText Typo="Typo.body2" Color="Color.Secondary">Numery liczników, przypisane budynki, uwagi i statusy.</MudText>
-            </div>
-            <AuthorizeView Policy="Liczniki.Edycja">
-                <Authorized>
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="DodajLicznik">
-                        Dodaj licznik
-                    </MudButton>
-                </Authorized>
-            </AuthorizeView>
-        </div>
-
-        @if (liczniki is null)
-        {
-            <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
-        }
-        else
-        {
-            <MudTable Items="@liczniki.OrderBy(x => x.Obiekt?.Nazwa).ThenBy(x => x.NumerLicznika)"
-            Hover="true"
-            Dense="true"
-            Breakpoint="Breakpoint.None"
-            @bind-RowsPerPage="LiczbaNaStronie">
-            <HeaderContent>
-                <MudTh>Numer licznika</MudTh>
-                <MudTh>Budynek</MudTh>
-                <MudTh>Uwagi</MudTh>
-                <MudTh>Typ</MudTh>
-                <MudTh>Status</MudTh>
-                <MudTh>Akcje</MudTh>
-            </HeaderContent>
-            <RowTemplate Context="licznik">
-                <MudTd DataLabel="Numer licznika"><strong>@licznik.NumerLicznika</strong></MudTd>
-                <MudTd DataLabel="Budynek">@(licznik.Obiekt?.Nazwa ?? "Nieprzypisany")</MudTd>
-                <MudTd DataLabel="Uwagi">@(string.IsNullOrWhiteSpace(licznik.Uwagi) ? "-" : licznik.Uwagi)</MudTd>
-                <MudTd DataLabel="Typ">@licznik.Typ</MudTd>
-                <MudTd DataLabel="Status">
-                    <MudChip T="string" Size="Size.Small" Color="@(licznik.CzyAktywny ? Color.Success : Color.Default)">
-                        @(licznik.CzyAktywny ? "Aktywny" : "Nieczynny")
-                    </MudChip>
-                </MudTd>
-                <MudTd DataLabel="Akcje">
-                    <AuthorizeView Policy="Liczniki.Edycja">
-                        <Authorized>
-                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" Title="Edytuj licznik" OnClick="@(() => EdytujLicznik(licznik))" />
-                        </Authorized>
-                    </AuthorizeView>
-                </MudTd>
-            </RowTemplate>
-            <PagerContent>
-                <MudTablePager RowsPerPageString="Liczników na stronie"
-                RowsPerPageOptions="new int[] { 10, 15, 25, 50 }" />
-            </PagerContent>
-        </MudTable>
+    @if (liczniki is null)
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
     }
-</MudPaper>
+    else
+    {
+        <FGrid TItem="Licznik"
+               Title="Administracja licznikami"
+               Items="@liczniki.OrderBy(x => x.Obiekt?.Nazwa).ThenBy(x => x.NumerLicznika)"
+               GridKey="@gridKey"
+               CrudPolicy="Liczniki.Edycja"
+               @bind-SelectedItem="wybranyLicznik"
+               ShowToolbar="true"
+               ShowSearch="true"
+               OnAdd="DodajLicznik"
+               OnEdit="EdytujLicznik">
+            <ToolbarLeftContent>
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-none d-md-block">
+                    Liczniki wody, ciepła i energii oraz przypisane budynki.
+                </MudText>
+            </ToolbarLeftContent>
+            <GridColumns>
+                <PropertyColumn T="Licznik" TProperty="string" Property="x => x.NumerLicznika" Title="Numer licznika" />
+                <TemplateColumn T="Licznik" Title="Budynek">
+                    <CellTemplate Context="ctx">
+                        @(ctx.Item.Obiekt?.Nazwa ?? "Nieprzypisany")
+                    </CellTemplate>
+                </TemplateColumn>
+                <PropertyColumn T="Licznik" TProperty="string" Property="x => x.Typ" Title="Typ" />
+                <TemplateColumn T="Licznik" Title="Uwagi">
+                    <CellTemplate Context="ctx">
+                        @(string.IsNullOrWhiteSpace(ctx.Item.Uwagi) ? "-" : ctx.Item.Uwagi)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="Licznik" Title="Status">
+                    <CellTemplate Context="ctx">
+                        <MudChip T="string" Size="Size.Small" Color="@(ctx.Item.CzyAktywny ? Color.Success : Color.Default)">
+                            @(ctx.Item.CzyAktywny ? "Aktywny" : "Nieczynny")
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+            </GridColumns>
+        </FGrid>
+    }
 </div>
 
 @code {
     private List<Licznik>? liczniki;
-    private int LiczbaNaStronie { get; set; } = 10;
+    private Licznik? wybranyLicznik;
+    private int gridKey;
 
     protected override async Task OnInitializedAsync()
     {
@@ -84,7 +70,9 @@
 
     private async Task OdswiezListe()
     {
-        liczniki = await LicznikService.PobierzWszystkieLicznikiWodyAsync();
+        liczniki = await LicznikService.PobierzWszystkieLicznikiAsync();
+        wybranyLicznik = null;
+        gridKey++;
     }
 
     private async Task DodajLicznik()
@@ -114,7 +102,9 @@
             DataDodania = licznik.DataDodania
         };
 
-        var dialog = await DialogService.ShowAsync<LicznikDialog>("Edytuj licznik", new DialogParameters { ["Licznik"] = kopia });
+        var dialog = await DialogService.ShowAsync<LicznikDialog>(
+            "Edytuj licznik",
+            new DialogParameters { ["Licznik"] = kopia });
         var result = await dialog.Result;
 
         if (!result.Canceled && result.Data is Licznik zaktualizowanyLicznik)

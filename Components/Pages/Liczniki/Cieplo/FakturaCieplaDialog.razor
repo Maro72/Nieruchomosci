@@ -67,12 +67,12 @@
                         {
                             <tr @key="p">
                                 <td>@(Faktura.Pozycje.IndexOf(p) + 1)</td>
-                                <td><MudTextField @bind-Value="p.NazwaTowaruUslugi" Variant="Variant.Outlined" Margin="Margin.Dense" /></td>
-                                <td><MudTextField @bind-Value="p.Jm" Variant="Variant.Outlined" Margin="Margin.Dense" /></td>
-                                <td><MudNumericField @bind-Value="p.Ilosc" @bind-Value:after="() => PrzeliczPozycje(p)" HideSpinButtons="true" Format="N6" Variant="Variant.Outlined" Margin="Margin.Dense" Class="cd-num" /></td>
-                                <td><MudNumericField @bind-Value="p.CenaNetto" @bind-Value:after="() => PrzeliczPozycje(p)" HideSpinButtons="true" Format="N2" Variant="Variant.Outlined" Margin="Margin.Dense" Class="cd-num" /></td>
-                                <td><MudNumericField @bind-Value="p.StawkaVat" @bind-Value:after="Przelicz" HideSpinButtons="true" Format="N0" Variant="Variant.Outlined" Margin="Margin.Dense" Class="cd-num" /></td>
-                                <td><MudNumericField @bind-Value="p.WartoscNetto" @bind-Value:after="Przelicz" HideSpinButtons="true" Format="N2" Variant="Variant.Outlined" Margin="Margin.Dense" Class="cd-num" /></td>
+                                <td><MudTextField @bind-Value="p.NazwaTowaruUslugi" Variant="Variant.Text" Margin="Margin.Dense" /></td>
+                                <td><MudTextField @bind-Value="p.Jm" Variant="Variant.Text" Margin="Margin.Dense" /></td>
+                                <td><MudNumericField @bind-Value="p.Ilosc" @bind-Value:after="() => PrzeliczPozycje(p)" HideSpinButtons="true" Format="N6" Variant="Variant.Text" Margin="Margin.Dense" Class="cd-num" /></td>
+                                <td><MudNumericField @bind-Value="p.CenaNetto" @bind-Value:after="() => PrzeliczPozycje(p)" HideSpinButtons="true" Format="N2" Variant="Variant.Text" Margin="Margin.Dense" Class="cd-num" /></td>
+                                <td><MudNumericField @bind-Value="p.StawkaVat" @bind-Value:after="Przelicz" HideSpinButtons="true" Format="N0" Variant="Variant.Text" Margin="Margin.Dense" Class="cd-num" /></td>
+                                <td><MudNumericField @bind-Value="p.WartoscNetto" @bind-Value:after="Przelicz" HideSpinButtons="true" Format="N2" Variant="Variant.Text" Margin="Margin.Dense" Class="cd-num" /></td>
                                 <td><MudIconButton Icon="@Icons.Material.Filled.DeleteOutline" Color="Color.Error" Size="Size.Small" OnClick="@(() => UsunPozycje(p))" /></td>
                             </tr>
                         }

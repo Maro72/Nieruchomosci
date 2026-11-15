@@ -473,6 +473,9 @@ namespace Mieszkaniec.Migrations
                     b.Property<decimal?>("Korekta")
                         .HasColumnType("decimal(12,3)");
 
+                    b.Property<int?>("LicznikId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Miesiac")
                         .HasColumnType("int");
 
@@ -501,6 +504,8 @@ namespace Mieszkaniec.Migrations
                         .HasColumnType("decimal(12,3)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("LicznikId");
 
                     b.HasIndex("ObiektId");
 
@@ -1489,9 +1494,15 @@ namespace Mieszkaniec.Migrations
 
             modelBuilder.Entity("Mieszkaniec.Model.Entities.OdczytCiepla", b =>
                 {
+                    b.HasOne("Mieszkaniec.Model.Entities.Licznik", "Licznik")
+                        .WithMany("OdczytyCiepla")
+                        .HasForeignKey("LicznikId");
+
                     b.HasOne("Mieszkaniec.Model.Entities.Obiekt", "Obiekt")
                         .WithMany()
                         .HasForeignKey("ObiektId");
+
+                    b.Navigation("Licznik");
 
                     b.Navigation("Obiekt");
                 });
@@ -1683,6 +1694,8 @@ namespace Mieszkaniec.Migrations
 
             modelBuilder.Entity("Mieszkaniec.Model.Entities.Licznik", b =>
                 {
+                    b.Navigation("OdczytyCiepla");
+
                     b.Navigation("OdczytyWody");
                 });
 

@@ -108,44 +108,38 @@
 
         @if (_wybranyBudynekId is not null && BudynekWybrany is not null)
         {
-            <MudPaper Elevation="1" Class="usage-chart-card usage-line-card">
+            <MudPaper Elevation="1" Class="usage-chart-card usage-horizontal-card">
                 <div class="usage-chart-heading">
                     <MudText Typo="Typo.h6">Ilość do fakturowania — @BudynekWybrany.Nazwa, @RokWidoku</MudText>
                 </div>
                 <MudText Typo="Typo.body2" Class="mb-2">
                     @($"{BudynekWybrany.Liczniki.Count} liczników")
                 </MudText>
-                <div class="usage-chart-scroll">
-                    <div class="selected-building-chart" role="img"
-                         aria-label="@($"Miesięczna ilość do fakturowania w budynku {BudynekWybrany.Nazwa} w roku {RokWidoku}")">
-                        @foreach (var miesiac in Miesiace)
-                        {
-                            var zuzycie = PobierzIloscDoFaktury(BudynekWybrany, miesiac);
-                            var wysokoscSlupka = WysokoscSlupka(BudynekWybrany, miesiac);
-                            <div class="selected-building-column">
-                                <div class="selected-building-plot">
-                                    <span class="selected-building-value"
-                                          style="@($"bottom:calc({wysokoscSlupka}% + 3px)")">
-                                        @zuzycie.ToString("N0")
-                                    </span>
-                                    <div class="selected-building-bar @KlasaLiczbyZuzycia(BudynekWybrany, miesiac)"
-                                         style="@($"height:{wysokoscSlupka}%")"
-                                         title="@OpisZuzycia(BudynekWybrany, miesiac, zuzycie)">
-                                    </div>
-                                </div>
-                                <span class="selected-building-month">@NazwaMiesiaca(miesiac)</span>
+                <div class="selected-building-chart" role="img"
+                     aria-label="@($"Miesięczna ilość do fakturowania w budynku {BudynekWybrany.Nazwa} w roku {RokWidoku}")">
+                    @foreach (var miesiac in Miesiace)
+                    {
+                        var zuzycie = PobierzIloscDoFaktury(BudynekWybrany, miesiac);
+                        <div class="selected-building-row" title="@OpisZuzycia(BudynekWybrany, miesiac, zuzycie)">
+                            <span class="selected-building-month">@NazwaMiesiaca(miesiac)</span>
+                            <div class="selected-building-track">
+                                @if (zuzycie > 0)
+                                {
+                                    <div class="selected-building-bar" style="@($"width:{SzerokoscPaska(zuzycie)}%")"></div>
+                                }
                             </div>
-                        }
-                    </div>
+                            <span class="selected-building-value @KlasaLiczbyZuzycia(BudynekWybrany, miesiac)">@zuzycie.ToString("N0")</span>
+                        </div>
+                    }
                 </div>
             </MudPaper>
         }
 
-        <MudPaper Elevation="1" Class="usage-chart-card usage-line-card">
+        <MudPaper Elevation="1" Class="usage-chart-card usage-horizontal-card">
             <div class="usage-chart-heading">
                 <MudText Typo="Typo.h6">Porównanie ilości do fakturowania — @OpisFiltraBudynku, @RokWidoku</MudText>
                 <MudText Typo="Typo.caption" Color="Color.Secondary">
-                    Miesiące na osi X, długość słupka oznacza ilość do fakturowania w m³.
+                    Poziome słupki pokazują miesięczną ilość do fakturowania w m³.
                 </MudText>
             </div>
             <div class="building-chart-scroll">
@@ -250,24 +244,9 @@
         ? "wszystkie budynki"
         : WszystkieBudynki.FirstOrDefault(x => (x.Id ?? -1) == _wybranyBudynekId)?.Nazwa ?? "wybrany budynek";
 
-    private List<ChartSeries<double>> SerieWszystkichBudynkow => BudynkiZOdczytami
-        .Select(budynek => new ChartSeries<double>
-        {
-            Name = budynek.Nazwa,
-            Data = Miesiace.Select(miesiac => (double)PobierzIloscDoFaktury(budynek, miesiac)).ToArray()
-        })
-        .ToList();
-
-    private ChartOptions OpcjeWykresu { get; } = new()
-    {
-        ShowLegend = true,
-        ShowToolTips = true,
-        ChartPalette = ["#1976d2", "#2e7d32", "#ed6c02", "#9c27b0", "#00838f", "#c62828", "#5d4037", "#455a64"]
-    };
-
     protected override async Task OnInitializedAsync()
     {
-        _liczniki = await LicznikService.PobierzWszystkieLicznikiWodyAsync();
+        _liczniki = await LicznikService.PobierzLicznikiWodyAsync();
         _ladowanie = false;
     }
 
@@ -352,16 +331,6 @@
         ? 0
         : Math.Max(2, (int)Math.Round(zuzycie * 100d / MaksymalneZuzycie));
 
-    private int WysokoscSlupka(ZuzycieBudynku budynek, int miesiac)
-    {
-        var maksimum = Miesiace
-            .Select(x => PobierzIloscDoFaktury(budynek, x))
-            .DefaultIfEmpty(0)
-            .Max();
-        var zuzycie = PobierzIloscDoFaktury(budynek, miesiac);
-        return maksimum == 0 || zuzycie == 0 ? 0 : Math.Max(2, (int)Math.Round(zuzycie * 78d / maksimum));
-    }
-
     private static string NazwaMiesiaca(int miesiac) => NazwyMiesiecy[miesiac - 1];
 }
 
@@ -408,19 +377,19 @@
     .header-meter { font-size: .78rem; font-weight: 700; }
     .usage-chart-row { min-height: 48px; border-bottom: 1px solid var(--mud-palette-divider); }
     .usage-cell { min-width: 0; padding: .45rem .2rem; color: var(--mud-palette-text-primary); font-size: .76rem; font-variant-numeric: tabular-nums; text-align: center; }
-    .usage-cell.usage-increase, .building-chart-increase { color: var(--mud-palette-error); font-weight: 800; }
+    .usage-cell.usage-increase { color: var(--mud-palette-error); font-weight: 800; }
     .usage-total, .month-total { padding: .45rem .25rem; color: var(--mud-palette-text-primary); font-size: .76rem; font-weight: 700; font-variant-numeric: tabular-nums; text-align: center; white-space: nowrap; }
     .usage-chart-footer { min-height: 46px; background: var(--mud-palette-background-grey); }
     .month-total { font-size: .7rem; }
     .grand-total { color: var(--mud-palette-primary); }
-    .usage-line-card { margin-top: 1rem; }
-    .selected-building-chart { display: grid; grid-template-columns: repeat(12, minmax(44px, 1fr)); gap: .5rem; min-width: 640px; height: 340px; padding: .5rem .25rem 0; }
-    .selected-building-column { display: grid; grid-template-rows: minmax(0, 1fr) 26px; min-width: 0; text-align: center; }
-    .selected-building-value { position: absolute; left: 50%; overflow: hidden; width: 100%; color: var(--mud-palette-text-primary); font-size: .72rem; font-variant-numeric: tabular-nums; text-overflow: ellipsis; transform: translateX(-50%); white-space: nowrap; }
-    .selected-building-plot { position: relative; display: flex; align-items: flex-end; justify-content: center; border-bottom: 1px solid var(--mud-palette-divider); background: linear-gradient(to top, var(--mud-palette-divider) 1px, transparent 1px) 0 0 / 100% 25%; }
-    .selected-building-bar { width: min(62%, 34px); min-height: 0; border-radius: 5px 5px 0 0; background: linear-gradient(180deg, #42a5f5, #1565c0); }
-    .selected-building-bar.building-chart-increase { background: var(--mud-palette-error); }
-    .selected-building-month { padding-top: .4rem; color: var(--mud-palette-text-secondary); font-size: .7rem; font-weight: 700; }
+    .usage-horizontal-card { margin-top: 1rem; }
+    .selected-building-chart { display: grid; gap: .45rem; }
+    .selected-building-row { display: grid; grid-template-columns: minmax(80px, 120px) minmax(0, 1fr) 80px; align-items: center; gap: .75rem; }
+    .selected-building-month { color: var(--mud-palette-text-secondary); font-size: .78rem; }
+    .selected-building-track, .building-chart-track { height: 12px; overflow: hidden; border-radius: 8px; background: var(--mud-palette-background-grey); }
+    .selected-building-bar, .building-chart-bar { height: 100%; min-width: 2px; border-radius: inherit; background: linear-gradient(90deg, #42a5f5, #1565c0); }
+    .selected-building-value { color: var(--mud-palette-text-primary); font-size: .78rem; font-variant-numeric: tabular-nums; text-align: right; }
+    .selected-building-value.building-chart-increase, .building-chart-increase { color: var(--mud-palette-error); font-weight: 800; }
     .building-chart-scroll { overflow-x: auto; }
     .building-chart { min-width: 1120px; }
     .building-chart-row, .building-chart-axis {
@@ -431,8 +400,7 @@
     .building-chart-row { min-height: 48px; border-bottom: 1px solid var(--mud-palette-divider); }
     .building-chart-label { min-width: 0; padding: .55rem .65rem .55rem .25rem; overflow: hidden; color: var(--mud-palette-text-primary); font-size: .78rem; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
     .building-chart-cell { display: flex; min-width: 0; align-items: center; gap: .25rem; padding: .4rem .2rem; color: var(--mud-palette-text-primary); font-size: .66rem; font-variant-numeric: tabular-nums; }
-    .building-chart-track { flex: 1; min-width: 10px; height: 12px; overflow: hidden; border-radius: 8px; background: var(--mud-palette-background-grey); }
-    .building-chart-bar { height: 100%; min-width: 2px; border-radius: inherit; background: linear-gradient(90deg, #42a5f5, #1565c0); }
+    .building-chart-track { flex: 1; min-width: 10px; }
     .building-chart-zero { width: 100%; color: var(--mud-palette-text-disabled); text-align: center; }
     .building-chart-axis { min-height: 42px; border-top: 1px solid var(--mud-palette-divider); background: var(--mud-palette-background-grey); }
     .building-chart-month { padding: .45rem .2rem; color: var(--mud-palette-text-secondary); font-size: .7rem; font-weight: 700; text-align: center; }

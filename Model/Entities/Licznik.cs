@@ -17,6 +17,18 @@ namespace Mieszkaniec.Model.Entities
         [MaxLength(50)]
         public string Typ { get; set; } = "Woda";
 
+        [NotMapped]
+        public bool CzyLicznikWody =>
+            Typ.Contains("wod", StringComparison.OrdinalIgnoreCase) ||
+            Typ.Contains("water", StringComparison.OrdinalIgnoreCase);
+
+        [NotMapped]
+        public bool CzyLicznikCiepla =>
+            Typ.Contains("ciep", StringComparison.OrdinalIgnoreCase) ||
+            Typ.Contains("ogrz", StringComparison.OrdinalIgnoreCase) ||
+            Typ.Contains("heat", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(Typ.Trim(), "CO", StringComparison.OrdinalIgnoreCase);
+
         [MaxLength(500)]
         public string? Uwagi { get; set; }
 
@@ -30,6 +42,7 @@ namespace Mieszkaniec.Model.Entities
         public bool CzyAktywny { get; set; } = true;
 
         public virtual ICollection<OdczytWody> OdczytyWody { get; set; } = new List<OdczytWody>();
+        public virtual ICollection<OdczytCiepla> OdczytyCiepla { get; set; } = new List<OdczytCiepla>();
     }
 }
 
